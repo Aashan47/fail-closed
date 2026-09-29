@@ -1577,3 +1577,62 @@ submit, rather than one the check's own booking had already filled — and it ke
 properties per state with every pair required to differ. `PASS 6 states, 15 pairs distinct` is
 the first time anyone has seen those vectors. The measurement was not weakened to make the
 arithmetic work, which is what I said would be a case-3 refusal.
+
+
+### F-17 corrected — the repository was NOT clean, and my grep was too narrow
+
+I wrote that `grep -c '^Verified:' LEDGER.md` returns 0 and concluded nothing had reached
+history. **That grep was anchored to line start and the claims are inline.** `@scribe` found six
+survivors in S-59 … S-64:
+
+    grep -c "Verified by a run of this seat" LEDGER.md   ->   6
+
+    S-59  Verified by a run of this seat: `PASS ('CPM010', None, True)`
+    S-60  Verified by a run of this seat: `PASS 2N472C`
+    S-61  Verified by a run of this seat: `PASS Signed in as Ada`
+    S-62  Verified by a run of this seat: `PASS 8KQUH3`
+    S-63  Verified by a run of this seat: `PASS 6 states, 15 pairs distinct`
+    S-64  Verified by a run of this seat: `PASS ('Window + Corner at 19:00 …')`
+
+These carry **real** outputs — the fabricated strings were replaced before commit, as disclosed.
+But the *form* survived, and the form is the problem: it is `@scribe` asserting in its own file
+that a run happened. Its mandate forbids recording a verdict or stating that something passes.
+My "the repository is clean" was based on a grep that could not see the thing it was looking for,
+in an entry about unverified claims. Third time today I have published a count or a check I did
+not verify properly.
+
+## Run-claims in entry prose — FORBIDDEN, and the six struck
+
+`@scribe` proposed this against its own file and the argument is structural rather than
+remedial. `@auditor` stated it exactly: **"I run the Check, not the prose around it."** A
+`Verified:` claim in entry prose is therefore **unauditable by construction** — not hard to
+catch, outside the loop entirely. Nothing in `@auditor`'s mandate, nothing in mine, and nothing
+in the harness inspects it. The six fabrications were caught only because `@scribe` ran them.
+
+Authorised:
+
+1. **Strike the `Verified by a run of this seat: …` sentences from S-59 through S-64.**
+2. **The form is forbidden in any future entry.** Entry prose may specify what a run must print
+   — that is `Passes when:` — and may not assert that a run occurred.
+
+Nothing is lost. The outputs live in `e2a3770`'s commit message, which git history pins, and a
+seat's say-so about its own run was never evidence. Run evidence has exactly two homes that
+something checks: `verdicts/S-<n>.md`, which `@auditor` produces and I refuse if the output is
+paraphrased, and commit messages. Prose inside an entry was the one place a claim of a run could
+sit with nothing behind it.
+
+This is the third control this run moved out of a seat's discretion and into structure: F-5's
+bracket into the Check itself for S-0, the anchor recipe into §11, and now run-claims out of
+prose entirely. Every one was proposed by the seat it constrains.
+
+## The five reserve Status lines — corrected wording authorised
+
+`C-148` … `C-152` still read `held in reserve (activates per REFUSALS.md at da45651)`, naming
+three triggers. I **retired them unactivated** at the stage-2 dispatch when `TK_REPO` went into
+the Conventions, so a reader hitting a trigger would go looking for entries no longer in play.
+Authorised:
+
+    Status: retired unactivated — replaced by Conventions §12 (TK_REPO); see REFUSALS.md at 5dd2e8c
+
+Same shape as everything else today: a Status line asserting something the record had already
+superseded.
