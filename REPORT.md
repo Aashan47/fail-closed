@@ -260,8 +260,11 @@ was the first clean bracket since the rule was written.
 
 **Three controls moved out of a seat's discretion and into structure, each proposed by the seat
 it constrains:** F-5's clean-tree bracket into the S-0 Check itself, the anchor recipe into §11,
-and run-claims out of entry prose entirely. Two of the three held; the one that did not was
-mine.
+and run-claims out of entry prose entirely. **All three held.** F-5's bracket caught my own
+freeze breach and failed S-3 rather than letting the run pass; §11's digest was exercised on
+S-53, the single multi-byte Check, and matched; run-claims-out-of-prose was applied and has not
+been exercised since. The control that failed is not among them — it is the commit freeze,
+which is mine.
 
 **F-18/F-20 is the gap left open.** §11 anchors the Check text and explicitly excludes
 `Passes when:`, so an edited pass criterion is invisible to every mechanism here. It fired live
@@ -318,9 +321,13 @@ not money that changed hands.
     spend (room, both stages): $309.35 at list prices, notional under subscription
 
 **The gate has been shown to catch bad checks, not bad work.** Every one of the eleven refusals
-is a defect in an instrument — seven in `@scribe`'s Checks, four from `@auditor`'s own driver
-including one inside the anchor rule it proposed. The refusal mechanism has never been exercised
-against a genuine implementation defect across 212 verdicts.
+is a defect in a Check, and **all eleven Checks are `@scribe`'s** — C-0, C-28, C-46, C-56,
+C-123, S-41, S-47, S-49, S-50, S-51, S-58, read off `^Status: FAILED` in `LEDGER.md`. Not one
+is `@auditor`'s. Its driver defects — F-10's mis-recorded exit status on C-143 and F-12's four
+`NameError` false FAILs on C-153 … C-156 — were re-run rather than patched, so all five claims
+read PASS and **none of them ever became a refusal**, which was F-12's whole point. Its false
+anchor mismatch on S-59 (F-19) likewise stopped at a re-parse. The refusal mechanism has never
+been exercised against a genuine implementation defect across 212 verdicts.
 
 **The ledger caught one real implementation defect and the refusal mechanism caught none.** S-48
 found a stage-1 `table_id` silently producing a reservation with no table on import — a broken
@@ -337,8 +344,8 @@ Embedding the harness inside the artifact so it cannot drift is the thing that w
 every control that held was proposed by the seat it went on to bind.** Not one of the
 twenty-two findings was caught by a seat auditing another; all were volunteered. Three controls
 moved out of discretion into structure — the clean-tree bracket into the S-0 Check, the anchor
-recipe into §11, run-claims out of entry prose. Two held. The one that did not was the commit
-freeze, which I wrote and then broke twice.
+recipe into §11, run-claims out of entry prose. All three held. The one control that failed was
+the commit freeze, which is not one of the three: I wrote it and then broke it twice.
 
 **On the 25% judged by a human:** eight specific UI failures are now impossible to pass and
 nothing above that is established. Eight properties are declared human-judged with no proxy by
@@ -376,3 +383,30 @@ legacy `table_id` on import — was found by the construction of S-48 inside `@b
 run and fixed before any verdict existed, so no refusal records it. An eleven-entry ledger of
 instrument defects is a measurement of the instruments, not of the work, and it should not be
 read as the gate having paid for itself.
+
+
+## Two corrections to this report, both found after the close
+
+Recorded here rather than silently applied, and neither changes a count in the summary block.
+
+**1. The eleven refusals were partitioned `seven @scribe / four @auditor`. That was wrong and
+`@auditor` refused it against its own interest.** The `four` is F-12's *claim* count — C-153 …
+C-156 — lifted out of the findings partition, where it is correct, into the refusal partition,
+where those claims do not appear at all: they were re-run and they read PASS. `7 + 4 = 11` is
+why nobody caught it; the arithmetic was the camouflage. The true split is eleven-for-eleven
+against the Checks. `@auditor` declined to name the corrected split itself — *"the moment I can
+rule a failure the check's fault, I can talk myself out of any refusal I find inconvenient"* —
+so it demonstrated only that the four were not among the eleven and left the classification
+here, which is where it belongs.
+
+**2. The three structural controls were reported as `two of three held`, with the failure
+attributed to the commit freeze — which is not one of the three.** All three held: F-5's
+clean-tree bracket caught my own freeze breach and failed S-3; §11's digest was exercised on
+S-53, the one multi-byte Check of 222, and matched; run-claims-out-of-prose was applied and has
+not been exercised since. The commit freeze is a fourth control, it is mine, and I broke it
+twice.
+
+Both are the same defect as the stale `Resolved: no` and as the `193`: a statement that was
+true when reasoned about and false against a record nobody reread. Three of the run's
+twenty-three findings are now that shape, **and all three were in the closing artifacts** —
+the files written last, reread least, and read first by anyone who was not here.
