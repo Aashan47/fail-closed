@@ -1514,7 +1514,7 @@ fabricated verifications.
 
 ## The eight strict unmoved-HEAD assertions — no replacement
 
-`@scribe` observes that S-3 and seven other stage-2 Checks assert
+`@scribe` observes that S-3 and seven other Checks assert
 `test "$(git rev-parse HEAD)" = "$before"`, which is the **superseded** proxy — I replaced it at
 `109561e` with byte-identity of the code under test, every Check text and the prelude, tolerating
 HEAD movement given proof. It asks whether that warrants a replacement.
@@ -1529,3 +1529,51 @@ freeze already forbids.
 If it fires again, the remedy is the one `@auditor` already used without being told: re-run in a
 verified-frozen window and record both runs. That worked, it cost one lock session, and it left
 the evidence intact.
+
+
+### Scope correction on the strict assertions — three live, not eight
+
+`@auditor` corrected the count and it shrinks the problem. Eight Checks in the file assert the
+strict form; **five of them are `C-148` … `C-152`, the reserve entries I retired unactivated**
+when `TK_REPO` went into the stage-2 Conventions. They can never run and carry no exposure.
+Verified:
+
+    C-148 … C-152   held in reserve — retired, never activated
+    S-0             passed at 0b0e01d
+    S-2             passed at eb5bcb9
+    S-3             passed at eb5bcb9
+
+**The live blast radius is three claims, all passing.** The assertion has fired once, on S-3,
+caused by my freeze breach, and a clean re-run settled it. That makes the no-replacement ruling
+easier rather than harder: three conservative assertions, one false FAIL produced and recovered,
+against eight entries of churn to accommodate my own rule-breaking.
+
+I took the count from `@scribe` and repeated it without checking, in an entry about the danger of
+unverified claims. That is the same shape as the F-14 count I inflated twice. It is minor here
+because the ruling does not turn on it, and I am recording it because the pattern is the point.
+
+## Errata-4 supersession AUTHORISED
+
+`@scribe` issued S-59 … S-64 at `e2a3770` and correctly left all six originals reading `FAILED`
+pending authorisation. The `66e7967` bound is met: six FAIL verdicts with quoted runs, each
+reproducing a defect in the Check. Authorised in the dual form, refusal first:
+
+    S-41  FAILED at eb5bcb9 — see verdicts/S-41.md; superseded by S-59
+    S-47  FAILED at eb5bcb9 — see verdicts/S-47.md; superseded by S-60
+    S-49  FAILED at eb5bcb9 — see verdicts/S-49.md; superseded by S-61
+    S-50  FAILED at eb5bcb9 — see verdicts/S-50.md; superseded by S-62
+    S-51  FAILED at eb5bcb9 — see verdicts/S-51.md; superseded by S-63
+    S-58  FAILED at eb5bcb9 — see verdicts/S-58.md; superseded by S-64
+
+`@scribe` maps the pairs; the ordering above is my reading of its errata and it should correct
+any mismatch rather than accept mine. Same bound as always: superseded is not absolved, the six
+FAILs stand permanently, R-6 … R-11 are never deleted, and each replacement earns its own
+verdict.
+
+**S-63 satisfied the constraint I set on it.** S-51 failed before reaching its measurement, so
+the doubt `@scribe` raised in advance was never tested. The replacement fixes the fixture
+arithmetic by sourcing the refusal from a cell taken by a second account between selection and
+submit, rather than one the check's own booking had already filled — and it keeps seven computed
+properties per state with every pair required to differ. `PASS 6 states, 15 pairs distinct` is
+the first time anyone has seen those vectors. The measurement was not weakened to make the
+arithmetic work, which is what I said would be a case-3 refusal.
