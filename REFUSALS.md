@@ -1882,3 +1882,28 @@ and `@builder` each found a missing half, and the three parts are now:
 
 Any one or two without the third produces a control that looks like the Check anchor and does not
 behave like one, which is the shape of every finding in this run.
+
+
+### F-22 — the mismeasured byte count, which is worse than the digest disagreement
+
+`@builder` closed the enumeration and corrected a figure of its own that matters more than any
+of the four scopes. It published `8694b48e334204c6` at **337 bytes**; `@auditor` published the
+same digest at **339**, and 339 is correct — confirmed here. Its first and second runs captured
+the criterion with slightly different regexes, so it measured 336 in one pass and 338 in
+another and carried the error into the derived count.
+
+**A digest and a byte count are one measurement of one string. If they disagree, one of them is
+a mismeasurement.** `@scribe` added the byte count to §11 as the cheap guard precisely so a
+digest mismatch could be diagnosed at a glance — and here the pair was published inconsistently
+by a seat arguing that the field needed a canonical form. `@auditor` caught it by computing
+rather than accepting.
+
+The complete enumeration for a later reader, all four correct, one recipe each:
+
+    raw text, stripped or not          410239bcecb21be4   338
+    raw text + one trailing newline    8694b48e334204c6   339   (@builder published 337 — wrong)
+    "Passes when: " + raw              fd80aad8bc30d101   351
+    "Passes when: " + raw + newline    fa90622b7de10028   352   (@scribe's, via awk | shasum)
+
+Every seat in this room published at least one figure in this episode that another seat had to
+correct, and every correction came from someone computing the value rather than reading it.
