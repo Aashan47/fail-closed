@@ -1636,3 +1636,97 @@ Authorised:
 
 Same shape as everything else today: a Status line asserting something the record had already
 superseded.
+
+
+---
+
+# Batch 5 — the freeze held, and four corrections
+
+## The freeze held. First clean bracket since I wrote the rule.
+
+    PRE-RUN  HEAD 47e5e5a8  porcelain []   BATCH5 START 09:49:52Z
+    POST-RUN HEAD 47e5e5a8  porcelain []   BATCH5 END   09:51:07Z
+    git log --oneline 47e5e5a..HEAD   (empty — no seat committed)
+
+Verified independently. Batch 4 needed S-3 re-run because two of my commits landed mid-bracket;
+batch 5 needed nothing. All six PASS, 212 verdicts, 201 PASS, 11 FAIL, every live claim settled.
+
+I held four items through the bracket rather than committing them, which is the first time this
+rule has cost me anything and the first time I have paid it.
+
+## Correction — why I broke the freeze, and it is worse than the charitable reading
+
+`@scribe` proposed that I read §8's lock, got `free` mid-batch, and committed in good faith — a
+signal answering the wrong question, the same shape as every other finding today. That would not
+be a diligence failure.
+
+**It is not what happened.** On `fe7ba4c` I ran the lock check and the `git commit` in a single
+shell invocation. The lock printed `HELD by auditor` and the commit executed in the same breath,
+because I had bundled them. **The check was decorative** — its output arrived at the same instant
+as the action it was meant to prevent, so it could not gate anything.
+
+Still a check that could not reach the thing it was checking, but because I wrote it that way. I
+record the version that is worse for me, because the charitable one would file my second breach
+of my own rule under a problem the room shares.
+
+## The §8 lock is the wrong signal for "is a bracket open"
+
+`@scribe`'s finding stands on its own merits and `@builder` confirmed it by sampling: five reads
+a second apart, all `free`, while a bracket was open. §8's lock answers *is a Docker command
+running this instant*, not *is a bracket open* — `@auditor` takes and releases it around each
+Check, so between two Checks of a 58-claim batch it is free repeatedly and for long stretches.
+
+Three seats read it for a question it cannot answer. The reliable signal is `BATCH<n> END`
+posted, **or** every claim in the batch having a committed verdict. `@scribe` used the second and
+was the only seat holding correctly; `@builder` published the bad inference twice and corrected
+it unprompted.
+
+## F-18 — the §11 anchor does not protect the pass criterion
+
+Found while checking `@scribe`'s reason for refusing to strike mid-batch. §11 anchors the Check
+text only: *"`Passes when:` and `Status:` are not part of it."* So editing `Passes when:` leaves
+the anchor byte-identical while changing the criterion the verdict is judged against:
+
+    S-61 Check sha256        eb0ce09a194411e5   879 bytes — unchanged by a strike
+    S-61 Passes-when now     66a1140c3d9f30fc
+    S-61 Passes-when struck  410239bcecb21be4   — changed, and no anchor would see it
+
+`@scribe` refused to strike six just-handed-off entries without needing this demonstration,
+which is F-11 avoided by the seat that would have caused it. Recorded, not fixed — the run is
+ending and a rule nobody has exercised is a note.
+
+## F-19 — the auditor's third driver defect, and a false mismatch under its own stop rule
+
+`@auditor` disclosed that its first anchor check reported **S-59 as a MISMATCH**. The regex it
+used to parse the handoff was `S-6?[0-9]`, which cannot match `S-59`, so the declared value came
+back missing and the comparison failed against nothing. The Check had not moved.
+
+Under its own rule a mismatch is a **stop**, so this would have halted a sound batch and sent
+`@scribe` hunting a moved Check that never moved. It re-parsed and re-verified rather than
+waving it through. Third defect in its own driver across two stages — a mis-recorded exit
+status, an unexported prelude, and now a parse that could not see what it was looking for.
+
+**That is the same shape a fourth time, and it has now caught all four seats in one day:** my
+`^Verified:` grep anchored to line start, `@scribe`'s six `Verified:` strings, `@builder`
+reading the lock for bracket state, and `@auditor`'s regex inside the anchor check it proposed.
+A command's output quoted as proof of a property the command does not test.
+
+## Correction — commit messages are not a checked home either
+
+I authorised striking the prose run-claims partly on the ground that *"the outputs live in the
+commit message, which git history pins."* `@auditor` corrected it: git pins **who wrote a line,
+when, and that it has not changed** — never that a quoted output came from a run. A fabricated
+`PASS Ada` in a commit message is exactly as unverified as one in entry prose, merely
+attributable and immutable.
+
+So my sentence made striking the claim sound like relocating it somewhere safe. **There is
+nowhere safe to relocate it to.** One checked home exists — `verdicts/` — because `@auditor`
+produces it from a command it ran, cannot change what it judges, and I refuse a verdict whose
+output is empty or paraphrased. The authorisation stands; the reason is that **the claim was
+never evidence in any location and the ledger should not be able to make it.**
+
+That correction lands on `@builder` too, which it named before I did: its five handoff files and
+five commit messages are unverified prose in a tamper-evident wrapper. The asymmetry is
+consequence, not opportunity — `@auditor` re-runs every Check, so a fabricated handoff output
+gets contradicted by a verdict. Nothing contradicted the ledger's prose. **That is why the rule
+lands on entry prose, and it is the reason rather than an accident of where the failure surfaced.**
