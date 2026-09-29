@@ -2122,3 +2122,56 @@ What survives from `@builder`'s message is the two genuine instances it keeps: `
 sampling the repository twice across another seat's commit and assembling one report from two
 states. The lock was not a third. Recorded so the count of this class stays right — it has been
 inflated once already, by exactly this.
+
+
+### F-22 CORRECTED — §11 stated the unit, so there was no uncaught error and nothing went the right way by luck
+
+**This is the correction that costs me the most, because it falsifies the entry I called the
+most important finding in the run.** `@builder` opened `handoffs/` and reproduced the S-53
+digest six ways; `@scribe` then reread §11 — a rule it wrote — and found the load-bearing
+premise false. I verified it at `LEDGER.md:2483` before accepting either:
+
+> The canonical form of a Check is the exact **byte sequence** between the backticks following
+> `Check: ` — stripped of surrounding whitespace, with no trailing newline … Anchor it as
+> `sha256` of those bytes and **record the byte count beside the digest.**
+
+**Bytes, twice, in the rule's own text.** So three sentences above are wrong and I am naming
+them rather than editing them away:
+
+- *"§11's unit was never stated"* — it was stated, in the sentence defining the canonical form
+  and again in the sentence mandating the count.
+- *"it survived because one seat chose `len(bytes)` where nothing required it"* — §11 required
+  it. `@builder` complied with the rule. Had it published `2071` it would have been in breach,
+  not equally defensible.
+- *"an uncaught error that happened to go the right way"* — **there was no error.** The Check
+  anchor was correct, verified pre-run against `handoffs/batch-4.md` (58 declared, 58 compared,
+  0 mismatches, `verdicts/S-53.md:24`), and it matched on S-53, the one multi-byte Check of 222.
+
+**What actually happened is the opposite of what I recorded: §11 was pointed at its single hard
+case, with the unit stated in the rule and restated in the handoff legend, and it held.** A
+control exercised against the one input capable of breaking it, and passing, is the strongest
+result any control in this run achieved — and I filed it as the run's one uncaught error.
+
+**The real ambiguity was never in §11. It was in the field §11 excludes.** §11 says plainly
+that *"`Passes when:` and `Status:` are not part of it."* When four seats anchored a
+`Passes when:` digest ad hoc, they were computing over a field **no rule governed**, which is
+why the character-versus-byte divergence surfaced there and nowhere else. I collapsed a coverage
+gap in what §11 anchors into a unit ambiguity in how it anchors, and the second does not exist.
+F-18's gap is untouched and remains the one real open item: 39 of 222 criteria carry multi-byte
+characters against 1 of 222 Checks, so **the uncovered side is the populated one.**
+
+**Three seats read F-22 and none of us checked it against §11's text.** `@auditor` accepted it
+about its own batch, `@builder` repeated it and then disproved it, and `@scribe` asserted the
+unit was unstated **about a convention it wrote**. The finding was durable for hours because it
+was interesting, and because every seat it accused had a reason to believe it. That is F-21's
+mechanism — a wrong finding travelling fastest through the seats it costs — reaching its third
+and largest destination: the entry this file nominated as its most valuable.
+
+**And it lands on the same bruise as the other two corrections at this close.** A statement true
+when reasoned about, false against a record nobody reread. The record here was `LEDGER.md:2483`,
+eight lines long, in the repository the whole time, cited by every seat in the argument and
+opened by none of us. **Four of this run's findings are now that shape and all four are in the
+closing artifacts.**
+
+The original entries above stand unedited. A wrong finding deleted is a wrong finding that can
+happen again.
