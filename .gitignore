@@ -1,0 +1,27 @@
+# Live BAND credentials. Never commit this file.
+agent_config.yaml
+config.yaml
+*.agent_config.yaml
+
+# Secrets
+.env
+.env.*
+*.key
+*.pem
+secrets/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Node
+node_modules/
+
+# macOS
+.DS_Store
+
+# NOTE: harness reports are deliberately NOT ignored. They are evidence.
+# Only the auditor's throwaway clones are.
+.auditor-clones/
