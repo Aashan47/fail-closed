@@ -438,3 +438,72 @@ the blob, not only the revision.** Its C-1 handoff names
 moves before the run, the blob is the thing to verify. A revision goes stale whenever any
 seat commits anything; the blob under test does not. This is the same principle as F-8's
 derive-don't-paste — prefer the identifier that does not rot.
+
+
+---
+
+## CORRECTION to F-6's third occurrence — it did not happen
+
+**The entry above is wrong and I am not deleting it.** I recorded a lost message that was
+not lost. `@builder`'s C-1 handoff reached `@auditor`, which ran it and committed
+`verdicts/C-1.md`. The commit graph settles it, and my own erroneous entry is the parent
+of the verdict that disproves it:
+
+    c4f4667  REFUSALS.md: F-6 third occurrence ...   2026-09-29T12:41:14+05:00   <- mine, wrong
+    95ec84e  verdicts/C-1.md: PASS at ce80f21        2026-09-29T12:41:21+05:00   <- seven seconds later
+
+**Running total of lost messages is two, not three.**
+
+**Why two seats got it wrong at once, which is the finding worth keeping.** `@builder`
+and I independently concluded the handoff was lost from the same evidence: `ls verdicts/`
+showed no `C-1.md`. That was true when each of us looked, because `@auditor` was mid-run.
+A verdict file does not exist until the run completes — acquire lock, build `--no-cache`,
+wait up to 60s for health, tear down, write, commit. For a multi-minute window the
+repository is **indistinguishable** from one where the handoff never arrived.
+
+So the detection heuristic I relied on cannot separate *never arrived* from *in progress*.
+It produced a confident, committed, wrong finding from two seats simultaneously. That is
+more useful than a third genuine instance would have been: F-6's difficulty is that
+absence is unobservable, and here the same blind spot generated a **false positive**
+instead of a miss. The fix is not more care — two careful seats had already failed it
+before either of us wrote anything down.
+
+**Liveness check adopted, from `@auditor`'s observation.** `/tmp/tk-docker.lock` read
+`auditor` for the entire window in which both of us concluded the handoff was lost. A seat
+holding the Docker lock is a seat that is running something. Before any seat concludes a
+message was lost, it checks the lock:
+
+    ls -d /tmp/tk-docker.lock 2>/dev/null && cat /tmp/tk-docker.lock/owner
+
+§8 was written for contention, so neither of us had reason to look — it turns out to
+double as the liveness signal this design otherwise lacks. That costs nothing and needs no
+new machinery.
+
+I recorded this correction rather than quietly amending the entry because I have refused
+other seats' work for exactly this: a record that is corrected invisibly is worse than one
+that was wrong, and three seats have now disclosed an error unprompted. This is mine.
+
+---
+
+## Two further rulings
+
+**Verdict header key standardised.** `@scribe` found a real fragility by applying its own
+rule: verdict files use `Revision:` (C-0, C-142) and `Submitted revision:` (C-1), so a
+`^Revision:` extraction returned empty on C-1. The PASS form carries no revision so nothing
+broke, but the FAIL form would have written `Status: FAILED at  — …` with a silent blank.
+**`@auditor` uses the literal key `Revision:` in every verdict from here.** Where a
+submitted revision and the tree during the run differ, record both, with `Revision:` naming
+the audited one. `@scribe` reads the revision by hand on any FAIL until it has seen the key
+used consistently, and says so in the commit message when it does.
+
+**`handoffs/C-<n>.md` authorised, one file per batch.** `@scribe` proposed committing
+handoffs so that `ls handoffs/` against `ls verdicts/` shows what has been offered and not
+settled, discoverable without believing any seat. Two lost messages and one false positive
+argue for it. I am scoping it to **one file per batch, not per claim**, so it costs
+`@builder` a single commit per round rather than one per entry — `handoffs/batch-<n>.md`
+listing the claim ids, the revision, and the blob under test for each. `@builder` stages it
+by path like everything else. This is additive and does not replace the room message.
+
+I note the tension with my own churn refusal and judge it differently: errata-2 swapped
+working checks for unexecuted ones, whereas this adds a record that converts an invisible
+failure into a visible one. If it slows the first batch measurably, I will withdraw it.
