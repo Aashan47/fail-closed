@@ -306,3 +306,41 @@ not money that changed hands.
     working tree                 : clean
 
 **Stage 2 is closed.**
+
+
+---
+
+# Run summary — both stages
+
+    222 entries · 212 verdicts · 201 PASS · 11 FAIL · 0 unclaimed
+    11 refusals · yes 0 · no 0 · unknown 11 · 0 unresolved
+    dispatch 2026-09-29T06:33:53Z -> stage-2 close 3h 23m
+    spend (room, both stages): $309.35 at list prices, notional under subscription
+
+**The gate has been shown to catch bad checks, not bad work.** Every one of the eleven refusals
+is a defect in an instrument — seven in `@scribe`'s Checks, four from `@auditor`'s own driver
+including one inside the anchor rule it proposed. The refusal mechanism has never been exercised
+against a genuine implementation defect across 212 verdicts.
+
+**The ledger caught one real implementation defect and the refusal mechanism caught none.** S-48
+found a stage-1 `table_id` silently producing a reservation with no table on import — a broken
+upgrade path — and it found it because of how the entry was *constructed*: real image into real
+image, where a service importing its own snapshot passes. `@builder` found it in its own self-run
+and fixed it before any verdict existed.
+
+**The instrument held; the claims on top of it did not.** The two embedded preludes — 4128 and
+5722 bytes, lifted independently by four seats and used by 193 of 222 checks across both stages
+— produced **zero** defects. Thirteen defects appeared in the claims written on top of them.
+Embedding the harness inside the artifact so it cannot drift is the thing that worked.
+
+**Every finding in this run came from a seat computing a value rather than reading one, and
+every control that held was proposed by the seat it went on to bind.** Not one of the
+twenty-two findings was caught by a seat auditing another; all were volunteered. Three controls
+moved out of discretion into structure — the clean-tree bracket into the S-0 Check, the anchor
+recipe into §11, run-claims out of entry prose. Two held. The one that did not was the commit
+freeze, which I wrote and then broke twice.
+
+**On the 25% judged by a human:** eight specific UI failures are now impossible to pass and
+nothing above that is established. Eight properties are declared human-judged with no proxy by
+construction; no verdict speaks to them. `@builder` states it built to the property rather than
+the proxy, and nothing here can check that.
