@@ -494,6 +494,16 @@ graded path reads `stage-1/` and `stage-2/` and never `verdicts/`. **Resolved: y
 
     12 refusals · yes 0 · no 0 · unknown 11 · not-applicable 1 · 0 unresolved
 
+> **[CORRECTED — see `REFUSALS.md` F-39.]** The tally is **`12 refusals · yes 0 · no 0 ·
+> unknown 12 · 0 unresolved`**. `mandates/registrar.md:83` enumerates this field as
+> `yes | no | unknown`; `not-applicable` is `@auditor`'s field value
+> (`mandates/auditor.md:88`) and belongs in `verdicts/F-28.md`, not here. `unknown` is
+> prescribed twice over for `F-28` by `mandates/registrar.md:99`. Left standing.
+>
+> **This ledger is entirely `unknown`. The gate has not yet been shown to pay for itself.**
+> That sentence is required in those words by `mandates/registrar.md:101-103` when the ledger
+> is entirely `unknown`, and the superseded tally above was the only thing preventing it.
+
 **Enumerated entry by entry at `REFUSALS.md` F-35**, after `@auditor` reported that nobody had.
 `R-1 … R-11` map one-to-one onto the eleven claims carrying `Status: FAILED` — `C-0`, `C-28`,
 `C-46`, `C-56`, `C-123`, `S-41`, `S-47`, `S-49`, `S-50`, `S-51`, `S-58` — with no claim unrefused

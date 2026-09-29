@@ -2787,6 +2787,13 @@ digest conformance. Recording it as `unknown` for that reason and not for lack o
 > graded path reads `stage-1/` and `stage-2/` and never `verdicts/`. `F-29` adopted it and the
 > published tally carries `not-applicable 1`. `unknown` was correct when written, because no
 > counterfactual had been produced yet. Left standing.
+>
+> **[THE MARKER ABOVE IS WRONG — see F-39 below.]** The field's value is **`unknown` and stays
+> `unknown`**. `mandates/registrar.md:83` enumerates this field as `yes | no | unknown`;
+> `not-applicable` is `@auditor`'s field (`mandates/auditor.md:88`, `PASS | FAIL |
+> not-applicable`) and is correct in `verdicts/F-28.md`, not here. And `unknown` is **doubly
+> prescribed** for `F-28` by `mandates/registrar.md:99` — no graded suite covers the claim, *and*
+> the refusal is about evidence provenance rather than a defect. The field was right all along.
 
 Resolved: **yes** — settled by `verdicts/F-28.md`, `Seat: @auditor`, committed at `ebcbfe0` and
 extended at `4810395`. Verdict: `C-0`, `C-1`, `C-142` FAIL — the published digest is over the
@@ -3057,6 +3064,10 @@ the argument was.
 `handoffs/` recompute §11-exact, digest and byte count both, independently by `@auditor` at
 `4810395`: **65 of 65 for declared-vs-computed, 0 of 3 for the prose form.** The defect is
 confined to the three prose digests in `verdicts/`. `@auditor` records the counterfactual as
+> **[CORRECTED — see F-39 below.]** Adopting `not-applicable` into the registrar's field was
+> wrong. It is not one of that field's three values and `unknown` was prescribed twice over.
+> Left standing.
+
 **not-applicable** — no graded suite exists in the repository and 0 of the 222 Checks invoke a
 hash tool — which is a better answer than the `unknown` I had been writing, and I am adopting it
 for this finding.
@@ -3317,6 +3328,9 @@ reader who greps and gets `4` finds the mapping instead of re-deriving the confu
       unknown 11        R-1 .. R-11, all Check defects, all @scribe's Checks
       not-applicable 1  F-28, no graded suite exists and 0 of 222 Checks invoke a hash tool
 
+> **[CORRECTED — see F-39 below.]** The tally is **`12 refusals · yes 0 · no 0 · unknown 12 ·
+> 0 unresolved`**. `not-applicable` is not a value of this field. Left standing.
+
 **`REPORT.md` carries `11 refusals` at its stage-2 run summary and `12` in the post-close
 addendum. Both are correct at the revision each was written**, and no marker is needed: the
 twelfth refusal did not exist when the stage-2 summary was published. Saying so here so the pair
@@ -3405,6 +3419,10 @@ something is later fixed, naming the verdict — so the field is updated in plac
 rather than marked. `Evidence:` and the counterfactual record the state at the time the refusal
 was raised, so those are marked and left standing.
 
+> **[THIS MARKER IS FALSE — see F-39 below.]** The instruction is committed here, at
+> `mandates/registrar.md:104`. `F-37`'s citation resolves and `F-38` was wrong: I searched three
+> root files and not the directory the seat mandates live in. Left standing.
+>
 > **[UNCITABLE — see F-38 below.]** *"The standing instruction"* is real but lives in this seat's
 > operator mandate, **outside this repository**. `FACTORY.md`, `README.md` and this file say
 > nothing about `Resolved:`. A reader cannot check the citation for the one in-place replacement
@@ -3504,3 +3522,85 @@ right to.
 
 **Nothing in the published figures moves. `LEDGER.md` unedited since `039dd8a`. `unknown 11`
 unchanged, and this gate has still not been shown to pay for itself.**
+
+
+### F-39 — `unknown 12`, not `unknown 11 · not-applicable 1`, and the tally I published was standing between the report and the sentence my mandate tells me to write
+
+**`@auditor` AND `@builder` EACH FOUND `F-38` FALSE, INDEPENDENTLY, WITH MY OWN PATTERN.**
+
+    $ grep -rniE 'update .*Resolved|Resolved.*updated|when .*later fixed' mandates/
+    mandates/registrar.md:104   Update `Resolved:` when something is later fixed, naming the
+                                verdict that settled it. **Never delete an entry.**
+
+**I searched `REFUSALS.md`, `FACTORY.md` and `README.md` and wrote *"it appears nowhere"* and
+*"lives outside this repository."*** `mandates/` holds four files and my grep listed three paths,
+none of them it. **A corpus too narrow rather than a pattern too narrow — the same shape one
+level out**, and the conclusion I drew inverted the category: `F-37` was the one repair today with
+an explicit written basis and I recorded it as the one that had none. `mandates/registrar.md:84`
+also ships `Resolved: no` as the template's initial value, so the field was *specified* to start
+at `no` and be updated in place. **`F-37` followed the written rule exactly and `F-38` took the
+bar-bending credit for it.** Both are marked.
+
+**AND `@auditor` FOUND THE THING THAT MATTERS, AGAINST ITS OWN POSITION.**
+
+    mandates/registrar.md:83   Would it have failed the graded suite: yes | no | unknown
+    mandates/auditor.md:88     Graded suite at this revision: PASS | FAIL | not-applicable
+
+**Two different fields with two different enumerations.** `not-applicable` is `@auditor`'s value
+and is correct in `verdicts/F-28.md`. **It is not one of this field's three.** Copying it across
+imported a fourth class the registrar's mandate does not define — and `@auditor`, which pushed
+`not-applicable` so it would not read as a credit, is the seat that found and reported this.
+
+**`unknown` was not merely true-when-written. It was prescribed, twice over**, by
+`mandates/registrar.md:99`: *"`unknown` **only** where no graded suite covers the claim, **or**
+where the refusal is about evidence provenance rather than a defect."* `F-28` is both conditions
+at once. **The field at `:2777` was right the whole time and the marker I put above it was the
+error.**
+
+**THE CONSEQUENCE IS THE SENTENCE MY MANDATE ORDERS ME TO WRITE, AND MY TALLY WAS STANDING IN
+FRONT OF IT.** `mandates/registrar.md:101-103`:
+
+> At the end report all three counts. Together they are the measured value of the gate: `yes` is
+> defects it caught in common with the grader, `no` is defects only it caught, and **a ledger that
+> is entirely `unknown` means the gate has not yet been shown to pay for itself. If that is the
+> situation, say it in those words.**
+
+**Under the template all twelve refusals are `unknown`. That is *entirely* `unknown` — the exact
+trigger.** `unknown 11 · not-applicable 1` is not entirely `unknown`, so the figure I published in
+seven tags and in `REPORT.md` broke the one condition the mandate names. The prose beside it has
+said the gate has not been shown to pay for itself all along, so nothing misleading reached a
+reader — **but the tally was the only thing between that sentence and its own trigger, and I put
+it there.**
+
+**THE TALLY, CORRECTED:**
+
+    12 refusals · yes 0 · no 0 · unknown 12 · 0 unresolved
+      unknown 12   R-1 .. R-11, all Check defects, all @scribe's Checks
+                   F-28, evidence-provenance refusal, no graded suite covering the claim
+
+**AND HERE IT IS IN THOSE WORDS, WHICH IS WHAT THE MANDATE ASKS FOR AND WHY IT ASKS.**
+
+> **This ledger is entirely `unknown`. The gate has not yet been shown to pay for itself.**
+
+Not one refusal has been shown to catch a defect in the submission that a graded run would have
+missed. `F-28`'s defect is in this factory's own evidence — three digests in `@auditor`'s verdict
+files. All eleven numbered refusals are defects in Checks `@scribe` wrote. **The one real
+implementation defect in this run, the legacy `table_id` on import, came out of how `@builder`
+constructed `S-48`, inside its own run, before any verdict existed, and no refusal records it.**
+An entirely-`unknown` ledger of instrument defects is a measurement of the instruments and not of
+the work.
+
+**AND THE MARKER KINDS WENT NARROW ON THREE SEATS IN THE MESSAGES ABOUT MARKER KINDS.** `@builder`
+verified `F-37` with `grep -cE '^> \*\*\[CORRECTED'`, got `8` unchanged, and nearly reported
+that nothing had been marked. `@auditor` grepped `(CORRECTED|SUPERSEDED)` and got a correct answer
+to a narrower question. At HEAD the file has **five**:
+
+    $ grep -oE '^> \*\*\[[A-Z]+' REFUSALS.md | sort | uniq -c
+       8 CORRECTED   1 REFUTED   2 SUPERSEDED   1 UNCITABLE   1 WITHDRAWN
+
+**`@builder`'s formulation is the one that generalises and it is committed as its own:**
+*agreement between seats on one component is not coverage of the others.* Three seats enumerated
+`12` by three independent routes, which felt like triangulation and was three passes at one
+quantity. **Independence across seats is not independence across components.**
+
+**No claim's status changes. `LEDGER.md` unedited since `039dd8a`.**
