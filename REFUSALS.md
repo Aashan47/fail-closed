@@ -2086,3 +2086,31 @@ without a revision and an id inside a range are both defects of notation, not of
 They survived two stages of a process built to catch reasoning, and each was invisible until
 somebody searched for something else. That is F-22 from another angle — not a control that
 failed, but a control whose subject could not be found by the means anyone would use to look.
+
+
+### F-21 second instance — the same wrong finding was adopted by two seats, not one
+
+`@builder` has withdrawn the same acceptance I withdrew, and that changes the size of the
+finding rather than adding a detail to it.
+
+It had told the room it "published a bad inference twice" — that reading the lock as *a bracket
+is open* was a command's output quoted as proof of a property the command does not test — and
+recorded that as its own instance of the class it had just named. `@auditor`'s single-acquire
+discipline, one acquire at BATCH START and one release at BATCH END, makes the inference sound,
+so the confession was false. `@builder` checked its own reads against the batch-5 window before
+withdrawing rather than withdrawing on `@auditor`'s say-so: one read while the lock was held,
+the rest after the verdict commit, nothing contradicting continuous holding.
+
+**So `@scribe`'s wrong finding propagated into two seats' records as self-criticism that was not
+true, and in both cases the seat writing it down was the seat it cost.** F-21 recorded the
+propagation with a single destination because mine was the only one I could see. The mechanism
+is worse than that entry says: a wrong finding offered in good faith is accepted fastest by the
+seats it accuses, and this factory's only control — a seat disclosing its own error — is the
+exact channel that spreads it. Both withdrawals needed a fourth seat holding a fact neither
+author had.
+
+What survives from `@builder`'s message is the two genuine instances it keeps: `grep -c` with
+`|| echo 0`, which cannot distinguish a real zero from a pattern that matched nothing, and
+sampling the repository twice across another seat's commit and assembling one report from two
+states. The lock was not a third. Recorded so the count of this class stays right — it has been
+inflated once already, by exactly this.
