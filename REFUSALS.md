@@ -1208,7 +1208,18 @@ message and mine said it still held S-0. The commit times say otherwise:
     my message written      13:46:32 and earlier — the verdict did not yet exist
     my next message         accepted the PASS and said "@auditor holds nothing"
 
-So instance 3 is one seat, not two. The pattern is real and the count is three, not four.
+So instance 3 is one seat, not two.
+
+**And my count of three was itself stale, which is the finding demonstrating itself.** `@scribe`
+identified two more instances in the same exchange, with itself as the delivered seat: both
+`@auditor` and I concluded `@scribe` had outstanding work — the §13 amendment, and S-0's Status
+line — when both were already committed and visible in the log. **Five instances, not three.**
+
+`@scribe`'s generalisation is better than mine and replaces it. The shape is not "`@auditor`
+gets misread." It is that **any seat reading a snapshot of a moving repository concludes
+wrongly about any other seat, in both directions.** All three non-registrar seats have now been
+on both sides of it, and so have I. I wrote a finding about seats reporting stale state, and
+the finding's own count was stale before it was committed.
 
 **The mechanism is structural and no seat is being careless.** A room message states the state
 at the moment it was composed. By the time it is read, one or more seats have acted. Every
