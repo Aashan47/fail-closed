@@ -2016,3 +2016,214 @@ and with unlisted bookings (C-132, C-133), all-or-nothing rollback across four f
 (C-134), key reusability after a refused batch (C-135), replay after amendment and after cancellation
 (C-136), no-op retention (C-137), retained occupancy for listed-but-unchanged bookings (C-138), and
 receipt preservation across export/import (C-139).
+
+---
+
+# ERRATA — defects in this ledger, found after issue
+
+Four defects have been found in this ledger since it was issued at `d9501ee`. All four are mine, not
+the implementation's. They were found by `@builder` and `@registrar` reading the ledger against the
+graded harness's own source, and each is reproduced below from a run rather than asserted.
+
+**No original entry is edited.** C-0, C-2, C-3, C-4, C-140 and C-141 stand exactly as written, with
+whatever verdict they earn. Replacements are new entries appended below. Whether a superseded entry's
+`Status` changes is `@registrar`'s to authorise, not mine to assume.
+
+The root cause of the first and worst defect is that C-0 broke this ledger's own stated rule — *one
+claim, one entry; an "and" in a requirement is usually two claims*. C-0 said "builds and serves from
+a clean container **with no outbound network**". That is two claims, and on one Docker network they
+are mutually exclusive.
+
+## Defect 1 — a published port cannot reach an `--internal` network
+
+Reproduced here, with the port verified free beforehand so nothing else could answer:
+
+```
+$ docker network create --internal probe-net    # internal=true
+$ docker run -d --name probe-int --network probe-net -p 18077:8080 -e PORT=8080 tk-s1
+$ docker inspect probe-int --format '{{json .HostConfig.PortBindings}}'
+{"8080/tcp":[{"HostIp":"","HostPort":"18077"}]}
+$ docker inspect probe-int --format '{{json .NetworkSettings.Ports}}'
+{}
+$ docker port probe-int
+(no output)
+$ curl -fsS -m 5 http://127.0.0.1:18077/health
+curl: (7) Failed to connect to 127.0.0.1 port 18077 after 0 ms
+$ docker exec probe-int python -c '...urlopen("http://127.0.0.1:8080/health")...'
+b'{"status": "ok"}'
+```
+
+Docker records the bind request and publishes nothing. The graded harness states the constraint in
+its own words, at `harness/docker_driver.py:74`: *"container-to-container works, outbound is refused,
+and a published port does NOT reach it -- which is why `host` mode exists separately."*
+
+Affects **C-0, C-2, C-3, C-4** and **Conventions §1 and §3**. The prelude's
+`B="http://127.0.0.1:18080"` is correct and is not the defect; the defect is starting the container
+on a network that cannot publish.
+
+I must also record that I reported the opposite to the room before issuing this ledger. My original
+probe appeared to reach a published port on an internal network. It was a false positive — I did not
+verify the port was free first, so another container from an earlier run almost certainly answered
+that curl while my own container supplied the no-egress half. Two different containers, one
+conclusion. That is why every check below verifies its own premise.
+
+## Defect 2 — the whole-suite claims run in the wrong harness mode
+
+```
+$ sed -n '306p' harness/cli.py
+    args.mode = args.mode or dd.HOST
+$ sed -n '336p' harness/cli.py
+        args.build = str(folder)
+$ sed -n '360p' harness/cli.py
+    if args.mode == dd.ISOLATED and not args.build:
+```
+
+The default is `host`. C-140 and C-141 pass no `--mode`, so both run in host mode, where the harness
+warns outbound is **not** blocked and "never score a submission from this mode". Grading runs
+`isolated`. Because `args.build` is set from the stage folder at line 336, before the guard at line
+360, `--repo --stage 1 --mode isolated` is a valid invocation — the ledger simply never asked for it.
+
+Consequence: a service that reached the network at run time would pass C-140 and C-141 and fail
+grading. Affects **C-140, C-141**.
+
+## Defect 3 — fixed Docker names make this ledger unsafe to run concurrently
+
+Every entry uses the container name `tk-s1`, the network `tk-s1-noout` and host port 18080, and
+several begin with `docker rm -f tk-s1`. Docker is shared state across all four seats even though our
+git trees are not, so any two seats running checks at once destroy each other's containers. This has
+already happened twice in this room, once to `@auditor` mid-run. Affects **every entry**.
+
+I am one of the causes, not only the author of the defect. While verifying the replacements below I
+created and removed containers named `tk-s1` and networks `tk-s1-net`, `tk-noout`, at a time when
+`.auditor-clones/` shows `@auditor` was running C-0. Any C-0 run of `@auditor`'s that reported
+`NOT HEALTHY` may have been killed by me rather than by the defect. `@auditor` should disregard any
+run that overlapped and re-run clean. I have stopped touching Docker.
+
+## Defect 4 — C-2 can pass vacuously
+
+C-2's Check is `getent hosts example.com || nslookup ... || wget ... || curl ...` and then tests the
+exit status of whichever ran last. A missing tool exits 127, which is indistinguishable from blocked
+egress. In the delivered image three of the four are absent:
+
+```
+getent   present
+nslookup ABSENT
+wget     ABSENT
+curl     ABSENT
+```
+
+So the status C-2 finally reads comes from `curl: not found`, not from refused egress. On an image
+carrying none of the four, C-2 prints `NO EGRESS` with egress wide open, and an implementation could
+satisfy it by shipping fewer tools. Affects **C-2**. The replacement probes from a sibling container
+whose tools are guaranteed, and asserts a positive fact — that the service answers — alongside the
+negative ones, so it cannot pass by absence.
+
+## Conventions, corrected
+
+Additive. §1 to §6 are unchanged and still describe the superseded entries.
+
+### §7 Start-up, corrected (supersedes §3)
+
+The service runs on a **publishable** user-defined bridge, so `B="http://127.0.0.1:18080"` in the
+prelude stays correct and every prelude-based check works unaltered:
+
+```sh
+docker rm -f tk-s1 >/dev/null 2>&1; docker network rm tk-s1-net >/dev/null 2>&1; docker network create tk-s1-net >/dev/null 2>&1; docker build -t tk-s1 /Users/aashanjaved/band-work/result/stage-1 && docker run -d --name tk-s1 --network tk-s1-net -p 18080:8080 -e PORT=8080 tk-s1 && for i in $(seq 1 60); do curl -fsS http://127.0.0.1:18080/health >/dev/null 2>&1 && break; sleep 1; done
+```
+
+Teardown, unchanged in spirit from §4, with the corrected network name:
+
+```sh
+docker rm -f tk-s1 >/dev/null 2>&1; docker network rm tk-s1-net >/dev/null 2>&1; echo "torn down"
+```
+
+This network has outbound access. That is deliberate and it is why no-egress is now its own claim
+(C-143) rather than a clause inside the gate. Reaching the service and proving it cannot reach out
+are both required; they are simply not provable on one network.
+
+### §8 Docker is shared state — take the lock first
+
+Only one seat runs Docker-touching checks at a time. Acquire before, release after, both by
+exact command:
+
+```sh
+mkdir /tmp/tk-docker.lock 2>/dev/null && { echo "$SEAT" > /tmp/tk-docker.lock/owner; echo ACQUIRED; } || { echo "HELD BY $(cat /tmp/tk-docker.lock/owner 2>/dev/null)"; exit 1; }
+```
+
+```sh
+rm -rf /tmp/tk-docker.lock && echo RELEASED
+```
+
+`mkdir` is atomic, so two seats cannot both acquire. A seat that cannot acquire waits and says so in
+the room; it does not remove the lock. Report in a verdict which seat held the lock during the run.
+
+### §9 Prelude-2 (optional, default-identical)
+
+Identical to the §6 prelude in every line except that the base URL may be overridden, so seats can
+use different ports when the registrar authorises concurrent runs:
+
+```python
+#PRELUDE2-BEGIN
+import os
+B=os.environ.get("TK_BASE","http://127.0.0.1:18080")
+#PRELUDE2-END
+```
+
+Export it after `$P` and it replaces only `B`:
+
+```sh
+export P="$P
+$(awk '/^#PRELUDE2-BEGIN$/{f=1;next} /^#PRELUDE2-END$/{f=0} f' /Users/aashanjaved/band-work/result/LEDGER.md)"
+```
+
+With `TK_BASE` unset this is byte-identical in behaviour to the §6 prelude. No check's text changes.
+Using it is `@registrar`'s call, and a verdict must record whether it was used and what `TK_BASE` was.
+
+## Replacement entries
+
+### C-142: The service builds from a clean container and serves /health within 60 seconds, following its RUN.md.
+Check: `docker rm -f tk-s1 >/dev/null 2>&1; docker network rm tk-s1-net >/dev/null 2>&1; docker builder prune -af >/dev/null 2>&1; test -f /Users/aashanjaved/band-work/result/stage-1/Dockerfile && test -f /Users/aashanjaved/band-work/result/stage-1/RUN.md && docker network create tk-s1-net && docker build --no-cache -t tk-s1 /Users/aashanjaved/band-work/result/stage-1 && docker run -d --name tk-s1 --network tk-s1-net -p 18080:8080 -e PORT=8080 tk-s1 && start=$(date +%s) && until curl -fsS http://127.0.0.1:18080/health; do [ $(( $(date +%s) - start )) -lt 60 ] || { echo "NOT HEALTHY WITHIN 60s"; exit 1; }; sleep 1; done && echo " HEALTHY IN $(( $(date +%s) - start ))s" && test "$(docker inspect tk-s1 --format '{{json .NetworkSettings.Ports}}')" != "{}" && echo "PORT PUBLISHED"`
+Passes when: exits 0 and prints the `/health` body, then `HEALTHY IN <n>s` with `n` at most 60, then `PORT PUBLISHED`. Replaces C-0 and is the gate in its place. The build runs `--no-cache` after a builder prune, so nothing carries over. The final assertion checks the check's own premise — that the port genuinely published — which is exactly what C-0 assumed and never verified.
+Status: unclaimed
+
+### C-143: At run time the service has no outbound network access, and still serves /health.
+Check: `docker rm -f tk-c143 >/dev/null 2>&1; docker network rm tk-c143-noout >/dev/null 2>&1; docker network create --internal tk-c143-noout && test "$(docker network inspect tk-c143-noout --format '{{.Internal}}')" = "true" && docker build -q -t tk-s1 /Users/aashanjaved/band-work/result/stage-1 >/dev/null && docker run -d --name tk-c143 --network tk-c143-noout -e PORT=8080 tk-s1 >/dev/null && for i in $(seq 1 60); do docker run --rm --network tk-c143-noout alpine:3 wget -qO- -T3 http://tk-c143:8080/health >/dev/null 2>&1 && break; sleep 1; done; docker run --rm --network tk-c143-noout alpine:3 sh -c 'wget -qO- -T5 http://tk-c143:8080/health || exit 1; nslookup example.com >/dev/null 2>&1 && exit 2; nc -w4 -z 1.1.1.1 80 2>/dev/null && exit 3; wget -qO- -T4 http://example.com >/dev/null 2>&1 && exit 4; echo " NO EGRESS"'; r=$?; docker rm -f tk-c143 >/dev/null 2>&1; docker network rm tk-c143-noout >/dev/null 2>&1; exit $r`
+Passes when: exits 0 and prints the `/health` body followed by `NO EGRESS`. Replaces C-2. The service is attached only to an internal network and publishes no port; it is reached by container name from a sibling `alpine:3` container, the way the graded harness reaches it in isolated mode. Exit 1 means the service did not answer, 2 that DNS resolved, 3 that a raw TCP connection opened, 4 that an HTTP fetch succeeded. Because the probe runs in a container whose tools are guaranteed and must print the service's own health body to pass, it cannot pass by a tool being absent. `alpine:3` is pulled once during setup; the no-outbound rule constrains the service, not the auditor's tooling.
+Status: unclaimed
+
+### C-144: The service listens on the port given in the PORT environment variable.
+Check: `docker rm -f tk-c144 >/dev/null 2>&1; docker network rm tk-c144-net >/dev/null 2>&1; docker network create tk-c144-net >/dev/null && docker run -d --name tk-c144 --network tk-c144-net -p 18081:9091 -e PORT=9091 tk-s1 >/dev/null && for i in $(seq 1 60); do curl -fsS http://127.0.0.1:18081/health && break; sleep 1; done; r=$?; docker rm -f tk-c144 >/dev/null 2>&1; docker network rm tk-c144-net >/dev/null 2>&1; exit $r`
+Passes when: exits 0 and prints the `/health` body. Replaces C-3. The container port is 9091, not 8080, so a hard-coded port cannot pass.
+Status: unclaimed
+
+### C-145: The service listens on port 8080 when PORT is not set.
+Check: `docker rm -f tk-c145 >/dev/null 2>&1; docker network rm tk-c145-net >/dev/null 2>&1; docker network create tk-c145-net >/dev/null && docker run -d --name tk-c145 --network tk-c145-net -p 18082:8080 tk-s1 >/dev/null && for i in $(seq 1 60); do curl -fsS http://127.0.0.1:18082/health && break; sleep 1; done; r=$?; docker rm -f tk-c145 >/dev/null 2>&1; docker network rm tk-c145-net >/dev/null 2>&1; exit $r`
+Passes when: exits 0 and prints the `/health` body. Replaces C-4. No `-e PORT` is passed, so the service must default to 8080.
+Status: unclaimed
+
+### C-146: The graded stage-1 suite passes in the mode grading uses.
+Check: `cd /Users/aashanjaved/dark-factory-wearedevs && ./.venv/bin/python -m harness run --track tablekeeper --repo /Users/aashanjaved/band-work/result --stage 1 --mode isolated --out /Users/aashanjaved/band-work/checks/s1-iso-$(date +%s)`
+Passes when: the harness exits 0 and its summary reports zero failures and zero errors for stage 1. Replaces C-141. `--mode isolated` is the grading mode: the service gets no outbound access and is reached by container name. A pass here, unlike a pass in host mode, cannot be earned by a service that fetches something at run time.
+Status: unclaimed
+
+### C-147: The shipped stage-1 checks pass in the mode grading uses.
+Check: `cd /Users/aashanjaved/dark-factory-wearedevs && ./.venv/bin/python -m harness run --track tablekeeper --repo /Users/aashanjaved/band-work/result --stage 1 --mode isolated --out /Users/aashanjaved/band-work/checks/s1-iso-shipped-$(date +%s)`
+Passes when: the harness exits 0 and its summary reports zero failures and zero errors for stage 1. Replaces C-140. Host mode is still useful while developing, but per the harness's own warning it must never be the basis of a pass, so no entry in this ledger claims anything from it.
+Status: unclaimed
+
+## Superseded entries
+
+| Original | Replaced by | Why |
+|---|---|---|
+| C-0 | C-142 | published port cannot reach an `--internal` network; also conflated two claims |
+| C-2 | C-143 | same, plus the `\|\|` chain passes vacuously when probe tools are absent |
+| C-3 | C-144 | started the container on a network that cannot publish |
+| C-4 | C-145 | same |
+| C-140 | C-147 | ran in host mode, where outbound is not blocked |
+| C-141 | C-146 | same |
+
+**Unaffected: C-1 and C-5 through C-139.** C-1 runs `RUN.md`'s own command, which does its own
+`docker run`; its `docker network create --internal tk-s1-noout` line is vestigial and unused, so the
+entry stands. C-5 through C-139 reach the service through the prelude's `B`, which was never the
+defect — they need only the corrected start-up in §7 and the lock in §8. That is one setup defect,
+not 137 broken checks.
