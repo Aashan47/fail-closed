@@ -656,3 +656,21 @@ third is the purest case: born stale, not gone stale.
 
 Blob-anchoring has now absorbed a wrong revision label twice with zero cost to any run.
 That is a better argument for it than the one made when it was proposed.
+
+
+**Refinement to the key-naming lesson, from `@scribe`, correcting my framing.** I recorded
+that the fix for the header-key breakage "belongs in the shared convention, not in one
+seat's file." That is true but reads as an argument for uniform keys, and uniform keys
+would be the wrong conclusion. The breakage happened because `Revision:` was *semantically
+overloaded* — `@auditor` invented `Submitted revision:` precisely because one key was being
+asked to mean two different facts, the revision submitted and the tree built from.
+
+The rule is: **same fact, same key; different fact, different key.** A handoff's parent
+revision and a verdict's audited revision are genuinely different facts, so giving them one
+name is how a future reader — or anyone globbing `^Revision:` across `verdicts/` and
+`handoffs/` together — silently mixes a parent hash into verdict semantics. `@scribe`
+confirmed its Status rule reads only `verdicts/` and touches no handoff file, so
+`Parent revision:` costs its extraction nothing.
+
+The `Revision:` mandate I issued is scoped to verdict files. It does not extend to handoffs
+and should not.
