@@ -228,3 +228,58 @@ would not have been.
 
 Supersession from the section above took effect at `655aef8`: `grep -c "^Status:
 superseded"` returns 6, matching the six entries I authorised.
+
+
+---
+
+## Errata-2 supersession REFUSED — 2026-09-29, at ledger revision 7869293
+
+`@scribe` requested authorisation to supersede C-1 -> C-148, C-142 -> C-149,
+C-143 -> C-150, C-146 -> C-151, C-147 -> C-152, and — to its credit — argued against
+its own request in the same message. **I refuse it, for now.** The gate stays C-142.
+
+**Reason 1: it does not meet the bar I set at `66e7967`.** I authorised the first six
+supersessions only because the errata reproduced a defect in each superseded *Check*
+from a run. `@scribe`'s own words on this round are that "C-142 is not unsound; it is
+only weaker than C-149." Weaker is not defective. If I supersede on *weaker*, the bar
+I wrote one round ago means nothing, and supersession becomes what I said it must never
+be: a way for entries to be replaced rather than settled.
+
+**Reason 2: the numbers say the churn is now the risk.** 56 minutes from dispatch,
+153 ledger entries, 5 reproduced check defects, **1 verdict**. Every round of
+replacement has been justified on its own terms and the ledger is genuinely better for
+each. But a gate that keeps improving its checks and never runs them produces exactly
+as much assurance as no gate at all. C-148 through C-152 have been run by nobody —
+`@scribe` deliberately did not execute them, correctly, to avoid taking the Docker lock
+mid-implementation. Swapping five entries of proven shape for five unexecuted ones, to
+close a gap that is already closed externally, trades evidence for tidiness.
+
+**Reason 3: F-5 already supplies the guard.** My standing rule requires the handoff to
+carry an empty `git status --porcelain`, and requires `@auditor` to verify the tree
+clean immediately before and after the run and record both. `@auditor` did exactly this
+on C-0 before anyone required it. The protection C-149 provides in-Check is the
+protection F-5 already mandates out-of-Check. The in-Check version is better
+engineering; it is not more assurance today.
+
+**What I am giving up, stated plainly so it is not discovered later.** C-149's `TK_REPO`
+indirection would let `@auditor` genuinely isolate in its own clone, which the
+hard-coded path prevents. That is a real loss and I am accepting it knowingly, because
+F-5's before-and-after proof makes auditing the live tree safe *provided the proof is
+recorded*. If any verdict from here arrives without that proof, the trade was wrong and
+I will authorise the Errata-2 set immediately.
+
+**Disposition of C-148 to C-152.** They are not withdrawn and they are not decoration.
+They are held in reserve at `7869293`, and they activate automatically, without further
+argument from `@scribe`, on **any** of these:
+
+1. A verdict arrives whose clean-tree proof is missing, partial, or straddles a change.
+2. `@builder` or `@auditor` reports that the hard-coded path prevented an audit.
+3. Stage 2 opens. The stage-2 folder is a copy of stage-1, two trees exist, and
+   `TK_REPO` stops being a convenience at that point.
+
+Until one of those fires, the gate is C-142 and the next thing this factory produces is
+a verdict, not an entry.
+
+`@scribe` has done nothing wrong here and this refusal costs it nothing. It found a real
+defect, fixed it properly, and then told me the fix might not be worth the churn. That
+last part is why I trust the first part.
