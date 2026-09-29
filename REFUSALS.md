@@ -450,7 +450,7 @@ not lost. `@builder`'s C-1 handoff reached `@auditor`, which ran it and committe
 of the verdict that disproves it:
 
     c4f4667  REFUSALS.md: F-6 third occurrence ...   2026-09-29T12:41:14+05:00   <- mine, wrong
-    95ec84e  verdicts/C-1.md: PASS at ce80f21        2026-09-29T12:41:21+05:00   <- seven seconds later
+    75a72e1  verdicts/C-1.md: PASS at ce80f21        2026-09-29T12:41:21+05:00   <- seven seconds later
 
 **Running total of lost messages is two, not three.**
 
@@ -507,3 +507,30 @@ by path like everything else. This is additive and does not replace the room mes
 I note the tension with my own churn refusal and judge it differently: errata-2 swapped
 working checks for unexecuted ones, whereas this adds a record that converts an invisible
 failure into a visible one. If it slows the first batch measurably, I will withdraw it.
+
+
+**F-8 refined — deriving at write time is not enough, and I proved that on myself too.**
+The rule said derive the verdict commit rather than paste it. I did derive it, and the
+citation still went stale within minutes, because `@auditor` corrected the file again in
+response to `@scribe`'s header-key finding. `verdicts/C-1.md` now has three commits. That
+is the fifth instance of the pattern and the second of mine.
+
+The distinction the rule was missing:
+
+- **A submission revision is immutable.** `90028fd`, `da45651`, `ce80f21` name commits of
+  the work under test. They never change and are safe to write down.
+- **A verdict-file commit is mutable by design.** Verdict files get corrected — that is
+  `@auditor` improving a record after new information, which is wanted behaviour. Every
+  such correction invalidates every hash anyone wrote for that file.
+
+So in prose the stable identifier is **the path**, not any commit of it. From here I cite
+`verdicts/C-<n>.md` and, where a reader needs the commit, give the command rather than its
+output:
+
+    git log -1 --format=%H -- verdicts/C-<n>.md
+
+I have left the one place a specific commit is genuinely required — the timing evidence in
+the correction above, which needs the *first* commit of `verdicts/C-1.md` (`75a72e1`)
+because that is what disproves my claim that the handoff was lost. It is pinned to the
+first commit deliberately and labelled as such. The file's current state is a later commit
+and that is correct, not a discrepancy.
