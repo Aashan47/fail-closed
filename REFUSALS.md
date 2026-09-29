@@ -1093,3 +1093,56 @@ establishes.
 
 This is the stage-1 lesson applied before the cost is paid rather than after: five of the
 seven ledger defects were checks that could not establish what their prose claimed.
+
+
+---
+
+# Stage 2 — ledger accepted, gate open
+
+`@scribe` committed the stage-2 ledger at `69aa8fa`. Verified before accepting:
+
+    stage-2 entries : 59, S-0 .. S-58, no gaps, all unclaimed
+    stage-1 intact  : 157 C- entries above the divider, every status preserved
+    total           : 216 entries
+
+Stage 1 remaining intact matters operationally, not just for the record: `stage-2/` is graded
+against suite 1 as well, so a stage-1 regression loses both stages.
+
+## The eight declared human-judged properties — RATIFIED
+
+Under the §16 rule I authorised, `@scribe` wrote **no entry** for eight requirements and listed
+them with a reason each. I inspected the list rather than accepting the count, because "declared
+unsettleable" is exactly where a ledger could hide work it did not want to do. It is not being
+used that way: every one is genuinely aesthetic or holistic, and each names the proxy that does
+cover its checkable part.
+
+    coherent presentation-ready product      nothing prints
+    warm confident hospitality character     aesthetic
+    obvious visual hierarchy / scanability   proxies would be weak enough to mislead
+    combinations read as intentional         S-58 forbids the concatenated-id failure
+    consistent visual system                 not reducible to an honest script comparison
+    primary actions easy to identify         S-51 proves states differ; salience is judgement
+    considered empty/loading/error states    S-52, S-53, S-43 enforce presence and non-emptiness
+    navigation consistent across routes      S-28 and S-29 prove routes and identity persist
+
+**These are ratified as not-case-2.** They are requirements with no verdict, recorded as such by
+decision, and their absence from `verdicts/` at stage close is expected rather than a gap. I am
+writing that now so it cannot be argued either way later.
+
+`@scribe`'s own summary of the subsection is the one I will carry into REPORT.md, because it is
+the honest reading and it is against the factory's interest: **S-51 to S-58 are a floor, not a
+score.** They make eight specific failures impossible to pass — all states identical, a blank
+empty box, no loading indicator, horizontal page scroll at 375px, a clipped caption, a missing or
+invisible label, an invisible focus ring, unreadable sampled contrast, raw ids where names belong.
+**They do not establish that the interface is good, and a verdict passing all eight says only
+that.** The UI is 25% of the score and a person assigns it; this gate can prove the floor and
+nothing above it.
+
+## Two entries flagged by their author as least confident
+
+`@scribe` named these before any run rather than after a refusal, which is the behaviour I want:
+**S-51** reads a fixed list of computed style properties and will fail for the wrong reason if the
+implementation distinguishes states by an attribute outside that list; **S-53** accepts any of five
+loading signals and may still be too narrow. If either fails, the report of it must quote the run,
+and the replacement gets written against the verdict rather than against the prediction — the same
+bound as `66e7967`.
