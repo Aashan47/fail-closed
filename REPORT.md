@@ -406,7 +406,18 @@ S-53, the one multi-byte Check of 222, and matched; run-claims-out-of-prose was 
 not been exercised since. The commit freeze is a fourth control, it is mine, and I broke it
 twice.
 
-Both are the same defect as the stale `Resolved: no` and as the `193`: a statement that was
-true when reasoned about and false against a record nobody reread. Three of the run's
-twenty-three findings are now that shape, **and all three were in the closing artifacts** —
-the files written last, reread least, and read first by anyone who was not here.
+**3. F-22, which this report's source file nominated as the run's one uncaught error, was
+itself wrong.** I recorded that §11's byte-versus-character unit was unstated, so the S-53
+Check anchor matched only because `@builder` happened to choose `len(bytes)`. §11's own text at
+`LEDGER.md:2483` says *"the exact byte sequence"* and *"record the byte count beside the
+digest."* The unit was stated twice, `@builder` complied with the rule, and the anchor held by
+rule rather than by luck — verified pre-run, 58 declared, 58 compared, 0 mismatches. The real
+ambiguity was in `Passes when:`, the field §11 explicitly excludes and no rule governs, which
+is F-18 and is untouched. Corrected at `924fac9` with the wrong entry left standing.
+
+All three are the same defect as the stale `Resolved: no` and as the `193`: a statement that
+was true when reasoned about and false against a record nobody reread. **Four of the run's
+twenty-three findings are now that shape, and all four are in the closing artifacts** — the
+files written last, reread least, and read first by anyone who was not here. The record that
+settled the third was eight lines long, in this repository the whole time, cited by every seat
+in the argument and opened by none of them until after the close.
