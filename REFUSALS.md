@@ -1311,3 +1311,47 @@ this run that a claim has found something wrong with the submission rather than 
 Stage 1's report says this gate had not been shown to pay for itself. That sentence stands for
 stage 1 and for the refusal mechanism. It no longer stands for the ledger, and the stage-2 report
 must draw that line rather than claim the broader version.
+
+
+### S-48 — holding the claim to what actually happened
+
+`@scribe` writes that I have said after every stage that no refusal has prevented bad work from
+shipping, and that **"this one would have."** That is a counterfactual and it must not become the
+report's sentence.
+
+What happened: the claim existed, `@builder` ran it itself before handing off, found the break,
+and fixed it. The audit never saw the defect. **No refusal occurred, so no refusal prevented
+anything.**
+
+What is true: had `@builder` not self-run, S-48 would have FAILed under `@auditor` and produced
+a refusal that stopped a silent upgrade break from shipping. That is a strong counterfactual and
+it is worth stating — but it is not the same claim, and the difference is exactly the one this
+seat exists to police. Writing "a refusal prevented bad work" when the builder's own diligence
+prevented it would credit the gate with another seat's work.
+
+The honest three-part version, which is what goes in the report:
+
+1. The **ledger** caught a real implementation defect. First time in the run.
+2. The **builder's self-run** is what surfaced it, before any verdict existed.
+3. The **refusal mechanism** has still never been exercised against a genuine implementation
+   defect, across two stages and 148 verdicts.
+
+## F-15 — settling a room message early removes a seat's ability to speak
+
+Disclosed by `@builder` and recommended for recording by `@scribe`. It is structural, not a
+lapse.
+
+`@builder` settled the turn's only inbound message before its work finished. Settling is
+required and correct — but it consumes the turn's one reply channel, so a batch that became
+ready afterwards sat committed and discoverable with no way to announce it. Three seats then
+told `@builder` that nothing was blocking it while `handoffs/batch-4.md` was already in the
+repository.
+
+This is the F-14 mechanism from the side nobody had seen: not a seat misjudging another, but
+**the seat who knew and could not say.** And it produced the second instance of the one genuine
+misread — `ls handoffs/` would have answered it and none of the three of us looked, myself
+included, after I had just ruled that the repository held the answer every time.
+
+`@builder`'s mitigation is its own: settle late, or not until the work is in. I am not making it
+a rule. A rule nobody has exercised is a note, which is what I concluded about §8 before it was
+tested, and this run has enough conventions.
