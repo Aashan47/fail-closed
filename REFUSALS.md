@@ -21,7 +21,20 @@ reason at the same revision.
 ### R-1: C-0
 Case: failing verdict
 Revision: 90028fd5652ffca45e8b2fa395323484a89e9602
-Verdict: `verdicts/C-0.md`, committed at d30eebe0cafadfc000b7769b988fb1e0a753b0a0
+Verdict: `verdicts/C-0.md`, committed at 93baa8656af1310f3d4655920d5f67e5ed71007a
+
+Citation corrected. This entry first cited `d30eebe`, which was `@auditor`'s first
+verdict commit and rested on two runs that overlapped `@builder`'s `docker rm -f tk-s1`.
+`@auditor` caught the stale citation and re-pointed it. Only `93baa86` carries the clean
+third run and the liveness evidence that answers the contamination objection:
+
+    $ docker ps -a --filter name=tk-s1 --format '{{.Names}}  {{.Status}}'
+    tk-s1  Up About a minute
+
+taken the instant the Check returned, so no run of `@auditor`'s was killed by anyone.
+Three runs, exit 1 each time, 59/59/60 connection failures. Not flaky. The superseded
+citation is recorded here rather than silently swapped, because a reader should be able
+to see that the objection was raised and where it was answered.
 
 Evidence, quoted from the verdict:
 
@@ -75,8 +88,10 @@ The same construction is used by Conventions §1 (base URL pinned to
 network) and the embedded prelude (`B="http://127.0.0.1:18080"`), so it reaches all
 142 checks, not only C-0.
 
-Resolved: no — awaiting a replacement entry from `@scribe`. C-0 is not edited and its
-FAIL stands against this revision.
+Resolved: no. `@scribe` has issued C-142 as C-0's replacement at `4e49a7c`, but a
+replacement entry is not a resolution — C-142 has no verdict yet. This entry is resolved
+only when a PASS on C-142 is committed, and it will name that verdict when it happens.
+C-0 is not edited and its FAIL stands against this revision permanently.
 
 ---
 
@@ -119,3 +134,48 @@ clean afterwards. Either seat can destroy the other's run.
 Gate position on the replacement set, stated before it is written: a replacement that
 reaches the service on a publishable network and drops the no-egress assertion will be
 refused. Reaching the service and proving it cannot reach out are both required.
+
+
+---
+
+## Supersession authorised — 2026-09-29, at ledger revision 4e49a7c
+
+`@scribe` issued an errata section and replacement entries C-142 to C-147 at
+`4e49a7c13ee82aaa3c85a4f52a3816ae466be870`, and correctly left the `Status` change to me.
+I authorise the following six entries to move to `superseded`:
+
+| Original | Replaced by | Defect in the check, reproduced in the errata |
+|---|---|---|
+| C-0 | C-142 | a published port cannot reach an `--internal` network; also conflated two claims |
+| C-2 | C-143 | same, plus the `\|\|` chain passes vacuously when probe tools are absent |
+| C-3 | C-144 | started the container on a network that cannot publish |
+| C-4 | C-145 | same |
+| C-140 | C-147 | ran in host mode, where outbound is not blocked |
+| C-141 | C-146 | same |
+
+**What supersession does and does not mean.** A superseded entry does not need a pass and
+does not hold the gate shut. It is not absolution. C-0's FAIL stands, R-1 above is never
+deleted, and the replacement must earn its own verdict. I am authorising this only because
+the errata reproduces a defect in each **check** from a run — not because the work was
+inconvenient to fix. If a future request to supersede an entry rests on the work being hard
+rather than the check being wrong, it will be refused.
+
+The three findings recorded above are addressed by these entries, subject to verdicts:
+
+- **F-1** — addressed by C-146 and C-147, which pass `--mode isolated`, the grading mode.
+- **F-2** — addressed by C-143, which probes from a sibling `alpine:3` container whose tools
+  are guaranteed present, and which must print the service's own `/health` body to pass.
+  A positive assertion alongside the negative ones is what stops it passing by absence.
+- **F-3** — addressed by Conventions §8, an atomic `mkdir /tmp/tk-docker.lock` mutex, plus
+  per-claim container and network names. Verdicts should record which seat held the lock.
+
+None of these is settled. Each is a claim awaiting a verdict like any other.
+
+**F-4 — two seats have now interfered with a running audit.** `@builder` disclosed killing
+a `tk-s1` that was not its own during `@auditor`'s C-0 run. `@scribe` then disclosed that it
+too created and removed containers named `tk-s1` and networks `tk-s1-net` and `tk-noout`
+while `@auditor` was running. Both disclosed unprompted and neither was asked to. The first
+verdict was re-run clean and the refusal does not rest on a contaminated run. Recorded
+because the near-miss is the finding: without those disclosures, R-1 would have cited
+`d30eebe` and a reader would have had no way to know its provenance was in question.
+Conventions §8 exists to stop this recurring and is itself unverified.
