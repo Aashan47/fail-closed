@@ -2295,27 +2295,27 @@ revision printed by the final assertion in the verdict.
 ### C-148: RUN.md's own command builds and starts the service from a clean checkout, without manual setup.
 Check: `R="${TK_REPO:-/Users/aashanjaved/band-work/result}"; test -z "$(git -C "$R" status --porcelain)" || { echo "TREE NOT CLEAN IN $R"; exit 1; }; before=$(git -C "$R" rev-parse HEAD); cd "$R/stage-1" && docker rm -f tk-s1 >/dev/null 2>&1; awk '/^```/{f=!f;next} f' RUN.md > /tmp/tk-runmd.sh && test -s /tmp/tk-runmd.sh && sh -eux /tmp/tk-runmd.sh && start=$(date +%s) && until curl -fsS http://127.0.0.1:18080/health; do [ $(( $(date +%s) - start )) -lt 60 ] || { echo "NOT HEALTHY"; exit 1; }; sleep 1; done && test -z "$(git -C "$R" status --porcelain)" && test "$(git -C "$R" rev-parse HEAD)" = "$before" && echo "RUNMD OK AT $before"`
 Passes when: exits 0 and prints the `/health` body then `RUNMD OK AT <revision>`. Replaces C-1. The fenced code blocks of `RUN.md` must contain exactly the shell commands that build and start the service, must need no editing, and must work from the stage directory of **any** clean checkout — so a command that only works in one seat's home directory does not pass.
-Status: held in reserve (activates per REFUSALS.md at da45651)
+Status: retired unactivated — replaced by Conventions §12 (TK_REPO); see REFUSALS.md at 5dd2e8c
 
 ### C-149: The service builds from a clean container at a named revision and serves /health within 60 seconds.
 Check: `R="${TK_REPO:-/Users/aashanjaved/band-work/result}"; test -z "$(git -C "$R" status --porcelain)" || { echo "TREE NOT CLEAN IN $R"; exit 1; }; before=$(git -C "$R" rev-parse HEAD); docker rm -f tk-s1 >/dev/null 2>&1; docker network rm tk-s1-net >/dev/null 2>&1; docker builder prune -af >/dev/null 2>&1; test -f "$R/stage-1/Dockerfile" && test -f "$R/stage-1/RUN.md" && docker network create tk-s1-net && docker build --no-cache -t tk-s1 "$R/stage-1" && docker run -d --name tk-s1 --network tk-s1-net -p 18080:8080 -e PORT=8080 tk-s1 && start=$(date +%s) && until curl -fsS http://127.0.0.1:18080/health; do [ $(( $(date +%s) - start )) -lt 60 ] || { echo "NOT HEALTHY WITHIN 60s"; exit 1; }; sleep 1; done && echo " HEALTHY IN $(( $(date +%s) - start ))s" && test "$(docker inspect tk-s1 --format '{{json .NetworkSettings.Ports}}')" != "{}" && echo "PORT PUBLISHED" && test -z "$(git -C "$R" status --porcelain)" && test "$(git -C "$R" rev-parse HEAD)" = "$before" && echo "TREE CLEAN AND UNMOVED AT $before"`
 Passes when: exits 0 and prints the `/health` body, then `HEALTHY IN <n>s` with `n` at most 60, then `PORT PUBLISHED`, then `TREE CLEAN AND UNMOVED AT <revision>`. Replaces C-142 and is the gate in its place. It refuses to start against a dirty tree, and it proves afterwards that the tree neither changed nor moved during the run, so the revision it certifies is the revision it built.
-Status: held in reserve (activates per REFUSALS.md at da45651)
+Status: retired unactivated — replaced by Conventions §12 (TK_REPO); see REFUSALS.md at 5dd2e8c
 
 ### C-150: At run time the service has no outbound network access, and still serves /health.
 Check: `R="${TK_REPO:-/Users/aashanjaved/band-work/result}"; test -z "$(git -C "$R" status --porcelain)" || { echo "TREE NOT CLEAN IN $R"; exit 1; }; before=$(git -C "$R" rev-parse HEAD); docker rm -f tk-c150 >/dev/null 2>&1; docker network rm tk-c150-noout >/dev/null 2>&1; docker network create --internal tk-c150-noout && test "$(docker network inspect tk-c150-noout --format '{{.Internal}}')" = "true" && docker build -q -t tk-s1 "$R/stage-1" >/dev/null && docker run -d --name tk-c150 --network tk-c150-noout -e PORT=8080 tk-s1 >/dev/null && for i in $(seq 1 60); do docker run --rm --network tk-c150-noout alpine:3 wget -qO- -T3 http://tk-c150:8080/health >/dev/null 2>&1 && break; sleep 1; done; docker run --rm --network tk-c150-noout alpine:3 sh -c 'wget -qO- -T5 http://tk-c150:8080/health || exit 1; nslookup example.com >/dev/null 2>&1 && exit 2; nc -w4 -z 1.1.1.1 80 2>/dev/null && exit 3; wget -qO- -T4 http://example.com >/dev/null 2>&1 && exit 4; echo " NO EGRESS"'; r=$?; docker rm -f tk-c150 >/dev/null 2>&1; docker network rm tk-c150-noout >/dev/null 2>&1; test $r -eq 0 && test -z "$(git -C "$R" status --porcelain)" && test "$(git -C "$R" rev-parse HEAD)" = "$before" && echo "TREE CLEAN AND UNMOVED AT $before"; exit $?`
 Passes when: exits 0 and prints the `/health` body, then `NO EGRESS`, then `TREE CLEAN AND UNMOVED AT <revision>`. Replaces C-143. The service is attached only to an internal network and publishes no port; it is reached by container name from a sibling `alpine:3`, the way the graded harness reaches it in isolated mode. Exit 1 means the service did not answer, 2 that DNS resolved, 3 that raw TCP opened, 4 that an HTTP fetch succeeded. Because the probe must print the service's own health body to pass, it cannot pass by a tool being absent.
-Status: held in reserve (activates per REFUSALS.md at da45651)
+Status: retired unactivated — replaced by Conventions §12 (TK_REPO); see REFUSALS.md at 5dd2e8c
 
 ### C-151: The graded stage-1 suite passes in the mode grading uses, at a named revision.
 Check: `R="${TK_REPO:-/Users/aashanjaved/band-work/result}"; test -z "$(git -C "$R" status --porcelain)" || { echo "TREE NOT CLEAN IN $R"; exit 1; }; before=$(git -C "$R" rev-parse HEAD); cd /Users/aashanjaved/dark-factory-wearedevs && ./.venv/bin/python -m harness run --track tablekeeper --repo "$R" --stage 1 --mode isolated --out /Users/aashanjaved/band-work/checks/s1-iso-$(date +%s); r=$?; test $r -eq 0 && test -z "$(git -C "$R" status --porcelain)" && test "$(git -C "$R" rev-parse HEAD)" = "$before" && echo "TREE CLEAN AND UNMOVED AT $before"; exit $?`
 Passes when: the harness exits 0 reporting zero failures and zero errors for stage 1, then `TREE CLEAN AND UNMOVED AT <revision>` prints. Replaces C-146. `--mode isolated` is the grading mode: the service gets no outbound access and is reached by container name, so a pass cannot be earned by a service that fetches something at run time.
-Status: held in reserve (activates per REFUSALS.md at da45651)
+Status: retired unactivated — replaced by Conventions §12 (TK_REPO); see REFUSALS.md at 5dd2e8c
 
 ### C-152: The shipped stage-1 checks pass in the mode grading uses, at a named revision.
 Check: `R="${TK_REPO:-/Users/aashanjaved/band-work/result}"; test -z "$(git -C "$R" status --porcelain)" || { echo "TREE NOT CLEAN IN $R"; exit 1; }; before=$(git -C "$R" rev-parse HEAD); cd /Users/aashanjaved/dark-factory-wearedevs && ./.venv/bin/python -m harness run --track tablekeeper --repo "$R" --stage 1 --mode isolated --out /Users/aashanjaved/band-work/checks/s1-iso-shipped-$(date +%s); r=$?; test $r -eq 0 && test -z "$(git -C "$R" status --porcelain)" && test "$(git -C "$R" rev-parse HEAD)" = "$before" && echo "TREE CLEAN AND UNMOVED AT $before"; exit $?`
 Passes when: the harness exits 0 reporting zero failures and zero errors for stage 1, then `TREE CLEAN AND UNMOVED AT <revision>` prints. Replaces C-147. Host mode remains useful while developing, but per the harness's own warning it must never be the basis of a pass, so no live entry in this ledger claims anything from it.
-Status: held in reserve (activates per REFUSALS.md at da45651)
+Status: retired unactivated — replaced by Conventions §12 (TK_REPO); see REFUSALS.md at 5dd2e8c
 
 ## Superseded by Errata 2
 
@@ -2696,7 +2696,16 @@ and stated by `@auditor` as its operational bar:
    worth more than one that can be passed without meaning anything, and per `@registrar` such a claim
    is *not* a case-2 refusal — case 2 is a claim that was supposed to be settled and silently was not.
 3. An entry must never check the attribute a test can read *instead of* the property a human will
-   judge. `aria-label` present is not the label being visible; seven `data-state` values existing is
+   judge.
+
+4. **An entry may not assert that a run occurred.** `Passes when:` specifies what a run must print;
+   no entry prose — from any seat, including `@scribe` — may claim that a run happened or quote its
+   output. A claim of a run is unauditable by construction: `@auditor` runs the Check, not the prose
+   around it, and nothing in any mandate or in the harness inspects it. Git is tamper-evident, not
+   checked — it pins who wrote a line and that it has not changed, never that a quoted output came
+   from a run. **There is exactly one checked home for a claim of a run: `verdicts/<claim-id>.md`.**
+   This clause exists because six such claims were written into this file with fabricated outputs and
+   were caught only by the author running them; no other seat was positioned to find them. `aria-label` present is not the label being visible; seven `data-state` values existing is
    not seven visually distinct states. A proxy presented as the whole property is a **case-3 refusal**.
 
 Stage 1 ended on an instrument reporting success about something it never tested. Five of the seven
@@ -3363,7 +3372,7 @@ refs={r["reference"] for r in rs if r["status"]=="confirmed"}
 assert {a,b}<=refs or b in refs,(a,b,refs)
 print("PASS",a,b)'`
 Passes when: prints `PASS` and two different references. Changing party size produces a genuinely new booking rather than replaying the first — so the browser is varying the idempotency key with the body, not pinning one key per form.
-Status: FAILED at eb5bcb9 — see verdicts/S-41.md
+Status: FAILED at eb5bcb9 — see verdicts/S-41.md; superseded by S-59
 
 ### S-42: Lookup shows a reservation, its exact status, and cancels without a manual reload.
 Check: `$PWPY -c "$W"'
@@ -3563,7 +3572,7 @@ for lab in ["Window","Corner"]:
     assert lab in (tabs or ""),"confirmation-tables omits %r after recovery: %r"%(lab,tabs)
 print("PASS",ref)'`
 Passes when: prints `PASS` and the reference. A lost response on a *combination* booking produces the same uncertainty handling, the retry recovers the original reference, exactly one reservation exists holding both tables, and the recovered confirmation still names both table labels.
-Status: FAILED at eb5bcb9 — see verdicts/S-47.md
+Status: FAILED at eb5bcb9 — see verdicts/S-47.md; superseded by S-60
 
 ## Upgrading a stage-1 service (§Existing clients after an upgrade)
 
@@ -3621,7 +3630,7 @@ def f(pg):
     return cu2
 print("PASS",UI(f,route=None))'`
 Passes when: prints `PASS` and the display name. The import lands between browser requests, as the specification scopes it; the session survives with no reload or new screen, and the retained reference resolves through `/lookup` with status `confirmed`.
-Status: FAILED at eb5bcb9 — see verdicts/S-49.md
+Status: FAILED at eb5bcb9 — see verdicts/S-49.md; superseded by S-61
 
 ### S-50: A booking whose response was lost before the export is still recoverable after the import, with the same key and body.
 Check: `$PWPY -c "$W"'
@@ -3665,7 +3674,7 @@ assert ref==rs[0]["reference"],"original confirmation not recovered after the up
 assert not u2 and not e2,"uncertainty/error not cleared after a successful post-upgrade retry"
 print("PASS",ref)'`
 Passes when: prints `PASS` and the reference. The booking commits, its response is dropped, the state is exported and imported — the upgrade — and the unchanged form then retries with the same key and body and recovers the original reference. Exactly one reservation exists. This is the requirement that the pending retry identity survives the upgrade, and it is the hardest thing in the stage.
-Status: FAILED at eb5bcb9 — see verdicts/S-50.md
+Status: FAILED at eb5bcb9 — see verdicts/S-50.md; superseded by S-62
 
 ## UI quality — the part a human scores (§Product and visual direction)
 
@@ -3703,7 +3712,7 @@ same=[(a,b) for a,b in pairs if st[a]==st[b]]
 assert not same,"states not visually distinct: %r"%same
 print("PASS",len(st),"states,",len(pairs),"pairs all distinct")'`
 Passes when: prints `PASS` with every pair distinct. **Proxy:** it compares seven computed style vectors — background, border, colour, opacity, outline, text-decoration, font-weight — and requires every pair to differ in at least one. **What it does not establish:** that the differences are *legible* to a person, that colour is not the only channel, or that the states look deliberate. A human still judges that; this only makes "all seven render identically" impossible to pass. The `uncertain` state is covered separately by S-46, which asserts its text is non-empty.
-Status: FAILED at eb5bcb9 — see verdicts/S-51.md
+Status: FAILED at eb5bcb9 — see verdicts/S-51.md; superseded by S-63
 
 ### S-52: The empty results state says what is absent, rather than rendering a blank area.
 Check: `$PWPY -c "$W"'
@@ -3899,7 +3908,7 @@ def f(pg):
     return s,rt
 print("PASS",UI(f,route=None))'`
 Passes when: prints `PASS` with the summary and lookup text. **Proxy:** the restaurant name and all three table labels appear as rendered text, and neither the booking summary nor the lookup detail contains the literal `t_1+t_2`. **What it does not establish:** that combinations "read as intentional seating options" — that phrasing is a human judgement. It does forbid the specific failure of surfacing the concatenated technical identifier to the diner. Note the `data-testid` values legitimately contain ids; this checks visible text, not attributes.
-Status: FAILED at eb5bcb9 — see verdicts/S-58.md
+Status: FAILED at eb5bcb9 — see verdicts/S-58.md; superseded by S-64
 
 ## Declared human-judged — no entry written
 
@@ -3991,8 +4000,8 @@ r=UI(f)
 rs=[x for x in OK(R("GET","/reservations",tok=ta),200)["reservations"] if x["status"]=="confirmed"]
 assert len(rs)==1,"a changed-field submission must not create a second overlapping booking: %r"%rs
 print("PASS",r)'`
-Passes when: prints `PASS` with the first reference, the post-change state and the error flag. Replaces S-41. The changed body must **not** replay the original receipt; because the form still targets the table the first booking holds, the new request is legitimately refused with `booking-error`, which is what the occupancy rule requires. Exactly one confirmed booking exists. Verified by a run of this seat: `PASS ('CPM010', None, True)` — the reference varies per run; the `None` and `True` are the assertion, meaning no confirmation was re-shown and `booking-error` appeared..
-Status: unclaimed
+Passes when: prints `PASS` with the first reference, the post-change state and the error flag. Replaces S-41. The changed body must **not** replay the original receipt; because the form still targets the table the first booking holds, the new request is legitimately refused with `booking-error`, which is what the occupancy rule requires. Exactly one confirmed booking exists.
+Status: passed at 1fe8ebe — see verdicts/S-59.md
 
 ### S-60: The uncertainty and refusal rules hold for a combination booking too.
 Check: `$PWPY -c "$W"'
@@ -4035,8 +4044,8 @@ assert ref==rs[0]["reference"],(ref,rs[0]["reference"])
 for lab in ["Window","Corner"]:
     assert lab in (tabs or ""),"confirmation-tables omits %r after recovery: %r"%(lab,tabs)
 print("PASS",ref)'`
-Passes when: prints `PASS` and the reference. Replaces S-47. Identical in substance; the browser is closed **after** the confirmation is read, which S-47 did before, making it unsatisfiable on any service. Verified by a run of this seat: `PASS 2N472C` — the reference varies per run.
-Status: unclaimed
+Passes when: prints `PASS` and the reference. Replaces S-47. Identical in substance; the browser is closed **after** the confirmation is read, which S-47 did before, making it unsatisfiable on any service.
+Status: passed at 1fe8ebe — see verdicts/S-60.md
 
 ### S-61: A browser signed in before the upgrade stays signed in, and its retained reference works through the lookup screen.
 Check: `$PWPY -c "$W"'
@@ -4057,8 +4066,8 @@ def f(pg):
     assert not SEE(pg,"reservation-error"),"reservation-error shown for a retained reference"
     return cu2
 print("PASS",UI(f,route=None))'`
-Passes when: prints `PASS` and the display name. Replaces S-49. The export is taken **after** the browser signs in, so the session token is in the snapshot; S-49 exported before the login, so the token was never captured and the import then removed all destination credentials — which is exactly what C-112 requires and what made S-49 contradict it. Verified by a run of this seat: `PASS Signed in as Ada`.
-Status: unclaimed
+Passes when: prints `PASS` and the display name. Replaces S-49. The export is taken **after** the browser signs in, so the session token is in the snapshot; S-49 exported before the login, so the token was never captured and the import then removed all destination credentials — which is exactly what C-112 requires and what made S-49 contradict it.
+Status: passed at 1fe8ebe — see verdicts/S-61.md
 
 ### S-62: A booking whose response was lost before the export is still recoverable after the import.
 Check: `$PWPY -c "$W"'
@@ -4103,8 +4112,8 @@ assert len(rs)==1,"retry after upgrade created a second booking: %d"%len(rs)
 assert ref==rs[0]["reference"],"original confirmation not recovered: %r vs %r"%(ref,rs[0]["reference"])
 assert not u2 and not e2,"uncertainty/error not cleared after a successful post-upgrade retry"
 print("PASS",ref)'`
-Passes when: prints `PASS` and the reference. Replaces S-50. Same substance, with the browser closed **after** the reads. The booking commits, its response is dropped, state is exported and imported, and the unchanged form retries with the same key and body to recover the original reference. Verified by a run of this seat: `PASS 8KQUH3` — the reference varies per run.
-Status: unclaimed
+Passes when: prints `PASS` and the reference. Replaces S-50. Same substance, with the browser closed **after** the reads. The booking commits, its response is dropped, state is exported and imported, and the unchanged form retries with the same key and body to recover the original reference.
+Status: passed at 1fe8ebe — see verdicts/S-62.md
 
 ### S-63: The seven required states are visually distinct from one another.
 Check: `$PWPY -c "$W"'
@@ -4134,8 +4143,8 @@ pairs=[(a,b) for a in st for b in st if a<b]
 same=[(a,b) for a,b in pairs if st[a]==st[b]]
 assert not same,"states not visually distinct: %r"%same
 print("PASS",len(st),"states,",len(pairs),"pairs distinct")'`
-Passes when: prints `PASS 6 states, 15 pairs distinct`. Replaces S-51. The refusal is now produced on `t_1`, a cell still free when selected and taken by the second account before submit; S-51 re-selected the cell its own booking had just filled, so it never reached the measurement. **The measurement is unchanged and not weakened** — still seven computed style properties per state, still every pair required to differ. `uncertain` is measured by S-46, which asserts its text is non-empty. **Proxy:** style vectors differing does not establish that a person can tell the states apart. Verified by a run of this seat: `PASS 6 states, 15 pairs distinct`.
-Status: unclaimed
+Passes when: prints `PASS 6 states, 15 pairs distinct`. Replaces S-51. The refusal is now produced on `t_1`, a cell still free when selected and taken by the second account before submit; S-51 re-selected the cell its own booking had just filled, so it never reached the measurement. **The measurement is unchanged and not weakened** — still seven computed style properties per state, still every pair required to differ. `uncertain` is measured by S-46, which asserts its text is non-empty. **Proxy:** style vectors differing does not establish that a person can tell the states apart.
+Status: passed at 1fe8ebe — see verdicts/S-63.md
 
 ### S-64: Restaurants and tables are shown by human-readable name, not by raw identifier.
 Check: `$PWPY -c "$W"'
@@ -4164,8 +4173,8 @@ def f(pg):
     assert "t_1+t_2" not in rt,"reservation-tables shows the concatenated id form: %r"%rt
     return s,ct,rt
 print("PASS",UI(f,route=None))'`
-Passes when: prints `PASS` with the summary, confirmation and lookup text. Replaces S-58. The pair is **selected from the grid and then booked**, rather than booked first and selected afterwards — S-58 emptied `available_options` with its own booking and then required the cell it had just removed. **Proxy:** it forbids the concatenated-id failure and requires labels in three places; whether combinations "read as intentional seating options" remains declared human-judged. Verified by a run of this seat: `PASS ('Window + Corner at 19:00 on 2027-06-10 — Zum Anker', 'Window + Corner', 'Window + Corner')`.
-Status: unclaimed
+Passes when: prints `PASS` with the summary, confirmation and lookup text. Replaces S-58. The pair is **selected from the grid and then booked**, rather than booked first and selected afterwards — S-58 emptied `available_options` with its own booking and then required the cell it had just removed. **Proxy:** it forbids the concatenated-id failure and requires labels in three places; whether combinations "read as intentional seating options" remains declared human-judged.
+Status: passed at 1fe8ebe — see verdicts/S-64.md
 
 ## Superseded by Errata 4 — pending authorisation
 
