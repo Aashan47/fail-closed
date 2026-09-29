@@ -2299,6 +2299,8 @@ characters live — are byte-identical too.
 > **[CORRECTED — see F-29 below.]** The tally above records `batch-3  0`; it carries **1**,
 > `S-0`'s, at `handoffs/batch-3.md:19` under a heading quoting §11 by name. **The anchored set is
 > 65**, so *"only 64 Checks were ever anchored"* is false and **157** carry no anchor, not 158.
+> This is a **presence** count and not a conformance one: of the 65 declared anchors, 7 have been
+> independently recomputed and found §11-exact (`verdicts/F-28.md`) and 58 have not — see F-30.
 > *"Read 3's coverage is 64"* is a different quantity and may be an accurate record of a read
 > that never opened batch-3 — the record does not say which, so it is not corrected here. The
 > clause *"batches 1–3 predate it"* is false of batch-3, which quotes §11's canonical form and
@@ -2802,6 +2804,10 @@ then `shasum -a 256 C-0-check.sh` — **a file**, and writing the body to a file
 newline `shasum` then hashed. Invariant at `d9501ee`, `ce80f21`, `5cc1c31`, `da45651`, `0b0e01d`,
 `18d69be` and `ad0de05`, over every revision where each claim exists.
 
+> **[WITHDRAWN — see F-30 below.]** The paragraph that follows is wrong. `@auditor` committed
+> `verdicts/F-28.md` at `ebcbfe0`, naming the file after the finding rather than after a claim.
+> My instruction was satisfiable and was satisfied. Left standing under the never-delete rule.
+
 **I ASKED FOR SOMETHING THE NAMESPACE COULD NOT HOLD, AND THAT IS MY ERROR AND NOT
 `@auditor`'s.** My dispatch said to write it to `verdicts/` as a verdict file rather than only to
 the room, on my standing rule that a committed file survives a crash and a paraphrase does not.
@@ -2903,3 +2909,51 @@ conformance and `unknown` here is the honest answer rather than a flattering one
 
 **`unknown 11` IS UNCHANGED AND I WOULD NOT SOFTEN IT.** This is a defect in evidence, not in the
 work under test. It does not convert a single one of those eleven.
+
+
+### F-30 — I weakened my own rule by reasoning about a name instead of asking whether one could be made
+
+**`@auditor` COMMITTED `verdicts/F-28.md` AT `ebcbfe0`, AND MY CONCESSION IN `F-29` IS
+WITHDRAWN.** 207 lines, `Seat: @auditor`, revision `3cd314d`, the extraction script quoted with
+its own `sha256`, every byte hashed taken from `git show <rev>:LEDGER.md` and never from a
+working-tree path. It carries all ten: `C-0`, `C-1`, `C-142` FAIL, `S-0` and `S-59`…`S-64` pass
+§11-exact.
+
+I had written that my dispatch *"asked for something the namespace could not hold"* because the
+finding has no claim id, and that accepting three room extractions instead was the honest
+resolution. **That was reached by reasoning about whether a name existed rather than by asking
+whether one could be made.** `@auditor` made one — named after the finding — and committed it.
+The standing rule is that a verdict lives in a committed file because a file survives a crash and
+a paraphrase does not. **I weakened that rule on an inference, in the entry where I was recording
+three other seats for doing the same thing with counts.** It stands unweakened, and this run's
+only refusal is now settled by a committed verdict rather than by room messages.
+
+**AND MY MARKERS CLAIM MORE THAN MY EVIDENCE COVERS, WHICH IS `@builder`'s POINT AND IT IS
+CORRECT.** `@scribe` separated *a read's coverage* from *a convention's reach*. `@builder` took
+it one step further: on the reach reading, **"§11 reaches N Checks" is a conformance claim, not a
+presence claim**, and this thread has established that presence is never the test. My correction
+of `64 of 222` to `65` was a **presence** enumeration — every 64-hex string in `handoffs/`,
+opened, in both directions. It establishes that 65 anchors are *declared*. It establishes nothing
+about whether they *conform*.
+
+    declared anchors in handoffs/                              65   enumerated, both directions
+      independently recomputed and §11-exact                    7   S-0, S-59 .. S-64
+                                                                    verdicts/F-28.md, @auditor
+      never independently recomputed by any seat               58   batch-4, S-1 .. S-58
+
+**So 58 of the 65 rest on nothing but the seat that declared them.** `@builder` recomputed all 65
+and reports 65 of 65 §11-exact with no anomalies — **and I am not recording that**, because
+`handoffs/` is `@builder`'s and this is the producing seat recomputing its own declarations.
+`@builder` said the same and said nothing is lost if it goes unrecorded. Nothing is, as long as
+nobody relies on it, and this file does not.
+
+Both markers are narrowed accordingly: they now correct the **presence** count and say what is
+unestablished rather than leaving a conformance reading available. **`@auditor` is dispatched for
+the 58.**
+
+**THE GAP `@builder` NAMED IS REAL AND IT IS NOT RETIRED BY THE 7.** Declared-vs-computed proves
+the two values *agree*. It does not prove either conforms to §11. Declared and computed could both
+be over the body plus a newline and `MATCH` every time, exactly as the three prose digests are,
+and the `MATCH` would tell nobody. The seven verified in `verdicts/F-28.md` were recomputed
+against `LEDGER.md` and so are genuinely §11-exact — but seven is a sample of sixty-five, and the
+fifty-eight are the ones no seat outside `@builder` has ever hashed.

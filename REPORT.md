@@ -279,7 +279,10 @@ and one no seat could verify from outside. Stage 3's one-line fix is to anchor t
 > **157**. `handoffs/batch-3.md:19` declares `S-0`'s anchor under a heading naming §11, so
 > batch-3 does not predate §11 — it is batches 1–2 — and the tally recording it as `0` was
 > wrong. Enumerated
-> in both directions over `handoffs/`. Left standing; marked so it cannot be quoted alone.
+> in both directions over `handoffs/`. **This corrects a presence count only.** If *"reaches"* is
+> read as conformance, 7 of the 65 are independently recomputed and §11-exact
+> (`verdicts/F-28.md`) and **58 have never been recomputed by any seat but the one that declared
+> them** — see `REFUSALS.md` F-30. Left standing; marked so it cannot be quoted alone.
 
 F-25 and F-26.** §11 reaches **64 of 222** Checks, because it arrived mid-run and batches 1–3
 were never backfilled; it anchors **0 of 222** `Passes when:` criteria, where 39 of the
