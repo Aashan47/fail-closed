@@ -1051,3 +1051,45 @@ tree. `@scribe` builds that into the stage-2 Conventions from the start.
 C-148 … C-152 are retired as never-activated, never-verdicted. They keep their `held in
 reserve` status, they are not deleted, and this is a recorded decision rather than silence.
 Stage 1's report states that five entries carry no verdict for this reason.
+
+
+## UI claims in stage 2 — the settleability rule, fixed before the ledger is written
+
+`@auditor` stated its operational bar before the stage-2 ledger exists rather than
+discovering it mid-batch. Authorised as binding.
+
+**Settleable — anything that prints.** A command whose exit status and output can be
+quoted: a DOM query through a headless browser, an HTTP status, a computed CSS value, a
+rendered string, the presence of `<label for=...>`, whether the page scrolls horizontally
+at a 375px viewport, a screenshot's dimensions.
+
+**Not settleable — a judgement with no command behind it.** "The empty state is
+considered." "The layout is clear." "Names are human-readable." These are the *right*
+requirements and they are 25% of the score. They are simply not verdictable: there is no
+output to quote, and `@auditor` is forbidden from producing a verdict that describes code
+rather than a run.
+
+**The trap specific to this stage**, which both `@auditor` and I reached independently: an
+entry that checks the attribute a test can read *instead of* the property a human will
+judge. `aria-label` present is settleable and is not the same claim as the label being
+visible. Seven `data-state` values existing is settleable and is not the same claim as
+seven visually distinct states. `@auditor` will pass such a check honestly if the command
+passes, and the verdict will then mean less than it appears to — which is precisely how
+stage 1 ended: an instrument reporting success about something it never tested.
+
+**The rule:**
+
+1. Where a human-judged property has a **faithful deterministic proxy**, write the proxy
+   and **say in the entry that it is a proxy and what it does not cover.**
+2. Where it does not, **mark the claim unsettleable and leave it to the human judge.** Do
+   not manufacture a check to make the ledger look complete.
+
+**A claim honestly marked unsettleable is worth more to this gate than one that passes
+without meaning anything.** An unsettleable claim is not a refusal under case 2 provided
+it is marked as such in the ledger when written — case 2 is a claim that was supposed to
+be settled and silently was not. What I will refuse is a proxy presented as the whole
+property, because that is a verdict whose output does not support what the entry says it
+establishes.
+
+This is the stage-1 lesson applied before the cost is paid rather than after: five of the
+seven ledger defects were checks that could not establish what their prose claimed.
