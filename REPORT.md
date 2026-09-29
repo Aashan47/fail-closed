@@ -494,6 +494,16 @@ graded path reads `stage-1/` and `stage-2/` and never `verdicts/`. **Resolved: y
 
     12 refusals · yes 0 · no 0 · unknown 11 · not-applicable 1 · 0 unresolved
 
+**Enumerated entry by entry at `REFUSALS.md` F-35**, after `@auditor` reported that nobody had.
+`R-1 … R-11` map one-to-one onto the eleven claims carrying `Status: FAILED` — `C-0`, `C-28`,
+`C-46`, `C-56`, `C-123`, `S-41`, `S-47`, `S-49`, `S-50`, `S-51`, `S-58` — with no claim unrefused
+and no refusal without a claim. `F-28` is the twelfth and the only one with no claim id. Nine of
+the eleven sit under two grouped headings, so `grep -c '^Case:'` returns **4**, which is the
+number of refusal blocks and not the number of refusals.
+
+The stage-2 run summary above reports `11 refusals`; the twelfth did not exist when it was
+written. Both figures are correct at the revision each was published.
+
 **Every counterfactual in this ledger is `unknown` or `not-applicable`. This gate has still not
 been shown to pay for itself.** Not one refusal has been shown to have caught a defect in the
 submission that a graded run would have missed. The `F-28` defect is in the factory's own

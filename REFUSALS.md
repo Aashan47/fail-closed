@@ -3249,3 +3249,71 @@ amended, so the partial commit stands in the history.
 the counterfactual counts are as `F-33` and `REPORT.md` record them: 12 refusals, `yes` 0, `no` 0,
 `unknown` 11, `not-applicable` 1, 0 unresolved. This gate has still not been shown to pay for
 itself.**
+
+
+### F-35 — the refusal tally is now enumerated entry by entry, which nobody had done, and it holds
+
+**`@auditor` REPORTED THAT IT HAD NOT VERIFIED THE TALLY THIS FILE AND `REPORT.md` PUBLISH, AND
+THAT NOBODY HAD.** Its two attempts returned `4` and `17` against a published `12` and `11`, and
+it said plainly that neither falsifies the figure and that it therefore had no verdict on it.
+**That was the right report and it was about the figure its own seat has the most standing to
+check.** A tally in a closing artifact that no seat has enumerated is exactly the shape this
+thread has spent the day on. Enumerated here, entry by entry, by reading:
+
+    R-1    C-0                                      ### R-1: C-0                        line 21
+    R-2    C-28   \
+    R-3    C-46    |  one grouped heading           ## R-2: C-28 · R-3: C-46 ·         line 733
+    R-4    C-56    |                                   R-4: C-56 · R-5: C-123
+    R-5    C-123  /
+    R-6    S-41   \
+    R-7    S-47    |
+    R-8    S-49    |  one grouped heading           ## R-6 … R-11 — S-41, S-47,        line 1435
+    R-9    S-50    |                                   S-49, S-50, S-51, S-58
+    R-10   S-51    |
+    R-11   S-58   /
+    F-28   (no claim id)                            ### F-28 REFUSAL
+
+    $ awk '/^### [CS]-[0-9]+:/{id=$2} /^Status: FAILED/{print id}' LEDGER.md
+    C-0 C-28 C-46 C-56 C-123 S-41 S-47 S-49 S-50 S-51 S-58        <- 11, exactly R-1 .. R-11
+
+**R-1 … R-11 map one-to-one onto the eleven claims carrying `Status: FAILED`, with no claim
+unrefused and no refusal without a claim.** `F-28` is the twelfth and the only one with no claim
+id, which is the same fact recorded in `F-32` about `verdicts/F-28.md`. **12 refusals. The
+published figure holds.**
+
+**AND HERE IS WHY EVERY PATTERN RETURNS 4.** Nine of the eleven sit under two grouped headings,
+so the per-entry fields are written once per group:
+
+    $ grep -cE '^Case:' REFUSALS.md        4      R-1 · R-2..R-5 · R-6..R-11 · F-28
+    $ grep -cE '^Resolved:' REFUSALS.md    4      same four
+
+**`4` is the number of refusal blocks, not the number of refusals**, and `@auditor`'s `4 unknown`
+was counting blocks correctly and refusals not at all. Its `17` counted every `R-` and `F-`
+heading, and most `F-` entries are findings rather than refusals. **Both patterns were narrower
+and broader than the sentence in the familiar way, and `@auditor` said so before publishing
+rather than after, which is the first time in this thread anyone has.** Recorded here so the next
+reader who greps and gets `4` finds the mapping instead of re-deriving the confusion.
+
+    12 refusals · yes 0 · no 0 · unknown 11 · not-applicable 1 · 0 unresolved
+      unknown 11        R-1 .. R-11, all Check defects, all @scribe's Checks
+      not-applicable 1  F-28, no graded suite exists and 0 of 222 Checks invoke a hash tool
+
+**`REPORT.md` carries `11 refusals` at its stage-2 run summary and `12` in the post-close
+addendum. Both are correct at the revision each was written**, and no marker is needed: the
+twelfth refusal did not exist when the stage-2 summary was published. Saying so here so the pair
+does not read as a contradiction.
+
+**THE TALLY IS NOW ENUMERATED. NOTHING IN IT MOVES, AND NOTHING IN IT IMPROVES.** Every
+counterfactual is `unknown` or `not-applicable`. Not one refusal has been shown to catch a defect
+in the submission that a graded run would have missed. `@auditor` refused to let
+`not-applicable` read as a credit on its own finding, and `@builder` restated against its own
+seat that the one real implementation defect this run — the legacy `table_id` on import — came
+out of how `S-48` was constructed, inside its own run, before any verdict existed, and that no
+refusal records it. **This gate has still not been shown to pay for itself.**
+
+**And three seats have now reported the `207` in `F-30` as outstanding at the tagged close.** It
+was marked at `952eb3b` in `F-34`, one commit after the tag they each read at — which is the
+staleness rule catching three seats at once on the entry that records it. No further action:
+the marker is in place and the correct figure, 154, is in the record.
+
+**No claim's status changes. `LEDGER.md` unedited since `039dd8a`. `unknown 11` unchanged.**
