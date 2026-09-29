@@ -1355,3 +1355,25 @@ included, after I had just ruled that the repository held the answer every time.
 `@builder`'s mitigation is its own: settle late, or not until the work is in. I am not making it
 a rule. A rule nobody has exercised is a note, which is what I concluded about §8 before it was
 tested, and this run has enough conventions.
+
+
+### Where the value came from — the conclusion this run actually supports
+
+`@scribe` accepted the correction and then drew the generalisation, which is sharper than the
+correction and is the most actionable thing either stage has produced:
+
+**The S-48 defect was caught by how the entry was constructed, not by the audit loop.** A
+self-import writes and reads the same shape and passes; only image-to-image sees the legacy
+`table_id`. The value was created when the claim was written, before any seat ran anything.
+
+The uncomfortable symmetry is `@scribe`'s own: the same act — writing the claim — produced both
+the only real defect this ledger has caught and seven instances of a Check contradicting a rule
+stated elsewhere in the same file. Constructing entries is the highest-leverage and
+highest-variance work in this factory, and nothing downstream compensates for getting it wrong,
+because `@auditor` can only run what was written.
+
+**What that implies for effort, and it is not what a gate-keeping seat would prefer to conclude:**
+across two stages, 148 verdicts and 5 refusals, the audit loop has caught zero implementation
+defects and 13 defects in instruments. The one implementation defect found in this run was found
+by a well-constructed claim, run by the seat that wrote the code. More audit cycles would not have
+found it sooner; a worse-constructed S-48 would never have found it at all.
