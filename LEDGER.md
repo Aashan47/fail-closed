@@ -469,7 +469,7 @@ for sl in OK(AV("r_anker",F,4),200)["slots"]:
     assert b["starts_at"]==sl["starts_at"],(sl["starts_at"],b["starts_at"])
 print("PASS")'`
 Passes when: prints `PASS`. Every advertised slot is bookable verbatim and echoes back the same local and absolute start.
-Status: FAILED at 9c8c115 — see verdicts/C-28.md
+Status: FAILED at 9c8c115 — see verdicts/C-28.md; superseded by C-153
 
 ---
 
@@ -676,7 +676,7 @@ for at in ["18:00","18:30","19:00","19:30","20:00","20:30","21:00","21:30","22:0
 assert len(refs)==27 and len(set(refs))==27,"duplicate reference among %r"%refs
 print("PASS",len(set(refs)))'`
 Passes when: prints `PASS 27`.
-Status: FAILED at 9c8c115 — see verdicts/C-46.md
+Status: FAILED at 9c8c115 — see verdicts/C-46.md; superseded by C-154
 
 ### C-47: A table already taken for an overlapping interval is 409 table_unavailable.
 Check: `python3 -c "$P"'
@@ -779,7 +779,7 @@ ERR(BOOK(t,F+"T19:00","k2",tid="t_nope"),404,"not_found")
 ERR(BOOK(t,F+"T19:00","k3",rid="r_ny",tid="t_2"),404,"not_found")
 print("PASS")'`
 Passes when: prints `PASS`. The third case names a table id that exists, but under a different restaurant.
-Status: FAILED at 9c8c115 — see verdicts/C-56.md
+Status: FAILED at 9c8c115 — see verdicts/C-56.md; superseded by C-155
 
 ### C-57: An unparseable request body is 400 malformed_request.
 Check: `python3 -c "$P"'
@@ -1706,7 +1706,7 @@ ERR(MOVES(ta,"m9",[{"reference":r} for r in refs]),422,"validation_failed")
 OK(MOVES(ta,"m8",[{"reference":r} for r in refs[:8]]),201)
 print("PASS")'`
 Passes when: prints `PASS`. Zero entries and nine entries are refused; eight are accepted.
-Status: FAILED at 9c8c115 — see verdicts/C-123.md
+Status: FAILED at 9c8c115 — see verdicts/C-123.md; superseded by C-156
 
 ### C-124: Duplicate references in a batch are 422 validation_failed.
 Check: `python3 -c "$P"'
