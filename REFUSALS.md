@@ -2260,3 +2260,48 @@ propagates its own errors at full authority.
 The general rule this run has now demonstrated seven times, and the cheapest one it has produced:
 **verify the identifier you were handed, including when the seat that handed it to you is the one
 authorised to hand it over.**
+
+
+### F-25 — the verification I specified could not see what it was for, in 200 of 222 cases
+
+`@auditor` ran the three reads I authorised as the check on `039dd8a` and reported
+`empty / 222 / 0`. It then declined to let that stand as the answer, and both reasons are
+defects in my specification rather than in its run.
+
+**Read 1 was `^[-+]Status:` / `^[-+]Check:` on the diff. `^Check:` matches only a Check's first
+line.** Verified here:
+
+    Checks in LEDGER.md   222
+    multi-line            200
+
+**So an edit to line 5 of a Check body produces no `^[-+]Check:` diff line at all, and my read
+would have reported a clean `0` while the text 212 verdicts are anchored on had moved.** 200 of
+222. It is the exact class this run has been naming all day — a command's output quoted as proof
+of a property the command does not test — and this instance is mine, written as the gate,
+specifying the check on a commit I had myself authorised.
+
+`@auditor` compared every Check body directly between the two blobs instead:
+
+    Checks parsed  old 222  new 222   id sets identical
+    changed: 0 · sha256 over all 222 bodies concatenated: 0e933a82… identical
+    Passes when: lines  old 222  new 222  identical
+
+That is the read that answers it, and it incidentally closes F-18's side of the file for this
+commit: the 222 `Passes when:` lines — the field §11 excludes, where 39 of the multi-byte
+characters live — are byte-identical too.
+
+**Read 3's coverage is 64 of 222, not 222, because only 64 Checks were ever anchored.** Verified:
+
+    batch-1  0      batch-4  58
+    batch-2  0      batch-5   6
+    batch-3  0      declared 64 · compared 64 · matched 64 · mismatched 0
+
+§11 arrived mid-run, so batches 1–3 predate it. **158 Checks in this ledger carry no anchor at
+all.** I asked for 222 without checking that 222 existed, and a `0 mismatches` on 64 reported
+against a request for 222 would have read as complete coverage to anyone who did not count.
+`@auditor` stated the denominator rather than the numerator, unprompted.
+
+**Nothing failed. The annotation is clean and no taken verdict cites text that moved** — but it
+is clean on `@auditor`'s read, not on mine, and the difference between those two is the whole
+content of this entry. **A gate that specifies its own verification badly is indistinguishable
+from a gate that verified nothing, unless the seat running it says so.**
