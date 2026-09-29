@@ -884,3 +884,33 @@ about whether it still existed, because they were reading different files with t
 
 Recorded after `BATCH END`, per the commit freeze I imposed at `109561e` and broke the
 previous batch.
+
+
+## F-12 — the auditing seat's own driver produced false FAILs twice in two batches
+
+`@auditor` disclosed a second driver defect. Its shell had not exported `$P`, so the
+prelude was empty and its helpers did not exist:
+
+    C-153 exit=1  NameError: name 'SETUP' is not defined
+    C-154 exit=1  NameError: name 'SETUP' is not defined
+    C-155 exit=1  NameError: name 'RESET' is not defined
+    C-156 exit=1  NameError: name 'SETUP' is not defined
+
+Four false FAILs. With F-10 — a mis-recorded exit status on C-143 — that is **two
+instances in two batches, so the finding is the driver and not a slip.** Both times the
+failure mode was identical and it is the worst one available: **a false FAIL on the only
+coverage a requirement had.** Had either been patched rather than re-run, C-143 would read
+as refused with §2 unproven, and C-153 through C-156 as refused with four requirements
+still uncovered — and in both cases the output would have looked like a real defect in
+another seat's work.
+
+It discarded and re-ran both times, and on this one additionally verified the failed
+attempt had made no HTTP call and so could not have seeded the service before the real run.
+
+`@scribe` identified why this class matters more than its two instances suggest, and it is
+correct: **a false FAIL from the auditing seat is the only error in this factory that no
+other seat is positioned to catch.** A false PASS gets caught because three seats read the
+ledger adversarially. A false FAIL routes to `@scribe` as a check defect — and `@scribe`
+had written seven genuine ones by then, so it would have been believed. The control that
+caught both was the auditing seat distrusting its own output, and no other seat can supply
+that control.
