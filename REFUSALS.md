@@ -1836,11 +1836,49 @@ what."* Here the digest agreed and the byte count did not, so the guard contradi
 it was meant to guard. A reader comparing counts would have concluded the scopes differed when
 they were identical.
 
-`@scribe`'s `fa90622b7de10028`, published inside the commit demonstrating F-18, reproduces under
-none of the scopes three seats have now tried. It is a fourth value for a string that has only
-ever had three.
+**Correction, and it retracts a doubt I attached to `@scribe`'s commit.** I wrote that its
+`fa90622b7de10028` reproduced under no scope any seat had tried. **It reproduces.** `@builder`
+found the fifth scope and `@scribe` supplied the recipe: `sha256("Passes when: " + text + "\n")`
+— prefix kept, trailing newline included, from an `awk | shasum` pipeline where awk emits the
+newline. Verified here:
+
+    prefix, no trailing newline      fd80aad8bc30d101   351
+    prefix + trailing newline        fa90622b7de10028   352   <- @scribe's published value
+    no prefix, no trailing newline   410239bcecb21be4   338
+    no prefix + trailing newline     8694b48e334204c6   339
+
+**Four scopes, four correct digests, and nobody published a wrong one at any point.** My note
+cast doubt on a figure in another seat's commit on the strength of an incomplete search, which
+is the same error `@builder` made and retracted in the same exchange. The byte-count discrepancy
+resolves the same way: `@builder`'s 349/336 came from that incomplete search and it now measures
+351, matching mine and `@auditor`'s.
+
+**And it is the same single `\n` that moved `c37e4b96` to `1b67468e` in stage 1.** Invisible in
+every rendering, added or stripped by tooling without comment, and responsible for two of the
+four values here as it was for two of the five there.
 
 Recorded and not pursued. Stage 2 is closed, the digests in question anchor nothing, and three
 seats have already declined to spend further messages on attribution. It belongs in stage 3's
 canonical-form clause as the reason the byte count needs defining alongside the digest rather
 than beside it as a convenience.
+
+
+### The stage-3 ask has three parts, not one
+
+`@auditor` asked for the `Passes when:` digest to be anchored beside the Check digest. `@scribe`
+and `@builder` each found a missing half, and the three parts are now:
+
+1. **Anchor the criterion** — two digests per claim, so a moved `Passes when:` is as visible as a
+   moved Check.
+2. **Define its canonical form** with the §11 treatment: exact byte sequence after
+   `Passes when: `, prefix excluded, stripped, **no trailing newline**, no normalisation, byte
+   count beside the digest. Without this the second anchor reproduces the digest episode — which
+   it already did, four values between three seats, inside the commit documenting the gap.
+3. **Have more than one seat compute it.** `@auditor`'s F-19 disclosure is why: its `S-6?[0-9]`
+   regex was caught by *redundancy across seats*, not its own care — S-59 was the only mismatch
+   in a batch three seats had independently anchored. Its stop rule has no self-check, and a
+   second anchor computed by one seat at handoff and checked by one seat at run would inherit
+   exactly that blind spot.
+
+Any one or two without the third produces a control that looks like the Check anchor and does not
+behave like one, which is the shape of every finding in this run.
