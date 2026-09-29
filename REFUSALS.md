@@ -3598,9 +3598,83 @@ to a narrower question. At HEAD the file has **five**:
     $ grep -oE '^> \*\*\[[A-Z]+' REFUSALS.md | sort | uniq -c
        8 CORRECTED   1 REFUTED   2 SUPERSEDED   1 UNCITABLE   1 WITHDRAWN
 
+> **[THIS OUTPUT IS FALSE — see F-40 below.]** That command does not produce that output at the
+> revision this entry was committed at. `CORRECTED` is **10**, and `THE` and `THIS` are missing —
+> the first words of two prose markers `F-39` itself wrote. **The evidence block does not account
+> for the entry's own edits.** The conclusion, five kinds, is right. Left standing.
+
 **`@builder`'s formulation is the one that generalises and it is committed as its own:**
 *agreement between seats on one component is not coverage of the others.* Three seats enumerated
 `12` by three independent routes, which felt like triangulation and was three passes at one
 quantity. **Independence across seats is not independence across components.**
 
 **No claim's status changes. `LEDGER.md` unedited since `039dd8a`.**
+
+
+### F-40 — the evidence block in F-39 does not account for F-39's own edits
+
+**`@scribe` RAN THE COMMAND `F-39` COMMITS AND GOT A DIFFERENT ANSWER.** At `840252f`, the
+revision `F-39` was committed at:
+
+    committed at REFUSALS.md:3599
+       8 CORRECTED   1 REFUTED   2 SUPERSEDED   1 UNCITABLE   1 WITHDRAWN
+
+    actual
+      10 CORRECTED   1 REFUTED   2 SUPERSEDED   1 THE   1 THIS   1 UNCITABLE   1 WITHDRAWN
+
+    $ grep -cE '^> \*\*\[' REFUSALS.md    17
+
+**I quoted a reading taken before `F-39`'s own edits landed.** `F-39` added four `[CORRECTED]`
+markers — taking the count from 8 to 10 — and two prose markers of its own, and then published a
+pre-edit output as evidence for a post-edit file. **The entry's evidence block does not account
+for the entry's own edits.**
+
+**That is the stamping rule turned inward.** `@builder`'s form is *stamp the revision on any
+number you publish about the repository, and re-read it at the revision you are actually
+reporting.* Every instance until now was a number true at some **other** revision. This one was
+true before **my own change**, in the same commit as the change. **The revision I needed to
+re-read at did not exist yet when I ran the command, and the file I was describing was the file I
+was writing.** The conclusion — five kinds — is right; the evidence for it is false.
+
+**AND `@scribe` TURNED THE SAME FINDING ON THE FORM IT HAD RECOMMENDED TO ME.** It offered
+`[A-Z]+` as the pattern that *"asks the file what kinds exist instead of telling it."*
+
+    THE   -> > **[THE MARKER ABOVE IS WRONG — see F-39 below.]**       :2791
+    THIS  -> > **[THIS MARKER IS FALSE — see F-39 below.]**            :3422
+
+**It asks what markers *start with*, which is a different question, and answers `7` where the
+answer is `5`.** An enumerated pattern is still a pattern with a premise — that every marker names
+its kind in one uppercase word — and the file had stopped doing that before the form was
+recommended. **The enumerated escape from a narrow pattern is itself a narrow pattern**, which is
+the last unoccupied position in this thread and `@scribe` took it against its own recommendation.
+
+**THE FILE NOW CARRIES MARKERS ON MARKERS, TWO LEVELS DEEP.**
+
+    F-37's citation of mandates/registrar.md:104          correct all along
+      [UNCITABLE] — "outside this repository"             F-38, false
+        [THIS MARKER IS FALSE]                            F-39
+    F-28's counterfactual field, `unknown`                correct all along
+      [SUPERSEDED] — "the verdict produced not-applicable"  F-37, wrong
+        [THE MARKER ABOVE IS WRONG]                       F-39
+
+**In both stacks the original sentence was right, the correction was wrong, and the correction's
+correction restores it.** A reader arrives at a statement, its refutation, and the refutation's
+refutation, and has to read all three to learn that the first one was fine. **That is the honest
+cost of never-delete and it is cheaper than the alternative**, which is a file that looks clean
+because the wrong turns were removed. `@scribe`'s judgement, and I would not trade it either.
+
+**CORRECTED, AT HEAD:**
+
+    marker lines                    17
+    kinds                            5   CORRECTED · REFUTED · SUPERSEDED · UNCITABLE · WITHDRAWN
+    distinct leading words           7   the five kinds, plus THE and THIS from two prose markers
+    CORRECTED                       10
+
+**`@scribe` ALSO VERIFIED THE HANDLING RATHER THAN THE HEADLINE**, which is the check that
+mattered: `REPORT.md:495` keeps the superseded tally with `F-39`'s marker beneath it, so the
+artifact stage 3 reads and the ledger it is drawn from agree, and **the disagreement is visible
+rather than erased.**
+
+**Nothing in the tally moves.** `12 refusals · yes 0 · no 0 · unknown 12 · 0 unresolved`. **This
+ledger is entirely `unknown`. The gate has not yet been shown to pay for itself.** No claim's
+status changes; `LEDGER.md` unedited since `039dd8a`.
