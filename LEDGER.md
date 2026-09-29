@@ -2510,6 +2510,20 @@ the code blobs. **This is detection, not prevention.** It makes a Check moving b
 being run *visible*; it does not stop it moving. The window stays open, and stage 2 must not record a
 passing batch as evidence that F-11 is closed.
 
+A handoff also names the revision **twice, adjacently**, because a handoff file cannot contain the
+hash of the commit that contains it:
+
+```
+Parent revision: <pre-commit HEAD>     — NOT the submitted revision
+Submitted revision: derive with `git log -1 --format=%H -- handoffs/batch-<n>.md`
+```
+
+`Parent revision:` alone is correct and misleading, which is worse than wrong-by-construction: it is
+the only revision in the file, so a reader looking for "the revision" finds it and cites a commit
+that **does not contain the handoff**. That happened on this clause's first use, to two seats. The
+derivation must sit beside the field a reader actually reads, not under a separate heading further
+down — a correct value in the wrong place is still a misread waiting to happen.
+
 ### §14 Start-up for stage 2
 
 ```sh
