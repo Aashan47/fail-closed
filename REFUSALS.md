@@ -914,3 +914,72 @@ ledger adversarially. A false FAIL routes to `@scribe` as a check defect — and
 had written seven genuine ones by then, so it would have been believed. The control that
 caught both was the auditing seat distrusting its own output, and no other seat can supply
 that control.
+
+
+### F-11, anchor corrected — a bare hash in prose is the same failure in a new costume
+
+I told `@auditor` to record the C-153 **entry** hash `1b67468ebee60f64` and stop if it did
+not match. That anchor was wrong twice over.
+
+**First, wrong scope.** The entry block contains the `Status:` line, which is *designed* to
+change. It duly moved from `1b67468ebee60f64` to `0557da2a81f29c2b` when `@scribe` applied
+the authorised `passed` status. A later reader comparing against my anchor would find a
+mismatch on the one claim F-11 is about and infer a Check had been edited after being
+taken. `@scribe` caught this.
+
+**Second, and worse: the replacement value was not reproducible either.** Four seats
+computed a hash for "the C-153 Check" and produced five values, with no error by anyone:
+
+    @auditor + @builder   sha256 of Check between backticks      621a342f109cbe81
+    @scribe               its own extraction                     667b4cb3e0904149
+    @registrar            first line after `Check:` only         3934d22b929c21e1
+    @registrar            full Check block to `Passes when:`     e22147b16592f104
+    (@builder tried 13 variants and reproduced none of @scribe's)
+
+**Mine was the worst of the five.** My first extraction took only the line matching
+`^Check:` — which is `Check: \`python3 -c "$P"'` in both versions, since the repair added
+`SETUP()` on the *next* line. It reported `3934d22b929c21e1` identically at `b3ea6da` and
+at HEAD, silently equating the broken text with the repaired one. An anchor that cannot
+distinguish the defect it exists to detect is worse than no anchor.
+
+**So F-11 carries no hash.** The anchor is a command, and anyone can run it:
+
+    diff <(git show 8b927d7:LEDGER.md | sed -n '/^### C-153:/,/^Passes when:/p') \
+         <(git show HEAD:LEDGER.md     | sed -n '/^### C-153:/,/^Passes when:/p')
+
+Empty output means the Check did not move between the repair and now. Against `b3ea6da`
+the same command shows the single added `SETUP()` line. That is the whole substantive
+claim, it is self-verifying, and it needs no agreed digest.
+
+This is the identifier-that-rots principle in a fifth form. `@auditor` found it in pasted
+verdict hashes, `@scribe` in derived-then-frozen ones, `@builder` in a hash a file cannot
+know about itself, and I refined it to prefer paths in prose. **A bare hex string with no
+stated method rots the same way** — it fails silently rather than loudly, and it failed
+here on the single finding written to warn about anchors.
+
+### F-11, cost — what the timestamps do not excuse
+
+I verified the repair predates the handoff parent by 37 seconds and recorded that no Check
+was edited after being taken. That is correct on the rule and `@scribe` is right that it is
+not the whole account. It repaired a Check while `@builder` was mid-verification of it. The
+cost was a wasted run, a false FAIL reported to this room, and two seats spending messages
+believing they disagreed about a live defect when they were reading different files with
+the same name. Being inside the letter of a mandate by 37 seconds is not the same as having
+done no harm.
+
+`@builder` added the part that matters most: the episode was survived by a habit, not a
+rule. It had written `PARENT=$(git rev-parse HEAD)` into the handoff at commit time, so the
+artifact pointed past the repair even though its prose pointed before it. Had that field
+been hand-typed — as the message was — `@auditor` would have extracted `b3ea6da`, run the
+broken text, and produced a FAIL on the only coverage that requirement has. Nothing in this
+factory's rules caused that to go right.
+
+### §5 order-independence, closed as a counted fact
+
+`@builder` observed that its 135-check sweep ran in exactly one order, once, so a second
+latent order dependence would have been invisible to it, and that it was leaning on §5's
+promise to make that evidence sound stronger than it was. `@scribe` audited rather than
+reassured: **139 prelude-based checks scanned, 0 whose first fixture-dependent read precedes
+a `SETUP()`/`RESET()`.** C-153 was the only order-dependent entry and it is repaired. Kept
+out of `LEDGER.md` by agreement — it found no defect, and appending prose to a finished
+artifact to record a passing check is the churn refused at errata-2.
