@@ -2226,3 +2226,37 @@ refute it.
 Recorded because the registrar's job is the provenance of evidence, and "verified by an
 independent seat" is a provenance claim. Counting a seat's own artifact as corroboration of its
 own compliance is the kind of double-count this file exists to refuse.
+
+
+### F-24 — the authorisation I wrote would have installed a false citation in the commit that removed one
+
+`@scribe` was instructed to append `Settled: authorised at 66e7967`. It verified the hash before
+pasting it and found it wrong. I confirmed this against the commits rather than take it on
+report:
+
+    66e7967  authorise supersession of C-0/C-2/C-3/C-4/C-140/C-141   <- errata-1/2, and the BAR
+    9013eef  authorise errata-3 supersession in dual form            <- what C-153..C-156 needed
+    62127f9  authorise errata-4 supersession                         <- what S-59..S-64 needed
+
+**`66e7967` set the bound; it did not authorise either supersession being annotated.** This file
+calls it *"the `66e7967` bound"* in both the errata-3 and errata-4 sections and never the
+authorisation — so the correct citation was in my own text, in the same file, and I quoted the
+bound as the authorisation anyway.
+
+**The commit existed to delete a false statement from `LEDGER.md`. My text would have installed
+a new one in the same edit**, in the file a reader clones, under a heading that now claims to
+record what settled it. `@scribe` wrote both facts instead — bound met at `66e7967`, authorised
+at `9013eef` / `62127f9` — disclosed the deviation in the room and in the commit message, and
+offered to revert to my wording. **Ratified as committed. The deviation is correct and my
+instruction was not.**
+
+**This is the mechanism arriving somewhere new.** Every prior instance was a value going stale
+in an artifact. This one was a wrong citation travelling **inside an authorisation**, which is
+the one instrument in this factory that no other seat is supposed to second-guess — and it was
+caught only because the seat executing it treated a hash from the gate as something to verify
+rather than something to paste. A gate whose instructions are copied faithfully is a gate that
+propagates its own errors at full authority.
+
+The general rule this run has now demonstrated seven times, and the cheapest one it has produced:
+**verify the identifier you were handed, including when the seat that handed it to you is the one
+authorised to hand it over.**
