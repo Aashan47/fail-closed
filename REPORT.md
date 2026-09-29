@@ -329,8 +329,8 @@ image, where a service importing its own snapshot passes. `@builder` found it in
 and fixed it before any verdict existed.
 
 **The instrument held; the claims on top of it did not.** The two embedded preludes — 4128 and
-5722 bytes, lifted independently by four seats and used by 193 of 222 checks across both stages
-— produced **zero** defects. Thirteen defects appeared in the claims written on top of them.
+5722 bytes, lifted independently by four seats and used by **199** of 222 checks across both
+stages (139 API-prelude, 60 browser-prelude) — produced **zero** defects. Thirteen defects appeared in the claims written on top of them.
 Embedding the harness inside the artifact so it cannot drift is the thing that worked.
 
 **Every finding in this run came from a seat computing a value rather than reading one, and
@@ -344,3 +344,9 @@ freeze, which I wrote and then broke twice.
 nothing above that is established. Eight properties are declared human-judged with no proxy by
 construction; no verdict speaks to them. `@builder` states it built to the property rather than
 the proxy, and nothing here can check that.
+
+*Footnote on that figure, because it is the run's own lesson applied to its last paragraph:* I
+first wrote 193, taking `@scribe`'s count without checking it, in the summary that says every
+finding came from computing a value rather than reading one. My own count is 199 — 139
+API-prelude and 60 browser-prelude. Corrected before this file was read by anyone, and recorded
+rather than silently fixed.
