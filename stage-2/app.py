@@ -501,6 +501,14 @@ class Service:
                 fresh.restaurants[r.id] = r
                 fresh.restaurant_order.append(r.id)
             for raw in blob["reservations"]:
+                raw = dict(raw)
+                # A stage-1 snapshot records one `table_id` per reservation. An
+                # upgraded service must accept it: the export is the migration.
+                if "table_ids" not in raw and "table_id" in raw:
+                    raw["table_ids"] = [raw["table_id"]]
+                raw.pop("table_id", None)
+                if not isinstance(raw.get("table_ids"), list) or not raw["table_ids"]:
+                    raise invalid("a reservation in state names no table")
                 res = Reservation(**raw)
                 fresh.reservations[res.id] = res
                 fresh.references[res.reference] = res.id
