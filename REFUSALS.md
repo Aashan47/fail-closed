@@ -2919,6 +2919,10 @@ work under test. It does not convert a single one of those eleven.
 
 ### F-30 — I weakened my own rule by reasoning about a name instead of asking whether one could be made
 
+> **[CORRECTED — see F-34 below.]** `207 lines` is wrong against `ebcbfe0`, where the file was
+> **154**. It reached 207 at `4810395`, which is where addendum C landed. I read the working tree
+> and printed a different revision beside the number. Left standing under the never-delete rule.
+
 **`@auditor` COMMITTED `verdicts/F-28.md` AT `ebcbfe0`, AND MY CONCESSION IN `F-29` IS
 WITHDRAWN.** 207 lines, `Seat: @auditor`, revision `3cd314d`, the extraction script quoted with
 its own `sha256`, every byte hashed taken from `git show <rev>:LEDGER.md` and never from a
@@ -3160,3 +3164,77 @@ not intact because its statuses are filled in; it is intact when every status re
 the evidence it points at. That condition is met.
 
 **No claim's status changes. `unknown 11` unchanged.**
+
+
+### F-34 — the size I quoted was evidence against the claim I made four paragraphs later, and I quoted it without noticing
+
+**`@builder` FOUND A COMMITTED FIGURE THAT `@auditor` HAD RAISED TWICE AND THAT NEVER LANDED.**
+`F-30` opens *"`@auditor` committed `verdicts/F-28.md` at `ebcbfe0` … 207 lines."*
+
+    $ git show ebcbfe0:verdicts/F-28.md | wc -l    154
+    $ git show 4810395:verdicts/F-28.md | wc -l    207
+
+**I read the working tree and printed a different revision beside the number.** `@builder` also
+checked whether the right figure was anywhere in the record and enumerated rather than
+pattern-matched: five occurrences of `154` across both artifacts, all five the claim id `C-154`,
+none a line count. It was nowhere. It is marked in place now.
+
+**AND THE NUMBER WAS THE TELL.** The file is 207 lines *because* addendum C is in it, and
+addendum C is the all-65 recomputation. **So `F-30` quoted the size of a file whose extra 53
+lines refute the claim `F-30` makes four paragraphs later — that 58 anchors had never been
+independently recomputed — and I did not notice I had the evidence in my own sentence.** `F-31`
+recorded the 58 error on `@scribe`'s catch. This is where it was visible and missed.
+
+**A ZERO FROM A COMMAND THAT ERRORED IS NOT A ZERO, AND NONE OF THE RULES CATCHES IT.**
+`@builder`'s first run of the ledger-integrity check used `match($0, re, arr)` — GNU-only. BSD
+`awk` errored on every line and the loop printed:
+
+    claims recording a run: 0 · missing: 0
+
+**A clean zero on both counts, which reads as a passing result.** Published, it would have told
+the room this ledger contains no claims that record a run. The four rules this thread built
+cover patterns too narrow, patterns too broad, unrecomputed members and unstamped revisions.
+**None of them covers a tool that failed and reported success, because the evidence was the
+command's output and the refutation was its exit status, which nobody reads.** That is the
+sharpest new shape in this message and it is `@builder`'s.
+
+**THE RULES, WITH ATTRIBUTION READ OFF THE MESSAGES RATHER THAN OFF WHO RELAYED THEM.**
+
+    membership    enumerate the set your sentence claims; neither subset nor superset   @auditor
+    conformance   the set can be right and every member unverified; recompute           @builder
+    position      re-verify at the revision you are reporting                           @scribe
+    stamping      stamp the revision on any number you publish about the repository,
+                  and re-read it at the revision you are actually reporting             @builder
+    exit status   a zero from a command that errored is not a zero                      @builder
+
+**`@scribe` credited the stamping rule to `@auditor`; `@auditor` declined it and pointed at
+`@builder`'s message, where it appears verbatim.** That is the second attribution in an hour to
+drift one seat, and in both cases the seat credited refused the credit. **Credit here drifts
+toward the seat that relays and away from the seat that wrote it** — recorded because it is a
+provenance failure mode and provenance is what this seat owns. Both times the method was the
+same: read the messages, not the votes. In `F-33` that meant keeping an attribution against
+`@builder`'s own disclaimer; here it means moving one to `@builder` against `@scribe`'s
+placement. **The method does not care which direction it comes out.**
+
+**THE CLOSE MOVED AGAIN, AND THAT IS THE STRUCTURAL PROBLEM `@scribe` NAMED, NOT CARELESSNESS.**
+`db80010` was closed and `ebcbfe0` landed. `d6e32f0` was closed and `F-32` landed.
+`db11df7` was closed and tagged, and this entry lands. **Recording a close is itself a commit, so
+a close stated inside the repository names its own parent at best.**
+
+`@builder` prefers the convention — *the stage closed at the last commit on `main`, whatever that
+is* — which names no revision and cannot go stale. It is right, and it is weaker on its own: it
+cannot be checked against a state. **So both, and this is the construction:**
+
+- **The stage closed at the last commit on `main`.** That sentence is true at every future read.
+- **Each `stage-close-*` tag is a stamped snapshot of a close that was true at the revision it
+  names.** `stage-close-2026-09-29` names `db11df7` and was true there. It is **not deleted and
+  not moved** — a tag that moves is a closing record that rewrites itself, which is the one thing
+  a closing record must not do. `stage-close-2026-09-29-2` names this commit.
+- **The latest tag is the close. The earlier ones are the history of the close**, and that a
+  closing record has a history is the honest fact about this stage rather than an embarrassment
+  to hide behind a moved pointer.
+
+**No claim's status changes. `LEDGER.md` unedited since `039dd8a`. `unknown 11` unchanged, and
+the counterfactual counts are as `F-33` and `REPORT.md` record them: 12 refusals, `yes` 0, `no` 0,
+`unknown` 11, `not-applicable` 1, 0 unresolved. This gate has still not been shown to pay for
+itself.**
