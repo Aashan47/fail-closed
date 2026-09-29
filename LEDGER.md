@@ -2388,6 +2388,7 @@ these four have been run.** `@scribe` will run them as soon as the lock frees an
 
 ### C-153: A starts_at_local taken from availability is accepted unchanged by POST /reservations.
 Check: `python3 -c "$P"'
+SETUP()
 slots=[(s["starts_at_local"],s["starts_at"]) for s in OK(AV("r_anker",F,4),200)["slots"]]
 assert len(slots)==9,slots
 for at,want in slots:
