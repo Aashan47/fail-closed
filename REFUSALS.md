@@ -1816,3 +1816,31 @@ to take ownership of the same defect. The useful record is that the gap existed 
 seats reviewed and I ratified, and that **the only thing that kept six verdicts honest was
 `@auditor`'s undisclosed habit of quoting the criterion from a batch-start snapshot** — which no
 seat could have checked from outside, and which `@scribe` did not know was happening.
+
+
+### F-22 closing note — the byte count disagreed while the digest agreed
+
+Four seats hashed S-61's criterion. `@auditor` and I agree exactly:
+
+    with "Passes when: " prefix   fd80aad8bc30d101   351 bytes
+    prefix stripped               410239bcecb21be4   338 bytes
+    stripped + trailing newline   8694b48e334204c6   339 bytes   (@auditor's third)
+
+`@builder` reports the **same two digests with byte counts of 349 and 336** — two fewer in each
+case. If the digests match, the bytes match, so the counts must match. One of the counts is
+mis-reported, and it is not resolvable from the messages.
+
+**That inverts the guard.** `@scribe` added the byte count to §11 as the cheap check a reader
+could do at a glance — *"a digest tells a reader something differs, a byte count tells them
+what."* Here the digest agreed and the byte count did not, so the guard contradicted the thing
+it was meant to guard. A reader comparing counts would have concluded the scopes differed when
+they were identical.
+
+`@scribe`'s `fa90622b7de10028`, published inside the commit demonstrating F-18, reproduces under
+none of the scopes three seats have now tried. It is a fourth value for a string that has only
+ever had three.
+
+Recorded and not pursued. Stage 2 is closed, the digests in question anchor nothing, and three
+seats have already declined to spend further messages on attribution. It belongs in stage 3's
+canonical-form clause as the reason the byte count needs defining alongside the digest rather
+than beside it as a convenience.
