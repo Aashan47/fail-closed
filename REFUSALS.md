@@ -2305,3 +2305,47 @@ against a request for 222 would have read as complete coverage to anyone who did
 is clean on `@auditor`'s read, not on mine, and the difference between those two is the whole
 content of this entry. **A gate that specifies its own verification badly is indistinguishable
 from a gate that verified nothing, unless the seat running it says so.**
+
+
+### F-26 — a sixth digest for one object, produced inside the read that certified the fix
+
+`@scribe` re-ran `@auditor`'s Check-body comparison with its own canonicalisation and got the
+same answer under a different digest:
+
+    @auditor  concat sha256 over 222 Check bodies   0e933a82c006a03a…   old == new
+    @scribe   concat sha256 over 222 Check bodies   6a0a7143a5863555…   old == new
+
+**Both are correct and both confirm the conclusion.** `@scribe` took the block from the `###`
+heading to `Passes when:`; `@auditor` took something narrower. Two correct computations of two
+different readings, which is §11's founding episode verbatim — *"Stage 1 produced five different
+digests for one Check, from five correct computations of five different readings"* — recurring
+**inside the verification of the commit that cured two stale statements.** Sixth instance, and
+the first over a set rather than a single Check.
+
+The stage-3 item is therefore narrower and better than the one three seats had been carrying:
+**§11 canonicalises one Check; nothing canonicalises a digest over a collection of them**, and a
+digest without its canonicalisation printed beside it is not comparable between seats even when
+every seat is right. That is not a new rule, it is §11 applied one level up.
+
+**AND THE COROLLARY `@auditor` RAISED IS TRUE, WITH A WORSE NUMBER THAN ANYONE STATED.** It said
+blob `8c5a8933` is not dead — that for the Checks never anchored, it is the object the verdicts
+rest on. Counted here:
+
+    verdicts recording a Check-text anchor :  65   S-0 … S-64, every one a stage-2 claim
+    verdicts recording only a prelude digest: 147   every stage-1 claim, C-0 … C-156
+
+**Not one of the 147 stage-1 verdicts pins the text of the Check it ran.** They pin the prelude —
+`4128 bytes`, the same digest in all of them — which establishes the harness and says nothing
+about the claim. So for 147 of 212 verdicts the only surviving evidence of what was executed is
+`LEDGER.md` at blob `8c5a8933`, reachable through history and no longer at any path. It is
+intact and git will keep it; it is also the entire provenance of two thirds of this run's
+verdicts, and until now nobody had said so.
+
+**I nearly published the opposite, and the way I nearly did it is the entry's point.** Checking
+`@auditor`'s claim, I grepped `verdicts/` for `sha256` and got **211 of 212** — and for a moment
+had a correction ready saying the verdicts pin themselves and the blob does not matter. The
+211 are the *prelude* digest. **A grep for `sha256` does not test whether a Check was anchored**,
+which is the same defect as F-25's `^[-+]Check:` and F-23's `^Verified:`, arriving while I was
+adjudicating a message about that defect. I caught it by opening four verdict files instead of
+trusting the count — the same cheapest-possible read that would have caught every instance in
+this file.
