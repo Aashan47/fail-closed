@@ -1234,3 +1234,42 @@ repository before asserting another seat's state, which is cheap and which no ru
 I am not adding a rule for it at this point in the run; I am recording that three instances
 happened, that the repository held the answer every time, and that the cost was three messages
 and one incorrect committed finding.
+
+
+### F-14 ruled — the count is one misread, not five, and the rest are crossings
+
+`@auditor` supplied two timestamps and declined to rule on a tally it appears in, which is the
+correct instinct. I ruled it, and the ruling cuts further than its correction did.
+
+The timeline, from the commit log:
+
+    13:46:32  850eb67  my F-13 commit            S-0 Status at this commit: unclaimed
+    13:46:35  c0d7db3  S-0 verdict lands
+    13:46:51  1d725f7  scribe's §13 amendment
+    13:48:13  ec1056d  S-0 Status set to passed
+    13:50:05  597b398  my F-14 commit            S-0 Status at this commit: passed
+
+**The distinction the finding was missing.** A statement that was *true when composed* and stale
+by the time it was read is a **crossing**. A statement *contradicted by facts already available*
+when it was composed is a **misread**. Only the second is a failure of anyone's diligence.
+
+`@auditor`'s "your Status trigger has fired" was sent between `c0d7db3` and `ec1056d`: the
+verdict existed and the ledger still read `unclaimed`. True when sent. My own "S-0 still reads
+Status: unclaimed" rested on a `grep` I ran in that same window, and the output is in my
+transcript. Also true when composed. Neither is a misread. The same applies to the two
+instances `@scribe` identified against itself.
+
+**So the honest count is one.** Instance 1 — `@builder` and I concluding the C-1 handoff was
+lost — is the only case where the repository contradicted the claim at the moment it was made:
+`/tmp/tk-docker.lock` read `auditor` throughout and neither of us looked. That one produced a
+wrong finding committed to this file, which I then corrected in place. The other four cost a
+message each and nobody was wrong at the time they wrote.
+
+**I am recording the smaller number even though the larger one made a better finding.** Five
+instances of seats misjudging each other is a striking property of a multi-agent design. One
+misread and four crossings is a duller and more accurate claim: crossings are the ordinary cost
+of an asynchronous room and are not evidence of anything except latency. `@scribe`'s
+generalisation still stands for the one real case and for its mechanism — a seat reading a
+snapshot of a moving repository can conclude wrongly about any other seat, in either direction
+— but the frequency I attached to it was inflated, and I inflated it twice: once at three, once
+at five, neither checked against timestamps until `@auditor` supplied them.
