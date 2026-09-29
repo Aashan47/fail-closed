@@ -2640,6 +2640,14 @@ author**, and a container id inside an `## Output` block is the most innocent th
       of those, declared-vs-computed not prose        :   1   S-0 only
     verdicts citing committed handoffs/               : 209
 
+> **[CORRECTED — see F-28 below.]** *"verdicts containing a Check digest : 4"* is **10**.
+> `S-59`…`S-64` anchor their Checks with a 16-hex truncation, a byte count and `MATCH`, and
+> contain no 64-hex string at all. My enumeration was exhaustive over `[0-9a-f]{64}`; the
+> sentence I hung on it claimed the wider set. **A subset error, in the table inside the entry
+> about subset errors.** The `7` and the three Docker ids are also mislabelled: two of the three
+> are *network* ids. Left standing under the never-delete rule, marked here so it cannot be
+> quoted alone.
+
 `S-0` was dropped from `@auditor`'s union by one space character: it writes the heading
 `Check anchor (§11 / §13)` where the other six write `(§11/§13)`. **The left end of the range is
 the best-anchored file in the tree** -- declared and computed side by side, 1050 bytes, MATCH --
@@ -2668,3 +2676,99 @@ and stage 3 inherits it as an open question and not as a number.**
 reopens.** Read of committed files only at `6e1c123`, tree clean, nothing run. The `verdicts`
 tree is byte-identical at `6e1c123` and `77d5558` (`059509f20ac8f08cffc68c4162efb0593384f474`),
 so none of this depends on where HEAD settles.
+
+
+### F-28 — the table in F-27 is wrong by six, by the pattern F-27 is about, one commit later
+
+I committed `F-27` at `ad0de05` and `@auditor` falsified its central line before the commit was
+an hour old. **It is the ninth instance and it is mine, inside the entry recording the seventh.**
+
+**WHAT I GOT WRONG.** I enumerated every occurrence of `[0-9a-f]{64}` in `verdicts/`, opened all
+ten, classified each, and was right about all ten. Then I wrote the row
+*"verdicts containing a Check digest : 4."* **The enumeration was sound and the sentence over it
+was not.** Six more verdicts anchor their Check with a truncated digest that no 64-hex pattern can
+see. Verified here by reading, not by hashing:
+
+    $ grep -h 'Check anchor (§11/§13): declared sha256' verdicts/S-*.md
+    declared sha256 5cd493d4f11ad866… bytes  998; computed identical. MATCH.   S-59
+    declared sha256 6bc38a58d7a9492a… bytes 2275; computed identical. MATCH.   S-60
+    declared sha256 eb0ce09a194411e5… bytes  879; computed identical. MATCH.   S-61
+    declared sha256 10f3ee43a299c58c… bytes 1271; computed identical. MATCH.   S-62
+    declared sha256 7925512ebdb4a80d… bytes 1234; computed identical. MATCH.   S-63
+    declared sha256 685cd7dfca3d1bd4… bytes 2399; computed identical. MATCH.   S-64
+
+    $ for f in S-59..S-64; do grep -cE '[0-9a-f]{64}' $f; done   ->  0 0 0 0 0 0
+
+Declared, computed, byte count, MATCH, per Check, per §11. **Invisible to the pattern, and they
+are the second-best-anchored files in the tree after `S-0`.**
+
+**ONE PATTERN, BOTH FAILURE DIRECTIONS, SIMULTANEOUSLY.** `[0-9a-f]{64}` was too broad — it
+caught four Docker ids — *and* too narrow — it missed six truncated digests. Every earlier
+instance failed in one direction. `@auditor`'s formulation supersedes the clause `@scribe` and I
+added, and it is the compact form of the whole thread: **enumerate the set your sentence claims,
+then show the pattern is neither a subset nor a superset of it.** The clause about digest-shaped
+strings is a special case of that and not an addition to it.
+
+**AND THE DOCKER LABELS WERE WRONG TOO.** `@builder` checked what printed each id rather than
+what it looked like. Two are **network** ids: `C-143` and `S-1` run
+`docker network create --internal <name> &&` unredirected while their `docker build -q` and
+`docker run -d` are both `>/dev/null`, so the network id is the only id that reaches `## Output`.
+`C-1:63` and `S-2:64` follow an echoed `+ docker run -d` and are container ids. Four Docker ids:
+two network, two container.
+
+**A METHOD CLAIM IS NOT AN ANCHOR, AND 144 VERDICTS MAKE ONE.** Also `@auditor`'s, verified here:
+
+    $ grep -l 'Extracted programmatically' verdicts/C-*.md | wc -l        146
+      of those carrying any digest                                          2    C-1, C-142
+      C-143 matches only through the network id in its ## Output            1
+      asserting the method with no digest and no byte count               144
+
+    verdicts/C-50.md:19   Extracted programmatically from the committed LEDGER.md rather than retyped.
+
+**144 verdicts assert byte-exactness and record nothing a reader can check it against.** That is
+larger than everything else in this thread put together, and no pattern anybody ran would have
+surfaced it, because the defect is the *absence* of a string.
+
+**THE ROW, CORRECTED, WITH THE SET EACH NUMBER COUNTS:**
+
+    verdicts recording a Check anchor, any phrasing   :  65   58 + 6 + S-0, the three disjoint
+    verdicts pinning their Check with a digest of it  :  10   see below -- NOT 4
+      with a full 64-hex sha256                       :   4   C-0, C-1, C-142, S-0
+      with a 16-hex truncation + byte count           :   6   S-59 .. S-64
+      of the 10, stage-1 C-                           :   3   C-0, C-1, C-142
+      of the 10, declared-vs-computed not prose       :   7   S-0, S-59 .. S-64
+    verdicts containing any 64-hex string             :   7   4 digests + 4 docker ids, C-1 both
+      Docker ids among them                           :   4   C-143, S-1 network; C-1, S-2 container
+    C- verdicts asserting the method with no digest   : 144   a method claim, not an anchor
+    verdicts citing committed handoffs/               : 209
+
+### F-28 REFUSAL — `@builder` reports three of the four full digests do not reproduce, and I am not recording it
+
+Case: **no verdict.**
+Revision: `ad0de05` (claim concerns `verdicts/` unchanged since `6e1c123` and earlier).
+
+`@builder` recomputed the four full-`sha256` anchors from `LEDGER.md` and reports that `C-0`,
+`C-1` and `C-142` each publish a digest over the Check body **plus a trailing newline** while
+printing the §11-exact body length beside it, so the count and the digest describe different byte
+sequences; and that `S-0` alone reproduces, at 1050 bytes. It identifies the mechanism in the one
+file that shows its working — `verdicts/C-0.md:16-19` reports `extracted bytes: 684`, then
+`shasum -a 256 C-0-check.sh`, and writing the body to a file added the newline.
+
+**The evidence is hashing, and it was produced by the seat whose own run is its subject.**
+`@builder` said so itself and asked that nothing permanent rest on it. That is the correct call
+and I am enforcing it rather than accepting the courtesy: **I do not run the check either.** A
+gate that can manufacture the evidence that opens it is not a gate. `@auditor` has been dispatched
+to reproduce it independently — four extractions and eight hashes.
+
+Evidence: the room message quotes a full table of recomputed digests. **No verdict file exists for
+it.** Until one does, the claim is unrecorded, not disbelieved.
+
+Would it have failed the graded suite: **unknown.** This is a provenance question about evidence
+inside verdicts, not a defect in the work under test, and no graded suite covers verdict-internal
+digest conformance. Recording it as `unknown` for that reason and not for lack of trying.
+
+Resolved: no.
+
+**No claim's status changes on any of this, and `@builder` does not argue one should.** `C-0` is
+FAILED and superseded; `C-1` and `C-142` gate on the service building and serving `/health`, which
+their `## Output` blocks record. `unknown 11` is untouched.
