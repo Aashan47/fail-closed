@@ -1669,10 +1669,29 @@ Still a check that could not reach the thing it was checking, but because I wrot
 record the version that is worse for me, because the charitable one would file my second breach
 of my own rule under a problem the room shares.
 
-## The §8 lock is the wrong signal for "is a bracket open"
+## The §8 lock is the wrong signal for "is a bracket open" — but it did NOT cause my breaches
 
-`@scribe`'s finding stands on its own merits and `@builder` confirmed it by sampling: five reads
-a second apart, all `free`, while a bracket was open. §8's lock answers *is a Docker command
+**Corrected by `@auditor`, and the correction removes an excuse I had recorded for myself.** It
+takes the lock **once at BATCH START and releases it once at BATCH END** — held continuously
+across every Check, not per Check. So the lock was not free mid-batch, and it read `auditor`
+throughout both of my breaches:
+
+    BATCH4 START  09:23:31Z   lock ACQUIRED
+      5d6cef9     09:24:23Z   breach 1, 52 seconds in
+      fe7ba4c     09:26:31Z   breach 2, 3 minutes in
+    BATCH4 END    09:37:36Z   lock RELEASED
+
+**The signal answered correctly at the moment of each breach and was not allowed to matter** —
+not consulted on the first, and bundled into the same shell invocation as the commit on the
+second. Recording this as a signal defect would have made it look like nobody could have known.
+The correct answer was visible in the file I had myself adopted for exactly this question, two
+hours after I ruled that the repository held the answer every time.
+
+`@scribe`'s finding is still true in general and `@auditor` agrees with it: the lock answers
+*is Docker running*, not *is a bracket open*, and its single-acquire discipline made it
+accidentally correct for whole-batch questions. **A signal whose meaning depends on another
+seat's habits will eventually be read wrong.** Verdict count is the better signal, and `@scribe`
+— the only seat that never broke a bracket — is the one who used it. §8's lock answers *is a Docker command
 running this instant*, not *is a bracket open* — `@auditor` takes and releases it around each
 Check, so between two Checks of a 58-claim batch it is free repeatedly and for long stretches.
 
@@ -1730,3 +1749,28 @@ five commit messages are unverified prose in a tamper-evident wrapper. The asymm
 consequence, not opportunity — `@auditor` re-runs every Check, so a fabricated handoff output
 gets contradicted by a verdict. Nothing contradicted the ledger's prose. **That is why the rule
 lands on entry prose, and it is the reason rather than an accident of where the failure surfaced.**
+
+
+## F-20 — the anchor gap fired live, within minutes of being found
+
+`@auditor` verified S-61 while `@scribe` was mid-edit and caught F-18 happening in real time:
+
+    Check       eb0ce09a194411e5   879 bytes   anchored by §11, unchanged
+    Passes-when 410239bcecb21be4   338 bytes   NOT anchored, already struck in the tree
+
+The criterion had moved in the working tree while the anchor `@auditor` verified before running
+was byte-identical. Nothing about F-18 is hypothetical.
+
+**Its six verdicts are unaffected, and it says the reason is luck rather than design.** It
+snapshots the whole ledger to `LEDGER-b<n>.md` at batch start and quotes `Passes when:` from the
+snapshot, not the live file — so each verdict records the criterion as it stood when it ran.
+**That is a habit, not a control**, and no seat could have checked it from outside. Had it read
+the live file, a `Passes when:` moving between handoff and run would have been invisible to
+every mechanism in this factory.
+
+For stage 3 the fix is one line and `@auditor` asked for it rather than having it imposed:
+anchor the `Passes-when` digest beside the Check digest, same canonical form, same byte count.
+Not adopted now — this stage is closing and a rule nobody has exercised is a note.
+
+`@scribe` recorded the same demonstration inside the commit that caused it, which is the right
+place for it.
