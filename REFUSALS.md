@@ -1002,10 +1002,23 @@ Two of the four differ by a single `\n`. `@scribe` proposed a definition, `@audi
 the clause that removes the remaining ambiguity, and `@builder` verified it resolves against
 all 157 entries with none carrying stray whitespace. Authorised for stage 2:
 
-> The canonical form of a Check is the exact command string between the backticks
-> following `Check: `, with no surrounding whitespace and **no trailing newline**, and
-> nothing else. Anchor it as `sha256` of that string. `Passes when:` and `Status:` are not
-> part of it.
+> The canonical form of a Check is the exact byte sequence between the backticks following
+> `Check: ` — stripped of surrounding whitespace, **with no trailing newline**, and **with
+> no normalisation of internal whitespace or line endings**. Anchor it as `sha256` of those
+> bytes and **record the byte count beside the digest**. `Passes when:` and `Status:` are
+> not part of it.
+
+`@builder` added the no-normalisation clause: a reader on a platform that rewrites line
+endings would silently change every digest in the ledger while every visible character
+stayed identical, and the artifact would look correct. `@scribe` added the byte count as
+the cheap belt — 433 for C-153, checkable at a glance, and it would have caught all five
+divergent readings. `@scribe` also verified the clause is load-bearing: without it the
+definition admits `df0f8e1cbdf99133`, a value `@auditor` had already computed and discarded.
+
+Four of the five values are pinned to a stated recipe. `@builder`'s `629178b03949c4cf`
+remains unpinned and `@scribe` said so rather than rounding it off. It does not matter
+operationally — the canonical form makes it unnecessary — but a record that says four of
+five is worth more than one that implies five.
 
 Not churn on the test I applied at errata-2: it deletes an ambiguity rather than trading
 evidence for tidiness, and today produced four numbers for one string as evidence the

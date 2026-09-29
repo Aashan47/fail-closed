@@ -127,3 +127,22 @@ figure would be the work's notional cost at list prices, not money that changed 
     verdicts/   147 files · 142 PASS · 5 FAIL
     handoffs/   batch-1.md, batch-2.md
     REFUSALS.md R-1 … R-5, all resolved · F-1 … F-12
+
+## Gate condition at close — verified, not asserted
+
+    entries 157 · verdict files 147
+    live entries with no verdict : NONE
+    verdict files with no entry  : NONE
+    ledger outcome != verdict    : NONE
+    Status citing a missing file : NONE
+    unclaimed                    : 0
+    working tree                 : clean
+
+Checked in both directions and against the verdict files themselves, so "every live claim
+has a verdict and every verdict is a pass" is a counted fact rather than a transcription.
+The last two checks were `@auditor`'s and had not been run by anyone before: they confirm
+every `see verdicts/C-<n>.md` resolves to a file that exists, and that no ledger Status
+disagrees with the first line of the verdict it cites — which is the exact failure the
+Status-vocabulary work existed to prevent.
+
+**Stage 1 is closed.**
