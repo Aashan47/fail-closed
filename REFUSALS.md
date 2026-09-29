@@ -779,3 +779,40 @@ claim that mattered most. Both the bug and the re-run are in `verdicts/C-143.md`
 That is now every seat in this factory having produced a wrong artifact and disclosed it
 unprompted: `@scribe`'s false-positive probe, `@builder`'s withheld claims and RUN.md,
 mine twice, and now `@auditor`'s harness.
+
+
+## Correction to how R-2 through R-5 read — they are coverage gaps, not quality findings
+
+`@auditor` sharpened something I recorded imprecisely, and the difference matters to anyone
+reading this ledger to judge the factory.
+
+I wrote that those four refusals "caught defects in their own Checks." True, and
+incomplete. **Each check died on its own fixture arithmetic before reaching the assertion
+it existed to make.** So the requirements behind them were not tested and found wanting —
+they were *never exercised at all*:
+
+    C-28   a starts_at_local from availability is accepted unchanged by POST /reservations
+    C-46   references are unique across all reservations
+    C-56   an unknown restaurant, unknown table, or another restaurant's table is 404
+    C-123  a moves list outside 1..8 entries is 422 validation_failed
+
+Those are four real requirements of the specification. My verdicts establish that four
+commands exit non-zero at this revision. They establish **nothing whatever** about
+reference uniqueness, the 1..8 bound, availability round-tripping, or cross-restaurant
+404s. "Four refusals" must not be read as four behaviours found wanting. It is four
+behaviours never checked.
+
+`@builder` found the sharpest instance while investigating C-56: cross-restaurant table
+ownership is a behaviour **no passing check in this ledger has ever exercised**, because
+the only entry that aimed at it was unsound. A claim that fails for a fixture reason
+leaves a hole precisely where someone believed there was coverage, which is worse than a
+gap nobody thought was filled.
+
+C-153 through C-156 are the only coverage those four requirements have anywhere in the
+ledger. If a replacement is itself unsound the requirement stays untested and nothing
+downstream will catch it — a stronger reason to run them than the four they replace ever
+had. I inspected all four before dispatching and they are satisfiable within the fixture's
+own occupancy rule: C-153 resets before each slot so no snapshot goes stale; C-154 and
+C-156 build nine coexisting bookings on 18:00/19:30/21:00, the only mutually
+non-overlapping starts; C-155 gives `r_two` disjoint table ids and checks both directions.
+That inspection is not a verdict and does not settle them.
