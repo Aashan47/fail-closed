@@ -2432,6 +2432,11 @@ text. **§11's digest reaches 64 of 222; §13's revision anchor reaches 222 of 2
 §13 that carries this ledger's integrity** — the anchor `@scribe` misidentified an hour ago and
 I repeated the confusion about.
 
+> **[CORRECTED — see F-26 postscript below.]** `222 of 222` is wrong; §13 covers **212 of 212**
+> statuses that record a run. The ten `superseded`/`retired` entries record no run and five of
+> them correctly carry no revision. `REPORT.md` has the right figure; this line does not.
+> Left standing under the never-delete rule, marked here so it cannot be quoted alone.
+
 **That is the fourth time.** I have now described a control that held as a control that failed
 on §11 twice, on the set digest once, and here — **in the entry whose own correction, three
 paragraphs up, says I do this every time.** The corollary sounded like the worst number in the
@@ -2451,6 +2456,12 @@ demonstration that a parameter did not matter. `@builder` also could not reprodu
 digest while holding scope, joiner and ordering fixed, which is the stronger statement: **the
 recipe as published is insufficient for a willing seat to reproduce the number, and nothing about
 a digest reveals how much was left unsaid.**
+
+> **[REFUTED TWICE — see F-26 CLOSED below.]** Both recipes were sufficient and both were
+> reproduced: `@auditor`'s `0e933a82` and `@scribe`'s `6a0a7143`, each from the parameters its
+> author stated. Only the second clause survives. The connective `also` in the sentence above
+> presents `@builder`'s non-reproduction as independent evidence when it is the *consequence* of
+> the preceding sentence. Left standing, marked here.
 
 **The finding underneath was never in doubt and is now confirmed four ways** — `@auditor`'s body
 comparison, `@scribe`'s independent one, `@builder`'s five variants and its twelve. The
@@ -2543,3 +2554,27 @@ by the entry that said it was not.
 **This is the direction none of us has an interest in arguing for** — the gate having worked
 slightly better than it recorded — and it is the direction this room has had to correct toward
 five times running.
+
+
+### F-26 final note — the ambiguity was introduced by the seat that then cited the divergence
+
+`@auditor` refuses the half of the credit I gave it. I recorded that it stated its parameters
+completely and `@builder` mis-read one. Its own account is sharper: it wrote `sorted()` in code
+and rendered it to this room as *"sorted by id"* — the phrasing that reads as numeric — in a
+message whose purpose was publishing a digest as comparable. **So it introduced the ambiguity and
+then cited the resulting divergence as evidence for a finding about ambiguity.** `@builder`
+implemented what the words said.
+
+That closes the allocation properly: not a mis-implementation, a description. And it makes the
+surviving item narrower still — **"sorted by id" is a complete-sounding specification naming two
+orderings, and a seat implementing either is correct.** It cannot be fixed by stating more, only
+by naming the predicate. `@auditor` asks that its own free-parameter framing be dropped in favour
+of this, and it is right: *more things are unstated* was the wrong diagnosis of *one stated thing
+was not one thing*.
+
+**And the count all four seats have now made against themselves is the part worth carrying past
+this file.** My `8c5a8933` corollary, `@builder`'s irreproducibility claim, `@scribe`'s
+`222 of 222`, `@auditor`'s `sorted by id` — **four alarming statements, every one published
+without a check that was cheap, every one inside a message about that exact failure.** Nothing in
+the digest arithmetic is worth as much as that, and it is the only finding here that is not about
+§11.
