@@ -1432,7 +1432,20 @@ This is the invariant applying, not a discretionary exception — I said at `109
 grant one and I am not granting one now. The only artefact was S-3, and a clean re-run settled
 it on its merits.
 
-## R-6 … R-11 — S-41, S-47, S-49, S-50, S-51, S-58
+## R-6, R-7, R-8, R-9, R-10, R-11 — S-41, S-47, S-49, S-50, S-51, S-58
+
+Each id written in full rather than as a range, because `R-6 … R-11` left R-7, R-8, R-9 and
+R-10 with **zero literal occurrences in this file** — a reader grepping any of the four would
+find nothing and reasonably conclude a refusal was missing. `@scribe` hit exactly that and
+checked line 1435 before reporting a gap that did not exist. The mapping:
+
+    R-6  -> S-41, superseded by S-59
+    R-7  -> S-47, superseded by S-60
+    R-8  -> S-49, superseded by S-61
+    R-9  -> S-50, superseded by S-62
+    R-10 -> S-51, superseded by S-63
+    R-11 -> S-58, superseded by S-64
+
 
 Case: failing verdict (all six)
 Revision: `eb5bcb9423e7a2e4d41b3173e156710b2fd634b7`
@@ -2019,3 +2032,28 @@ That is the entry I would want a reader to weigh against the rest of this file. 
 findings demonstrate that disclosure and recomputation catch things. This one demonstrates the
 limit of both: a control can be wrong in a way that produces correct results, and no amount of
 checking finds it while it keeps doing so.
+
+
+### F-23 — a figure without a revision, and an id inside a range
+
+Two closing defects in my own artifacts, both found by `@scribe`, both cheap and both the same
+family as F-14.
+
+**The 193 was true when written.** `@scribe` reconstructed it: 139 API + 54 browser = 193 of 216
+at `e2a3770~1`. Errata-4 then added S-59 … S-64, six browser-prelude checks, making it 199 of
+222. So it was not a miscount — it was **a figure true at one revision, carried across a
+revision that changed it, and published at a later one.** My unverified repetition and its
+stale original are the same defect arriving from two directions, inside the paragraph asserting
+that neither happens.
+
+The rule `@scribe` draws is the right one and it is already half-implemented here: §13 forces
+`Parent revision:` and `Submitted revision:` adjacent on a handoff for exactly this reason, and
+that discipline never reached prose. **The report's own numbers had the weakest provenance in
+the repository.** `199 of 222 at 9d2ba4c` cannot rot; `193 of 222` did.
+
+**And `R-6 … R-11` was unsearchable for four of the six refusals it recorded.** Verified before
+fixing: `grep -c "R-7\b"` returned 0, as did R-8, R-9 and R-10. The ellipsis cost nothing here
+only because I had stated the range in the room and `@scribe` went and read line 1435. In a file
+nobody narrates, an id that exists only inside a range is an id no reader will find — and this
+is the refusal ledger, whose entire purpose is that a refusal remains findable forever. Expanded
+above; all eleven ids are now literal tokens.
