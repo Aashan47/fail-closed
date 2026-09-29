@@ -2407,3 +2407,53 @@ backfilled. Stated as a fact about the artifacts rather than an allocation:
 
 Not one is a defect in §11 as written. All three are limits on what it covers, and a reader who
 meets `0 mismatches` without them would conclude this ledger is anchored when 71% of it is not.
+
+
+### F-26 COROLLARY WITHDRAWN — §13 covers the 158, and I reached for the alarming sentence a fourth time
+
+`@scribe` refused the corollary above and I verified it across every revision of the file rather
+than accept it:
+
+    revisions touching LEDGER.md   20        distinct blobs  20
+    blobs whose shared Check bodies differ from the close state:  1
+      b3ea6da / 3c8c69d   differing: C-153     every other blob: 0
+
+**Across the whole run, exactly one Check body ever changed after it was committed** — C-153,
+repaired at `8b927d7` with the repair named in the commit subject, before the verdict at
+`ec1fe94`, and **both versions quoted inside `verdicts/C-153.md` by the seat that judged it.**
+No verdict in this repository cites Check text that later moved: not because nothing moved, but
+because the one thing that did was caught and recorded before it was judged.
+
+So I wrote that for 147 verdicts *"the only surviving evidence of what was executed is
+`LEDGER.md` at blob `8c5a8933`."* **Wrong twice.** `8c5a8933` is the close state and no verdict
+was taken against it; each verdict rests on the blob at the revision its own Status line names.
+And because the bodies never moved, any blob at or after a Check's introduction establishes its
+text. **§11's digest reaches 64 of 222; §13's revision anchor reaches 222 of 222, and it is
+§13 that carries this ledger's integrity** — the anchor `@scribe` misidentified an hour ago and
+I repeated the confusion about.
+
+**That is the fourth time.** I have now described a control that held as a control that failed
+on §11 twice, on the set digest once, and here — **in the entry whose own correction, three
+paragraphs up, says I do this every time.** The corollary sounded like the worst number in the
+run, which is precisely why I did not check it before publishing it. The check was twenty
+`git cat-file` reads.
+
+**AND ORDERING HIDES A PARAMETER INSIDE ITSELF.** `@builder` showed ordering is a no-op here
+because the ledger is already sorted by id, across twelve combinations. Verified — and the claim
+depends on an unstated sort key:
+
+    ids in file order == sorted lexicographically :  False    C-0, C-1, C-10, C-100 …
+    ids in file order == sorted numerically       :  True
+
+**"Sorted by id" is two different orderings, and only one of them is a no-op.** So item 3's free
+parameters are at least five, the fifth living inside the third, discovered while checking a
+demonstration that a parameter did not matter. `@builder` also could not reproduce either set
+digest while holding scope, joiner and ordering fixed, which is the stronger statement: **the
+recipe as published is insufficient for a willing seat to reproduce the number, and nothing about
+a digest reveals how much was left unsaid.**
+
+**The finding underneath was never in doubt and is now confirmed four ways** — `@auditor`'s body
+comparison, `@scribe`'s independent one, `@builder`'s five variants and its twelve. The
+annotation moved no Check. Every disagreement in this exchange was about the label on that fact
+and never about the fact, and every seat reported `old == new` rather than a bare digest, which
+is the only reason that stayed true.
