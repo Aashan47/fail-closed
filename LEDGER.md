@@ -2245,3 +2245,87 @@ is committed by `@auditor`.
 entry stands. C-5 through C-139 reach the service through the prelude's `B`, which was never the
 defect — they need only the corrected start-up in §7 and the lock in §8. That is one setup defect,
 not 137 broken checks.
+
+---
+
+# ERRATA 2 — the checks audited a working tree, not a revision
+
+## Defect 5 — every path-bearing Check builds from a mutable shared working tree
+
+Found by `@auditor`, which refused to run C-142 rather than audit uncommitted work. §8's Docker lock
+does not touch this: the collision is **git state, not Docker state**. A Check can be correct, the
+lock uncontended, and the audit still meaningless because the bytes moved between commit and run.
+
+Every path-bearing Check hard-codes `/Users/aashanjaved/band-work/result` — the writing seat's live
+working tree. So "clone the named revision and work only there" and "run the Check exactly as
+written" coincide **only while that tree is clean**, and no amount of cloning fixes it, because the
+Check builds from the live path whatever the auditor checks out. Demonstrated:
+
+```
+$ git -C /tmp/revprobe checkout 90028fd   # a clone at the named revision
+  clone app.py : 1908 bytes  (blob 4b71552)
+  live  app.py : 42127 bytes (blob b3afe57)
+```
+
+A PASS on those 42127 bytes would certify code that exists in nobody's history and that no graded
+checkout would ever contain.
+
+Affects the five live path-bearing entries: **C-1, C-142, C-143, C-146, C-147**. It does *not* affect
+C-5 through C-139: none of them reads a repository path — they reach the running service over HTTP
+through the prelude's `B`. The path enters only at build time, so repairing these five repairs the
+whole chain.
+
+## §10 Audit a revision, not a working tree
+
+Replacement checks take the repository path from `TK_REPO`, defaulting to the canonical path, so with
+`TK_REPO` unset they behave identically to the entries they replace:
+
+```sh
+export TK_REPO=/Users/aashanjaved/band-work/result/.auditor-clones/<claim>
+```
+
+`@auditor` clones the named revision, checks it out, and exports `TK_REPO` at that clone. A clone is
+immutable while nobody writes to it, which the writing seats do not. Each replacement below then
+asserts, **in the Check itself**, that the tree is clean before the run and clean and still at the
+same revision after it — so a check cannot silently audit a tree that moved underneath it. Record the
+revision printed by the final assertion in the verdict.
+
+## Replacement entries
+
+### C-148: RUN.md's own command builds and starts the service from a clean checkout, without manual setup.
+Check: `R="${TK_REPO:-/Users/aashanjaved/band-work/result}"; test -z "$(git -C "$R" status --porcelain)" || { echo "TREE NOT CLEAN IN $R"; exit 1; }; before=$(git -C "$R" rev-parse HEAD); cd "$R/stage-1" && docker rm -f tk-s1 >/dev/null 2>&1; awk '/^```/{f=!f;next} f' RUN.md > /tmp/tk-runmd.sh && test -s /tmp/tk-runmd.sh && sh -eux /tmp/tk-runmd.sh && start=$(date +%s) && until curl -fsS http://127.0.0.1:18080/health; do [ $(( $(date +%s) - start )) -lt 60 ] || { echo "NOT HEALTHY"; exit 1; }; sleep 1; done && test -z "$(git -C "$R" status --porcelain)" && test "$(git -C "$R" rev-parse HEAD)" = "$before" && echo "RUNMD OK AT $before"`
+Passes when: exits 0 and prints the `/health` body then `RUNMD OK AT <revision>`. Replaces C-1. The fenced code blocks of `RUN.md` must contain exactly the shell commands that build and start the service, must need no editing, and must work from the stage directory of **any** clean checkout — so a command that only works in one seat's home directory does not pass.
+Status: unclaimed
+
+### C-149: The service builds from a clean container at a named revision and serves /health within 60 seconds.
+Check: `R="${TK_REPO:-/Users/aashanjaved/band-work/result}"; test -z "$(git -C "$R" status --porcelain)" || { echo "TREE NOT CLEAN IN $R"; exit 1; }; before=$(git -C "$R" rev-parse HEAD); docker rm -f tk-s1 >/dev/null 2>&1; docker network rm tk-s1-net >/dev/null 2>&1; docker builder prune -af >/dev/null 2>&1; test -f "$R/stage-1/Dockerfile" && test -f "$R/stage-1/RUN.md" && docker network create tk-s1-net && docker build --no-cache -t tk-s1 "$R/stage-1" && docker run -d --name tk-s1 --network tk-s1-net -p 18080:8080 -e PORT=8080 tk-s1 && start=$(date +%s) && until curl -fsS http://127.0.0.1:18080/health; do [ $(( $(date +%s) - start )) -lt 60 ] || { echo "NOT HEALTHY WITHIN 60s"; exit 1; }; sleep 1; done && echo " HEALTHY IN $(( $(date +%s) - start ))s" && test "$(docker inspect tk-s1 --format '{{json .NetworkSettings.Ports}}')" != "{}" && echo "PORT PUBLISHED" && test -z "$(git -C "$R" status --porcelain)" && test "$(git -C "$R" rev-parse HEAD)" = "$before" && echo "TREE CLEAN AND UNMOVED AT $before"`
+Passes when: exits 0 and prints the `/health` body, then `HEALTHY IN <n>s` with `n` at most 60, then `PORT PUBLISHED`, then `TREE CLEAN AND UNMOVED AT <revision>`. Replaces C-142 and is the gate in its place. It refuses to start against a dirty tree, and it proves afterwards that the tree neither changed nor moved during the run, so the revision it certifies is the revision it built.
+Status: unclaimed
+
+### C-150: At run time the service has no outbound network access, and still serves /health.
+Check: `R="${TK_REPO:-/Users/aashanjaved/band-work/result}"; test -z "$(git -C "$R" status --porcelain)" || { echo "TREE NOT CLEAN IN $R"; exit 1; }; before=$(git -C "$R" rev-parse HEAD); docker rm -f tk-c150 >/dev/null 2>&1; docker network rm tk-c150-noout >/dev/null 2>&1; docker network create --internal tk-c150-noout && test "$(docker network inspect tk-c150-noout --format '{{.Internal}}')" = "true" && docker build -q -t tk-s1 "$R/stage-1" >/dev/null && docker run -d --name tk-c150 --network tk-c150-noout -e PORT=8080 tk-s1 >/dev/null && for i in $(seq 1 60); do docker run --rm --network tk-c150-noout alpine:3 wget -qO- -T3 http://tk-c150:8080/health >/dev/null 2>&1 && break; sleep 1; done; docker run --rm --network tk-c150-noout alpine:3 sh -c 'wget -qO- -T5 http://tk-c150:8080/health || exit 1; nslookup example.com >/dev/null 2>&1 && exit 2; nc -w4 -z 1.1.1.1 80 2>/dev/null && exit 3; wget -qO- -T4 http://example.com >/dev/null 2>&1 && exit 4; echo " NO EGRESS"'; r=$?; docker rm -f tk-c150 >/dev/null 2>&1; docker network rm tk-c150-noout >/dev/null 2>&1; test $r -eq 0 && test -z "$(git -C "$R" status --porcelain)" && test "$(git -C "$R" rev-parse HEAD)" = "$before" && echo "TREE CLEAN AND UNMOVED AT $before"; exit $?`
+Passes when: exits 0 and prints the `/health` body, then `NO EGRESS`, then `TREE CLEAN AND UNMOVED AT <revision>`. Replaces C-143. The service is attached only to an internal network and publishes no port; it is reached by container name from a sibling `alpine:3`, the way the graded harness reaches it in isolated mode. Exit 1 means the service did not answer, 2 that DNS resolved, 3 that raw TCP opened, 4 that an HTTP fetch succeeded. Because the probe must print the service's own health body to pass, it cannot pass by a tool being absent.
+Status: unclaimed
+
+### C-151: The graded stage-1 suite passes in the mode grading uses, at a named revision.
+Check: `R="${TK_REPO:-/Users/aashanjaved/band-work/result}"; test -z "$(git -C "$R" status --porcelain)" || { echo "TREE NOT CLEAN IN $R"; exit 1; }; before=$(git -C "$R" rev-parse HEAD); cd /Users/aashanjaved/dark-factory-wearedevs && ./.venv/bin/python -m harness run --track tablekeeper --repo "$R" --stage 1 --mode isolated --out /Users/aashanjaved/band-work/checks/s1-iso-$(date +%s); r=$?; test $r -eq 0 && test -z "$(git -C "$R" status --porcelain)" && test "$(git -C "$R" rev-parse HEAD)" = "$before" && echo "TREE CLEAN AND UNMOVED AT $before"; exit $?`
+Passes when: the harness exits 0 reporting zero failures and zero errors for stage 1, then `TREE CLEAN AND UNMOVED AT <revision>` prints. Replaces C-146. `--mode isolated` is the grading mode: the service gets no outbound access and is reached by container name, so a pass cannot be earned by a service that fetches something at run time.
+Status: unclaimed
+
+### C-152: The shipped stage-1 checks pass in the mode grading uses, at a named revision.
+Check: `R="${TK_REPO:-/Users/aashanjaved/band-work/result}"; test -z "$(git -C "$R" status --porcelain)" || { echo "TREE NOT CLEAN IN $R"; exit 1; }; before=$(git -C "$R" rev-parse HEAD); cd /Users/aashanjaved/dark-factory-wearedevs && ./.venv/bin/python -m harness run --track tablekeeper --repo "$R" --stage 1 --mode isolated --out /Users/aashanjaved/band-work/checks/s1-iso-shipped-$(date +%s); r=$?; test $r -eq 0 && test -z "$(git -C "$R" status --porcelain)" && test "$(git -C "$R" rev-parse HEAD)" = "$before" && echo "TREE CLEAN AND UNMOVED AT $before"; exit $?`
+Passes when: the harness exits 0 reporting zero failures and zero errors for stage 1, then `TREE CLEAN AND UNMOVED AT <revision>` prints. Replaces C-147. Host mode remains useful while developing, but per the harness's own warning it must never be the basis of a pass, so no live entry in this ledger claims anything from it.
+Status: unclaimed
+
+## Superseded by Errata 2
+
+| Original | Replaced by | Why |
+|---|---|---|
+| C-1 | C-148 | built from a mutable shared working tree, not a revision |
+| C-142 | C-149 | same; was the gate, and C-149 is the gate in its place |
+| C-143 | C-150 | same |
+| C-146 | C-151 | same |
+| C-147 | C-152 | same |
+
+These supersessions need `@registrar`'s authorisation, exactly as the first six did, and the same
+bound applies: supersession is not absolution. C-5 through C-139 are untouched by Defect 5.
