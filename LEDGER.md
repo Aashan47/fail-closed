@@ -2514,7 +2514,7 @@ A handoff also names the revision **twice, adjacently**, because a handoff file 
 hash of the commit that contains it:
 
 ```
-Parent revision: <pre-commit HEAD>     — NOT the submitted revision
+Parent revision: <pre-commit HEAD>   — NOT the submission
 Submitted revision: derive with `git log -1 --format=%H -- handoffs/batch-<n>.md`
 ```
 
@@ -2709,7 +2709,7 @@ like a working interface until a person opens it.
 ### S-0: The stage-2 service builds from a clean container, serves /health within 60 seconds, and genuinely publishes its port.
 Check: `TK_REPO="${TK_REPO:-/Users/aashanjaved/band-work/result}"; test -z "$(git -C "$TK_REPO" status --porcelain)" || { echo "TREE NOT CLEAN"; exit 1; }; before=$(git -C "$TK_REPO" rev-parse HEAD); docker rm -f tk-s2 >/dev/null 2>&1; docker network rm tk-s2-net >/dev/null 2>&1; docker builder prune -af >/dev/null 2>&1; test -f "$TK_REPO/stage-2/Dockerfile" && test -f "$TK_REPO/stage-2/RUN.md" && docker network create tk-s2-net && docker build --no-cache -t tk-s2 "$TK_REPO/stage-2" && docker run -d --name tk-s2 --network tk-s2-net -p 18080:8080 -e PORT=8080 tk-s2 && start=$(date +%s) && until curl -fsS http://127.0.0.1:18080/health; do [ $(( $(date +%s) - start )) -lt 60 ] || { echo "NOT HEALTHY WITHIN 60s"; exit 1; }; sleep 1; done && echo " HEALTHY IN $(( $(date +%s) - start ))s" && test "$(docker inspect tk-s2 --format '{{json .NetworkSettings.Ports}}')" != "{}" && echo "PORT PUBLISHED" && test -z "$(git -C "$TK_REPO" status --porcelain)" && test "$(git -C "$TK_REPO" rev-parse HEAD)" = "$before" && echo "TREE CLEAN AND UNMOVED AT $before"`
 Passes when: exits 0 and prints the `/health` body, then `HEALTHY IN <n>s` with `n` at most 60, then `PORT PUBLISHED`, then `TREE CLEAN AND UNMOVED AT <revision>`. This is the gate. `PORT PUBLISHED` is the assertion C-0 assumed and never checked, which cost stage 1 an hour; it is asserted here rather than inferred from the curl succeeding.
-Status: unclaimed
+Status: passed at 0b0e01d — see verdicts/S-0.md
 
 ### S-1: The stage-2 service has no outbound network access at run time and still serves.
 Check: `TK_REPO="${TK_REPO:-/Users/aashanjaved/band-work/result}"; docker rm -f tk-s1x >/dev/null 2>&1; docker network rm tk-s1x-noout >/dev/null 2>&1; docker network create --internal tk-s1x-noout && test "$(docker network inspect tk-s1x-noout --format '{{.Internal}}')" = "true" && docker build -q -t tk-s2 "$TK_REPO/stage-2" >/dev/null && docker run -d --name tk-s1x --network tk-s1x-noout -e PORT=8080 tk-s2 >/dev/null && for i in $(seq 1 60); do docker run --rm --network tk-s1x-noout alpine:3 wget -qO- -T3 http://tk-s1x:8080/health >/dev/null 2>&1 && break; sleep 1; done; docker run --rm --network tk-s1x-noout alpine:3 sh -c 'wget -qO- -T5 http://tk-s1x:8080/health || exit 1; nslookup example.com >/dev/null 2>&1 && exit 2; nc -w4 -z 1.1.1.1 80 2>/dev/null && exit 3; wget -qO- -T4 http://example.com >/dev/null 2>&1 && exit 4; echo " NO EGRESS"'; r=$?; docker rm -f tk-s1x >/dev/null 2>&1; docker network rm tk-s1x-noout >/dev/null 2>&1; exit $r`
