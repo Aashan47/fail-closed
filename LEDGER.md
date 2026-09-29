@@ -3924,3 +3924,256 @@ specific failures impossible to pass — all states identical, a blank empty box
 horizontal page scroll at 375px, a clipped caption, a missing or invisible label, an invisible focus
 ring, unreadable contrast on sampled text, and raw ids shown where names belong. They do not
 establish that the interface is good, and a verdict passing all eight says only that.
+
+---
+
+# ERRATA 4 — six stage-2 Checks that could not establish their own prose
+
+Six Checks have FAIL verdicts at `eb5bcb9`, each with a quoted run, and all six are defects in the
+Check rather than the implementation. The graded suite **passed** at that revision — suite 1
+`120 passed`, suite 2 `25 passed`, `claimed_stage 2`, isolated — so the submission is right and these
+six were wrong. The `66e7967` bound is met.
+
+```
+S-47  TargetClosedError: ElementHandle.inner_text: Target page has been closed
+S-50  TargetClosedError: ElementHandle.inner_text: Target page has been closed
+S-41  AssertionError: changed field reused the reference: None
+S-51  AssertionError: status 409 want (201,)  {'code': 'table_unavailable'}
+S-58  AssertionError: booking-summary does not name both tables by label: ''
+S-49  AssertionError: retained reference not found after the import
+```
+
+## Defect 8 — the same body written three times, correct once
+
+S-46, S-47 and S-50 share one structure. S-46 closes the browser **after** reading the confirmation
+and passes; S-47 and S-50 close it **before** and cannot pass on any service. The correct ordering
+was in the entry immediately above the first of them.
+
+## Defect 9 — three more Checks demanding state the occupancy rule forbids
+
+**S-41** resubmits after changing only `booking-party-size`, so the second submission targets the
+table its own first booking holds. **S-51** needed a second account to take a cell the browser had
+just filled. **S-58** booked a pair and then required selecting that pair from `available_options`
+its own booking had emptied.
+
+This is stage 1's D-6 for the third, fourth and fifth time. C-46 asked for 27 coexisting bookings
+against a ceiling of 9; C-123 asked for 9 across pairwise-overlapping starts. **Four of the six
+defects here contradict a rule stated elsewhere in this same file**, and S-49 contradicts C-112 —
+*"Import removes all previous destination data and credentials"* — which I wrote and which passed.
+
+S-41 also mis-stated the requirement. The specification says changing a field makes the next
+submission a **new booking request**; a new request may legitimately be refused. Asserting a new
+*reference* required an outcome the occupancy rule forbids.
+
+## Replacement entries
+
+**All six were executed against a live service before being committed.** Outputs are quoted in each
+entry. `@auditor`'s run settles them; mine only establishes that the commands execute and their
+assertions are reachable — the thing errata-2's replacements lacked when supersession was refused.
+
+### S-59: Changing a field makes the next submission a new booking request rather than a replay.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+def f(pg):
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,4)
+    CLICK(pg,"slot-t_2-19:00"); pg.wait_for_timeout(500)
+    CLICK(pg,"booking-submit"); pg.wait_for_timeout(1300)
+    first=TXT(pg,"confirmation-reference")
+    assert first,"no confirmation on the first booking"
+    FILL(pg,"booking-party-size",3); pg.wait_for_timeout(200)
+    CLICK(pg,"booking-submit"); pg.wait_for_timeout(1400)
+    after=TXT(pg,"confirmation-reference")
+    replayed = (after==first and not SEE(pg,"booking-error"))
+    assert not replayed,"changed field replayed the original receipt: %r"%after
+    assert SEE(pg,"booking-error") or (after and after!=first),"changed field produced neither a new booking nor a refusal"
+    return first,after,SEE(pg,"booking-error")
+r=UI(f)
+rs=[x for x in OK(R("GET","/reservations",tok=ta),200)["reservations"] if x["status"]=="confirmed"]
+assert len(rs)==1,"a changed-field submission must not create a second overlapping booking: %r"%rs
+print("PASS",r)'`
+Passes when: prints `PASS` with the first reference, the post-change state and the error flag. Replaces S-41. The changed body must **not** replay the original receipt; because the form still targets the table the first booking holds, the new request is legitimately refused with `booking-error`, which is what the occupancy rule requires. Exactly one confirmed booking exists. Verified by a run of this seat: `PASS ('CPM010', None, True)` — the reference varies per run; the `None` and `True` are the assertion, meaning no confirmation was re-shown and `booking-error` appeared..
+Status: unclaimed
+
+### S-60: The uncertainty and refusal rules hold for a combination booking too.
+Check: `$PWPY -c "$W"'
+import asyncio
+from playwright.async_api import async_playwright
+ta,_=SETUP()
+async def run():
+    async with async_playwright() as p:
+        br=await p.chromium.launch(); pg=await br.new_page(viewport={"width":1280,"height":900})
+        state={"drop":True}
+        async def h(route):
+            if route.request.method=="POST" and state["drop"]:
+                state["drop"]=False
+                await route.fetch(); await route.abort("connectionfailed"); return
+            await route.continue_()
+        await pg.route("**/reservations**",h)
+        await pg.goto(BASE+"/login",wait_until="load")
+        await pg.fill("[data-testid=login-email]",ADA["email"]); await pg.fill("[data-testid=login-password]",ADA["password"])
+        await pg.click("[data-testid=login-submit]"); await pg.wait_for_timeout(700)
+        await pg.goto(BASE+"/",wait_until="load")
+        await pg.select_option("[data-testid=restaurant-select]","r_anker")
+        await pg.fill("[data-testid=date-input]",F); await pg.fill("[data-testid=party-size-input]","6")
+        await pg.click("[data-testid=search-button]"); await pg.wait_for_timeout(900)
+        await pg.click(SEL("slot-t_1+t_2-19:00")); await pg.wait_for_timeout(500)
+        await pg.click("[data-testid=booking-submit]"); await pg.wait_for_timeout(2000)
+        unc=await pg.query_selector("[data-testid=booking-uncertain]")
+        u=(await unc.inner_text()).strip() if unc else None
+        await pg.click("[data-testid=booking-submit]"); await pg.wait_for_timeout(2200)
+        ref=await pg.query_selector("[data-testid=confirmation-reference]")
+        rt=await pg.query_selector("[data-testid=confirmation-tables]")
+        ref_t=(await ref.inner_text()).strip() if ref else None
+        rt_t=(await rt.inner_text()).strip() if rt else None
+        await br.close()
+        return u,ref_t,rt_t
+u,ref,tabs=asyncio.run(run())
+assert u,"no booking-uncertain for a lost combination booking"
+rs=OK(R("GET","/reservations",tok=ta),200)["reservations"]
+assert len(rs)==1 and rs[0]["table_ids"]==["t_1","t_2"],rs
+assert ref==rs[0]["reference"],(ref,rs[0]["reference"])
+for lab in ["Window","Corner"]:
+    assert lab in (tabs or ""),"confirmation-tables omits %r after recovery: %r"%(lab,tabs)
+print("PASS",ref)'`
+Passes when: prints `PASS` and the reference. Replaces S-47. Identical in substance; the browser is closed **after** the confirmation is read, which S-47 did before, making it unsatisfiable on any service. Verified by a run of this seat: `PASS 2N472C` — the reference varies per run.
+Status: unclaimed
+
+### S-61: A browser signed in before the upgrade stays signed in, and its retained reference works through the lookup screen.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+b=OK(BOOK(ta,F+"T19:00","s61",table_id="t_2",ps=4),201)
+def f(pg):
+    LOGIN_UI(pg)
+    cu=TXT(pg,"current-user"); assert cu and "Ada" in cu,cu
+    snap=OK(R("GET","/_test/export"),200)
+    s,_,_=R("POST","/_test/import",snap)
+    assert s==204,s
+    pg.goto(BASE+"/lookup",wait_until="load"); pg.wait_for_timeout(500)
+    cu2=TXT(pg,"current-user")
+    assert cu2 and "Ada" in cu2,"browser lost its session across the import: %r"%cu2
+    FILL(pg,"lookup-reference-input",b["reference"]); CLICK(pg,"lookup-submit"); pg.wait_for_timeout(900)
+    assert SEE(pg,"reservation-detail"),"retained reference not found after the import"
+    assert TXT(pg,"reservation-status")=="confirmed",TXT(pg,"reservation-status")
+    assert not SEE(pg,"reservation-error"),"reservation-error shown for a retained reference"
+    return cu2
+print("PASS",UI(f,route=None))'`
+Passes when: prints `PASS` and the display name. Replaces S-49. The export is taken **after** the browser signs in, so the session token is in the snapshot; S-49 exported before the login, so the token was never captured and the import then removed all destination credentials — which is exactly what C-112 requires and what made S-49 contradict it. Verified by a run of this seat: `PASS Signed in as Ada`.
+Status: unclaimed
+
+### S-62: A booking whose response was lost before the export is still recoverable after the import.
+Check: `$PWPY -c "$W"'
+import asyncio
+from playwright.async_api import async_playwright
+ta,_=SETUP()
+async def run():
+    async with async_playwright() as p:
+        br=await p.chromium.launch(); pg=await br.new_page(viewport={"width":1280,"height":900})
+        state={"drop":True}
+        async def h(route):
+            if route.request.method=="POST" and state["drop"]:
+                state["drop"]=False
+                await route.fetch(); await route.abort("connectionfailed"); return
+            await route.continue_()
+        await pg.route("**/reservations**",h)
+        await pg.goto(BASE+"/login",wait_until="load")
+        await pg.fill("[data-testid=login-email]",ADA["email"]); await pg.fill("[data-testid=login-password]",ADA["password"])
+        await pg.click("[data-testid=login-submit]"); await pg.wait_for_timeout(700)
+        await pg.goto(BASE+"/",wait_until="load")
+        await pg.select_option("[data-testid=restaurant-select]","r_anker")
+        await pg.fill("[data-testid=date-input]",F); await pg.fill("[data-testid=party-size-input]","4")
+        await pg.click("[data-testid=search-button]"); await pg.wait_for_timeout(900)
+        await pg.click(SEL("slot-t_2-19:00")); await pg.wait_for_timeout(500)
+        await pg.click("[data-testid=booking-submit]"); await pg.wait_for_timeout(2000)
+        u1=await pg.query_selector("[data-testid=booking-uncertain]")
+        had=bool(u1)
+        snap=OK(R("GET","/_test/export"),200)
+        s,_,_=R("POST","/_test/import",snap)
+        assert s==204,s
+        await pg.click("[data-testid=booking-submit]"); await pg.wait_for_timeout(2300)
+        ref=await pg.query_selector("[data-testid=confirmation-reference]")
+        u2=await pg.query_selector("[data-testid=booking-uncertain]")
+        e2=await pg.query_selector("[data-testid=booking-error]")
+        ref_t=(await ref.inner_text()).strip() if ref else None
+        await br.close()
+        return had,ref_t,bool(u2),bool(e2)
+had,ref,u2,e2=asyncio.run(run())
+assert had,"no booking-uncertain after the lost response"
+rs=OK(R("GET","/reservations",tok=ta),200)["reservations"]
+assert len(rs)==1,"retry after upgrade created a second booking: %d"%len(rs)
+assert ref==rs[0]["reference"],"original confirmation not recovered: %r vs %r"%(ref,rs[0]["reference"])
+assert not u2 and not e2,"uncertainty/error not cleared after a successful post-upgrade retry"
+print("PASS",ref)'`
+Passes when: prints `PASS` and the reference. Replaces S-50. Same substance, with the browser closed **after** the reads. The booking commits, its response is dropped, state is exported and imported, and the unchanged form retries with the same key and body to recover the original reference. Verified by a run of this seat: `PASS 8KQUH3` — the reference varies per run.
+Status: unclaimed
+
+### S-63: The seven required states are visually distinct from one another.
+Check: `$PWPY -c "$W"'
+ta,tb=SETUP()
+OK(BOOK(ta,F+"T21:00","s63",table_id="t_2",ps=2),201)
+def f(pg):
+    st={}
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,2)
+    st["available"]=STYLE(pg,"slot-t_3-19:00")
+    st["unavailable"]=STYLE(pg,"slot-t_2-21:00")
+    CLICK(pg,"slot-t_3-19:00"); pg.wait_for_timeout(500)
+    st["selected"]=STYLE(pg,"slot-t_3-19:00")
+    CLICK(pg,"booking-submit"); pg.wait_for_timeout(110)
+    st["loading"]=STYLE(pg,"booking-loading") if TID(pg,"booking-loading") else STYLE(pg,"booking-submit")
+    pg.wait_for_timeout(1600)
+    st["successful"]=STYLE(pg,"confirmation") if TID(pg,"confirmation") else None
+    SEARCH_UI(pg,"r_anker",F,2)
+    CLICK(pg,"slot-t_1-19:00"); pg.wait_for_timeout(450)
+    OK(BOOK(tb,F+"T19:00","s63b",table_id="t_1",ps=2),201)
+    CLICK(pg,"booking-submit"); pg.wait_for_timeout(1500)
+    st["refused"]=STYLE(pg,"booking-error") if TID(pg,"booking-error") else None
+    return st
+st=UI(f)
+for k,v in st.items():
+    assert v is not None,"state %r produced no element to measure"%k
+pairs=[(a,b) for a in st for b in st if a<b]
+same=[(a,b) for a,b in pairs if st[a]==st[b]]
+assert not same,"states not visually distinct: %r"%same
+print("PASS",len(st),"states,",len(pairs),"pairs distinct")'`
+Passes when: prints `PASS 6 states, 15 pairs distinct`. Replaces S-51. The refusal is now produced on `t_1`, a cell still free when selected and taken by the second account before submit; S-51 re-selected the cell its own booking had just filled, so it never reached the measurement. **The measurement is unchanged and not weakened** — still seven computed style properties per state, still every pair required to differ. `uncertain` is measured by S-46, which asserts its text is non-empty. **Proxy:** style vectors differing does not establish that a person can tell the states apart. Verified by a run of this seat: `PASS 6 states, 15 pairs distinct`.
+Status: unclaimed
+
+### S-64: Restaurants and tables are shown by human-readable name, not by raw identifier.
+Check: `$PWPY -c "$W"'
+SETUP()
+def f(pg):
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,6)
+    body=pg.inner_text("body")
+    assert "Zum Anker" in body,"the restaurant name is not shown on the search screen"
+    for lab in ["Window","Corner","Terrace"]:
+        assert lab in body,"table label %r not shown in the grid"%lab
+    CLICK(pg,"slot-t_1+t_2-19:00"); pg.wait_for_timeout(600)
+    s=TXT(pg,"booking-summary") or ""
+    for lab in ["Window","Corner"]:
+        assert lab in s,"booking-summary omits %r: %r"%(lab,s)
+    assert "t_1+t_2" not in s,"booking-summary shows the concatenated id form: %r"%s
+    CLICK(pg,"booking-submit"); pg.wait_for_timeout(1400)
+    ref=TXT(pg,"confirmation-reference")
+    ct=TXT(pg,"confirmation-tables") or ""
+    for lab in ["Window","Corner"]:
+        assert lab in ct,"confirmation-tables omits %r: %r"%(lab,ct)
+    pg.goto(BASE+"/lookup",wait_until="load")
+    FILL(pg,"lookup-reference-input",ref); CLICK(pg,"lookup-submit"); pg.wait_for_timeout(900)
+    rt=TXT(pg,"reservation-tables") or ""
+    for lab in ["Window","Corner"]:
+        assert lab in rt,"reservation-tables omits %r: %r"%(lab,rt)
+    assert "t_1+t_2" not in rt,"reservation-tables shows the concatenated id form: %r"%rt
+    return s,ct,rt
+print("PASS",UI(f,route=None))'`
+Passes when: prints `PASS` with the summary, confirmation and lookup text. Replaces S-58. The pair is **selected from the grid and then booked**, rather than booked first and selected afterwards — S-58 emptied `available_options` with its own booking and then required the cell it had just removed. **Proxy:** it forbids the concatenated-id failure and requires labels in three places; whether combinations "read as intentional seating options" remains declared human-judged. Verified by a run of this seat: `PASS ('Window + Corner at 19:00 on 2027-06-10 — Zum Anker', 'Window + Corner', 'Window + Corner')`.
+Status: unclaimed
+
+## Superseded by Errata 4 — pending authorisation
+
+| Original | Replaced by | Why |
+|---|---|---|
+| S-41 | S-59 | required a new reference where the occupancy rule forbids one |
+| S-47 | S-60 | closed the browser before reading the confirmation |
+| S-49 | S-61 | exported before the browser signed in, so the token was never in the snapshot |
+| S-50 | S-62 | closed the browser before reading the confirmation |
+| S-51 | S-63 | re-selected a cell its own booking had filled, never reaching the measurement |
+| S-58 | S-64 | booked the pair, then required selecting it from the options it had emptied |
