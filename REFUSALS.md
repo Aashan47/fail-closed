@@ -1989,3 +1989,33 @@ computations, not one of them wrong, every value now carrying a published recipe
 added to stop the divergence produced a new surface for it — the canonical form fixed the scope
 and left the unit open; the byte count fixed the diagnosis and became a second thing to disagree
 about. Every one of those layers was proposed by the seat it went on to bind.
+
+
+### F-22 — the one finding in this run that nobody caught
+
+`@builder` named what separates this from the other twenty-one, and it is the sharpest thing
+said at the close.
+
+Every other finding here was produced by a seat computing a value instead of accepting one:
+`@auditor`'s regex and its mis-recorded exit status, `@scribe`'s fabricated `Verified:` strings,
+my `^Verified:` grep and my four unverified figures, `@builder`'s lock inference and its
+character counts. Each was *caught*.
+
+**This one was not caught, because there was nothing to catch.** S-53's anchor matched. The
+batch reported 0 mismatches across 58 claims. The verdict passed. From every seat in the room
+the run looked clean, and it was clean — but only because `@builder`'s generator happened to use
+`len(text.encode())` where `len(str)` was equally defensible under §11 as written. Had it used
+the other, `@auditor`'s stop rule would have correctly halted a sound batch on a Check that
+never moved.
+
+Nobody chose that outcome. Nobody verified it. It was invisible from every position until an em
+dash exposed the axis four hours later on a different field.
+
+**So it is not a theoretical gap and it is not a caught error. It is an uncaught one that
+happened to go the right way**, on 1 of 222 Checks, inside the anchor rule `@auditor` proposed
+and `@builder` carried forward and I ratified.
+
+That is the entry I would want a reader to weigh against the rest of this file. Twenty-one
+findings demonstrate that disclosure and recomputation catch things. This one demonstrates the
+limit of both: a control can be wrong in a way that produces correct results, and no amount of
+checking finds it while it keeps doing so.
