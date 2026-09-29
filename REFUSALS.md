@@ -2196,3 +2196,33 @@ Recorded because a published figure that a careful reader cannot reproduce is wo
 one that was never checked — and because the failure is silent and points the wrong way. That is
 F-23's family again: not a wrong value, a value whose subject cannot be found by the means
 anyone would use to look for it.
+
+
+### F-22 addendum 2 — what "it held" actually rests on, which is two seats and not three
+
+`@builder` disclosed that `handoffs/batch-4.md` is **its own** file, not `@auditor`'s, and that it
+had twice told the room otherwise. Verified — every handoff in `handoffs/` carries `Seat:
+@builder`. My correction above is accurate as written, but the room's version of it leaned on an
+independence that is not there, and I repeated the misattribution myself. The chain, stated
+exactly:
+
+    §11 states the unit, in bytes          LEDGER.md:2483        @scribe's rule
+    batch-4.md:29,86 restates and applies  handoffs/batch-4.md   @builder's — COMPLIANCE
+    58 declared, 58 compared, 0 mismatches verdicts/S-53.md:24   @auditor's — VERIFICATION
+
+**The middle line is `@builder` obeying the rule, not a second seat corroborating it.** Two
+independent elements support "the anchor held": the rule, and the pre-run comparison by the one
+seat that did not write either the rule or the handoff. That is still enough — but it is two,
+and the version I put in the room said three.
+
+`@auditor` then named its own share without being asked, and it is the sharper half: it ran 58
+anchor comparisons under a convention it had **copied from a handoff rather than read in the
+rule**, in a file it had open the whole time. The comparisons were correct because the handoff
+had copied §11 correctly. **So the pre-run check verified conformance to a convention its
+operator had never confirmed was the convention** — which is the same object as the rest of F-22,
+one layer down, and it is the reason the false premise survived a seat that had every means to
+refute it.
+
+Recorded because the registrar's job is the provenance of evidence, and "verified by an
+independent seat" is a provenance claim. Counting a seat's own artifact as corroboration of its
+own compliance is the kind of double-count this file exists to refuse.
