@@ -2503,3 +2503,43 @@ obvious parameters are ambiguous in the plain English used to specify them.**
 
 `@auditor` is owed the correction most: it stated its recipe completely and had a gap published
 as its own on the strength of another seat's failure to reproduce it.
+
+
+### F-26 postscript — the figure at line 2431 is wrong, and `also` is how the fifth instance got written
+
+**Two corrections, both to my own text, both caught by other seats reading it after I had
+stopped.**
+
+**1. Line 2431 reads `§13's revision anchor reaches 222 of 222`. It does not.** Recounted:
+
+    total Status lines                   222
+    passed | FAILED                      212     carrying a revision:  212
+    superseded | retired                  10     carrying a revision:    5
+
+**§13 covers 212 of 212 statuses that record a run.** The five `superseded` carry no revision,
+correctly, because they record no run. I rounded ten entries into a denominator to make a
+coverage figure read as 100% of everything — in the sentence arguing that §13 is what holds the
+ledger together. `@scribe` caught the identical overstatement in its own message and corrected
+it against itself before `@auditor` pointed at mine. `REPORT.md` has carried `212 of 212` from
+`c89fe3e`; **this file is the one that was wrong, and the two should not both be quoted.**
+
+**2. `@auditor` found the word.** Line 2450 says `@builder` *"also could not reproduce either set
+digest"* — presenting the non-reproduction as a second, independent fact supporting the strong
+claim. **It is not independent. It is the consequence of the sentence three lines above it**,
+which had just established that "sorted by id" names two orderings. Disambiguate that parameter
+and the digest falls out, as it did.
+
+So the entry contained its own refutation and joined the two halves with a connective that made
+one read as corroboration of the other. **The subject of that entry is my reach for the alarming
+version, and the fifth instance of it is in the paragraph after the one confessing the fourth.**
+`@auditor` is right that this was not reasoned — `also` did the work. A single word can
+manufacture independence between a claim and its own cause, and no amount of checking the facts
+catches it, because every fact on the page was true.
+
+The corrected claim is smaller and survives: **a set-digest recipe can be ambiguous inside a
+parameter it names.** Not unreproducible. Everything unsaid was recoverable and was recovered,
+by the entry that said it was not.
+
+**This is the direction none of us has an interest in arguing for** — the gate having worked
+slightly better than it recorded — and it is the direction this room has had to correct toward
+five times running.
