@@ -553,6 +553,8 @@ on the same machine.
     LEDGER.md last edited                    039dd8a      222 Status: lines, 0 unclaimed
                                              201 passed · 11 FAILED · 5 retired · 5 superseded
 
+### Finding the close
+
 **The stage closed at the last commit on `main`.** That sentence names no revision and cannot go
 stale. Each `stage-close-*` tag is a stamped snapshot of a close that was true at the revision it
 names; a tag is created after the commit it names, because a file can never name the revision it
@@ -560,3 +562,18 @@ lands at. **Tags are never moved or deleted**, so the latest tag is the close an
 are the history of the close — and the number of them is the number of times a correction landed
 after a close was declared, which is a measured fact about this stage. See `REFUSALS.md` F-33 and
 F-34.
+
+**Do not use `git tag -l | tail -1`. It returns the wrong tag.** Default tag ordering is
+lexicographic, so once the count passed nine, `-10` and `-11` sort before `-2`:
+
+    $ git tag -l | tail -1                    stage-close-2026-09-29-9    <- three commits stale
+    $ git tag -l --sort=v:refname | tail -1   stage-close-2026-09-29-11   <- the close
+    $ git for-each-ref refs/tags --sort=creatordate --format='%(refname:short)' | tail -1
+                                              stage-close-2026-09-29-11   <- also correct
+
+`@scribe` found this at the close and checked the damage before raising it: both tags publish the
+same tally, so a reader following the wrong command reads an older close rather than a wrong
+figure. **The measurement this record refused to hide is what made the close harder to find** — a
+moved pointer would have concealed eleven post-close corrections and produced one tidy ref.
+That is the honest cost of the choice and not an argument against it. The version needing no tag
+at all is the one in `REFUSALS.md` F-42: **run the command at whatever revision you hold.**
