@@ -210,7 +210,7 @@ assert s==200,(s,b)
 assert b=={"status":"ok"},b
 print("PASS",b)'`
 Passes when: prints `PASS {'status': 'ok'}`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-5.md
 
 ### C-6: JSON responses are application/json with charset utf-8.
 Check: `python3 -c "$P"'
@@ -225,7 +225,7 @@ ct=(h.get("Content-Type") or h.get("content-type") or "").lower().replace(" ",""
 assert s==404 and ct=="application/json;charset=utf-8",(s,ct)
 print("PASS")'`
 Passes when: prints `PASS`. Success and error responses alike carry `application/json; charset=utf-8`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-6.md
 
 ### C-7: POST /_test/reset replaces all state, returns 204, and needs no authentication.
 Check: `python3 -c "$P"'
@@ -239,7 +239,7 @@ assert OK(LIST(t2),200)["reservations"]==[],"state survived reset"
 assert len(OK(R("GET","/restaurants"),200)["restaurants"])==1
 print("PASS")'`
 Passes when: prints `PASS`. Reset returned 204 with no bearer token, and after it the caller sees only the new fixture.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-7.md
 
 ### C-8: Repeated resets are supported and each one takes full effect.
 Check: `python3 -c "$P"'
@@ -249,7 +249,7 @@ for i in range(4):
     assert [r["id"] for r in rs]==["r_%d"%i],(i,rs)
 print("PASS")'`
 Passes when: prints `PASS`. After each of four consecutive resets only that fixture's restaurant is visible.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-8.md
 
 ### C-9: A reset fixture carrying an ID longer than 64 characters is rejected.
 Check: `python3 -c "$P"'
@@ -258,7 +258,7 @@ ERR(R("POST","/_test/reset",FX(restaurants=[REST(id="r"*65)])),422,"validation_f
 ERR(R("POST","/_test/reset",FX(restaurants=[REST(tables=[{"id":"t"*65,"label":"1","capacity":2}])])),422,"validation_failed")
 print("PASS")'`
 Passes when: prints `PASS`. An over-long user, restaurant or table ID in a fixture is 422 `validation_failed`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-9.md
 
 ### C-10: A reset fixture carrying a reservation reference of invalid format is rejected.
 Check: `python3 -c "$P"'
@@ -266,7 +266,7 @@ for bad in ["x","lower01","TOO-LONG-WITH-DASH","ABCDEFGHIJKLM",""]:
     ERR(R("POST","/_test/reset",FX(reservations=[SEED(bad,F+"T19:00")])),422,"validation_failed")
 print("PASS")'`
 Passes when: prints `PASS`. Each malformed seeded reference is 422 `validation_failed`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-10.md
 
 ### C-11: Unknown fields in a request body are ignored, never an error.
 Check: `python3 -c "$P"'
@@ -277,7 +277,7 @@ OK(R("POST","/auth/signup",{"email":"zoe@example.com","password":"correct horse"
 OK(PATCHR(t,b["reference"],{"party_size":2,"junk":"ignored"}),200)
 print("PASS")'`
 Passes when: prints `PASS`. Extra body fields are accepted and do not appear in the response.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-11.md
 
 ### C-12: Unknown query parameters are ignored.
 Check: `python3 -c "$P"'
@@ -287,7 +287,7 @@ assert s==200,(s,b)
 assert b["restaurant_id"]=="r_anker" and b["date"]==F,b
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-12.md
 
 ### C-13: Timestamps in responses are RFC 3339 with an explicit offset.
 Check: `python3 -c "$P"'
@@ -300,7 +300,7 @@ sl=OK(AV("r_anker",F,2),200)["slots"][0]
 assert RFC.match(sl["starts_at"]) and LOC.match(sl["starts_at_local"]),sl
 print("PASS")'`
 Passes when: prints `PASS`. `starts_at`, `ends_at` and `created_at` carry an explicit offset; `starts_at_local` carries none.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-13.md
 
 ### C-14: IDs and references in responses are at most 64 characters.
 Check: `python3 -c "$P"'
@@ -312,7 +312,7 @@ u=OK(R("POST","/auth/signup",{"email":"zoe@example.com","password":"correct hors
 assert len(u["user_id"])<=64,u["user_id"]
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-14.md
 
 ---
 
@@ -328,7 +328,7 @@ assert rs[0]["name"]=="Zum Anker" and rs[0]["timezone"]=="Europe/Berlin",rs[0]
 assert rs[1]["timezone"]=="America/New_York",rs[1]
 print("PASS")'`
 Passes when: prints `PASS`. No bearer token was sent.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-15.md
 
 ### C-16: GET /restaurants/{id} is public and returns the restaurant in the fixture's shape.
 Check: `python3 -c "$P"'
@@ -344,7 +344,7 @@ assert [tb["capacity"] for tb in b["tables"]]==[2,4,4],b["tables"]
 assert all("label" in tb for tb in b["tables"]),b["tables"]
 print("PASS")'`
 Passes when: prints `PASS`. No bearer token was sent.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-16.md
 
 ### C-17: GET /restaurants/{unknown} is 404 not_found.
 Check: `python3 -c "$P"'
@@ -352,7 +352,7 @@ SETUP()
 ERR(R("GET","/restaurants/r_nope"),404,"not_found")
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-17.md
 
 ### C-18: GET /availability is public.
 Check: `python3 -c "$P"'
@@ -362,7 +362,7 @@ assert b["restaurant_id"]=="r_anker" and b["date"]==F and b["timezone"]=="Europe
 assert isinstance(b["slots"],list) and b["slots"],b
 print("PASS")'`
 Passes when: prints `PASS`. No bearer token was sent.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-18.md
 
 ---
 
@@ -376,7 +376,7 @@ want=[F+"T"+t for t in ["18:00","18:30","19:00","19:30","20:00","20:30","21:00",
 assert got==want,(got,want)
 print("PASS",len(got))'`
 Passes when: prints `PASS 9`. Opening 18:00, closing 23:30, 30-minute grid, 90-minute duration gives exactly the nine slots from 18:00 to 22:00; 22:30 would end at 24:00, after `closes`, so it must not appear.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-19.md
 
 ### C-20: available_table_ids lists the tables with capacity at or above party_size, in fixture order.
 Check: `python3 -c "$P"'
@@ -386,7 +386,7 @@ assert FREE("r_anker",F,4,F+"T19:00")==["t_2","t_3"],FREE("r_anker",F,4,F+"T19:0
 assert FREE("r_anker",F,5,F+"T19:00")==[],FREE("r_anker",F,5,F+"T19:00")
 print("PASS")'`
 Passes when: prints `PASS`. Order follows the fixture, not sorting.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-20.md
 
 ### C-21: A booked table disappears from every overlapping slot and from no other.
 Check: `python3 -c "$P"'
@@ -398,7 +398,7 @@ for at in ["20:30","21:00"]:
     assert "t_2" in FREE("r_anker",F,4,F+"T"+at),("non-overlap lost t_2",at)
 print("PASS")'`
 Passes when: prints `PASS`. A 90-minute booking at 19:00 blocks 18:00 through 20:00 and leaves 20:30 onward free, per the half-open interval rule.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-21.md
 
 ### C-22: A slot with no available table still appears, with an empty list.
 Check: `python3 -c "$P"'
@@ -410,7 +410,7 @@ assert len(sl)==1,sl
 assert sl[0]["available_table_ids"]==[],sl
 print("PASS")'`
 Passes when: prints `PASS`. The 19:00 slot is present with an empty `available_table_ids`, not omitted.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-22.md
 
 ### C-23: A closed day returns an empty slots list.
 Check: `python3 -c "$P"'
@@ -420,7 +420,7 @@ assert b["slots"]==[],b
 assert OK(AV("r_anker","2027-06-11",4),200)["slots"],"friday should be open"
 print("PASS")'`
 Passes when: prints `PASS`. 2027-06-10 is a Thursday, which the fixture leaves closed; 2027-06-11 is the Friday and is open.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-23.md
 
 ### C-24: Each of restaurant_id, date and party_size is required on GET /availability.
 Check: `python3 -c "$P"'
@@ -431,7 +431,7 @@ ERR(R("GET","/availability?restaurant_id=r_anker&date="+F),422,"validation_faile
 ERR(R("GET","/availability"),422,"validation_failed")
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-24.md
 
 ### C-25: An integer-valued query parameter must be plain decimal digits.
 Check: `python3 -c "$P"'
@@ -440,7 +440,7 @@ for bad in ["4.0","+4"," 4","1e9","0x4","four","-1","0",""]:
     ERR(AV("r_anker",F,bad),422,"validation_failed")
 print("PASS")'`
 Passes when: prints `PASS`. Each spelling is 422 `validation_failed` whatever its numeric value.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-25.md
 
 ### C-26: An unparseable or impossible date on GET /availability is rejected.
 Check: `python3 -c "$P"'
@@ -449,7 +449,7 @@ for bad in ["2027-06-31","2027-02-30","2027-13-01","10/06/2027","2027-6-1","not-
     ERR(AV("r_anker",bad,4),422,"validation_failed")
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-26.md
 
 ### C-27: An unknown restaurant_id on GET /availability is 404 not_found.
 Check: `python3 -c "$P"'
@@ -457,7 +457,7 @@ SETUP()
 ERR(AV("r_nope",F,4),404,"not_found")
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-27.md
 
 ### C-28: A starts_at_local taken from availability is accepted unchanged by POST /reservations.
 Check: `python3 -c "$P"'
@@ -469,7 +469,7 @@ for sl in OK(AV("r_anker",F,4),200)["slots"]:
     assert b["starts_at"]==sl["starts_at"],(sl["starts_at"],b["starts_at"])
 print("PASS")'`
 Passes when: prints `PASS`. Every advertised slot is bookable verbatim and echoes back the same local and absolute start.
-Status: unclaimed
+Status: FAILED at 9c8c115 — see verdicts/C-28.md
 
 ---
 
@@ -484,7 +484,7 @@ assert b["display_name"]=="Zoe" and isinstance(b["token"],str) and b["token"],b
 assert OK(LIST(b["token"]),200)["reservations"]==[],"token unusable"
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-29.md
 
 ### C-30: POST /auth/login returns 200 with user_id, display_name and a usable token.
 Check: `python3 -c "$P"'
@@ -495,7 +495,7 @@ assert b["display_name"]=="Ada",b
 assert OK(LIST(b["token"]),200)["reservations"]==[],"token unusable"
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-30.md
 
 ### C-31: Signing up with an already registered email is 409 email_taken.
 Check: `python3 -c "$P"'
@@ -505,7 +505,7 @@ OK(R("POST","/auth/signup",{"email":"zoe@example.com","password":"correct horse"
 ERR(R("POST","/auth/signup",{"email":"zoe@example.com","password":"another one","display_name":"Y"}),409,"email_taken")
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-31.md
 
 ### C-32: A password shorter than 8 characters is 422 validation_failed.
 Check: `python3 -c "$P"'
@@ -515,7 +515,7 @@ for pw in ["1234567","a",""]:
 OK(R("POST","/auth/signup",{"email":"new@example.com","password":"12345678","display_name":"X"}),201)
 print("PASS")'`
 Passes when: prints `PASS`. Seven characters is refused and eight is accepted.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-32.md
 
 ### C-33: An email not of the form local@domain is 422 validation_failed.
 Check: `python3 -c "$P"'
@@ -524,7 +524,7 @@ for em in ["not-an-email","@example.com","ada@","ada example.com","","ada@@examp
     ERR(R("POST","/auth/signup",{"email":em,"password":"correct horse","display_name":"X"}),422,"validation_failed")
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-33.md
 
 ### C-34: A wrong password or an unknown email on login is 401 unauthenticated.
 Check: `python3 -c "$P"'
@@ -533,7 +533,7 @@ ERR(R("POST","/auth/login",{"email":ADA["email"],"password":"wrong password"}),4
 ERR(R("POST","/auth/login",{"email":"nobody@example.com","password":"correct horse"}),401,"unauthenticated")
 print("PASS")'`
 Passes when: prints `PASS`. An unknown email is 401, not 404 — the service does not disclose which accounts exist.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-34.md
 
 ### C-35: A body field of the wrong JSON type is 400 malformed_request.
 Check: `python3 -c "$P"'
@@ -543,7 +543,7 @@ ERR(R("POST","/auth/signup",{"email":"a@example.com","password":["x"],"display_n
 ERR(R("POST","/auth/login",{"email":{"a":1},"password":"correct horse"}),400,"malformed_request")
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-35.md
 
 ### C-36: A protected endpoint without a bearer token is 401 unauthenticated.
 Check: `python3 -c "$P"'
@@ -557,7 +557,7 @@ ERR(R("POST","/reservations/"+ref+"/cancel"),401,"unauthenticated")
 ERR(R("POST","/reservation-moves",{"moves":[{"reference":ref,"table_id":"t_3"}]},key="k9"),401,"unauthenticated")
 print("PASS")'`
 Passes when: prints `PASS`. Every protected path refuses an anonymous caller.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-36.md
 
 ### C-37: An unknown bearer token is 401 unauthenticated.
 Check: `python3 -c "$P"'
@@ -566,7 +566,7 @@ ERR(LIST("not-a-real-token"),401,"unauthenticated")
 ERR(LIST("x"*200),401,"unauthenticated")
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-37.md
 
 ### C-38: A malformed Authorization header is 401 unauthenticated.
 Check: `python3 -c "$P"'
@@ -575,7 +575,7 @@ for h in ["","Bearer","Bearer ","bearer","Basic "+t,t,"Token "+t]:
     ERR(R("GET","/reservations",hdr={"Authorization":h}),401,"unauthenticated")
 print("PASS")'`
 Passes when: prints `PASS`. A header that is present but not a well-formed bearer credential is 401, never a 5xx and never treated as authenticated.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-38.md
 
 ### C-39: A seeded user can log in with the fixture password immediately after reset.
 Check: `python3 -c "$P"'
@@ -585,7 +585,7 @@ for u in [ADA,BOB]:
     assert b["display_name"]==u["display_name"],b
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-39.md
 
 ### C-40: One account may hold several valid tokens at once.
 Check: `python3 -c "$P"'
@@ -597,7 +597,7 @@ for t in ts:
     assert [r["reference"] for r in OK(LIST(t),200)["reservations"]]==[ref],t
 print("PASS")'`
 Passes when: prints `PASS`. Four concurrent sessions all see the same account's booking, and none was invalidated by a later login.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-40.md
 
 ### C-41: No plaintext password appears anywhere in the exported state.
 Check: `python3 -c "$P"'
@@ -611,7 +611,7 @@ for pw in ["correct horse","hunter2hunter2"]:
     assert pw.encode().hex() not in blob,"hex password in export: %r"%pw
 print("PASS")'`
 Passes when: prints `PASS`. Neither the seeded nor a signed-up password is recoverable from the export in plain, base64 or hex form.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-41.md
 
 ### C-42: Stored credentials carry the marker of a recognised password-hashing function.
 Check: `python3 -c "$P"'
@@ -622,7 +622,7 @@ hit=[m for m in marks if m in blob]
 assert hit,"no recognised KDF marker in export; markers looked for: %r"%marks
 print("PASS",hit)'`
 Passes when: prints `PASS` and the marker found. If the implementation uses a different but genuine password-hashing function whose serialised form matches none of these markers, `@auditor` records a fail naming the function and `@scribe` writes a replacement entry — the check is not edited.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-42.md
 
 ---
 
@@ -638,7 +638,7 @@ assert b["restaurant_id"]=="r_anker" and b["table_id"]=="t_2" and b["party_size"
 assert b["status"]=="confirmed" and b["starts_at_local"]==F+"T19:00",b
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-43.md
 
 ### C-44: ends_at is starts_at plus reservation_duration_minutes.
 Check: `python3 -c "$P"'
@@ -654,7 +654,7 @@ s=D.datetime.fromisoformat(b["starts_at"]); e=D.datetime.fromisoformat(b["ends_a
 assert (e-s)==D.timedelta(minutes=45),(b["starts_at"],b["ends_at"])
 print("PASS")'`
 Passes when: prints `PASS`. The duration comes from the restaurant's configuration, not a constant.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-44.md
 
 ### C-45: reference is 6 to 12 characters of A-Z and 0-9.
 Check: `python3 -c "$P"'
@@ -664,7 +664,7 @@ for r in refs:
     assert REF.match(r),"bad reference %r"%r
 print("PASS",refs)'`
 Passes when: prints `PASS` and the references, each matching `^[A-Z0-9]{6,12}$`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-45.md
 
 ### C-46: References are unique across all reservations.
 Check: `python3 -c "$P"'
@@ -676,7 +676,7 @@ for at in ["18:00","18:30","19:00","19:30","20:00","20:30","21:00","21:30","22:0
 assert len(refs)==27 and len(set(refs))==27,"duplicate reference among %r"%refs
 print("PASS",len(set(refs)))'`
 Passes when: prints `PASS 27`.
-Status: unclaimed
+Status: FAILED at 9c8c115 — see verdicts/C-46.md
 
 ### C-47: A table already taken for an overlapping interval is 409 table_unavailable.
 Check: `python3 -c "$P"'
@@ -686,7 +686,7 @@ for at in ["18:00","18:30","19:00","19:30","20:00"]:
     ERR(BOOK(t,F+"T"+at,"k-"+at,tid="t_2"),409,"table_unavailable")
 print("PASS")'`
 Passes when: prints `PASS`. Every start whose 90-minute interval meets the existing booking is refused, not only the identical one.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-47.md
 
 ### C-48: Occupancy is half-open, so a booking starting exactly when another ends succeeds.
 Check: `python3 -c "$P"'
@@ -698,7 +698,7 @@ c=OK(BOOK(t,F+"T22:00","k3",tid="t_2"),201)
 assert c["status"]=="confirmed"
 print("PASS")'`
 Passes when: prints `PASS`. The second booking starts at the exact instant the first ends and is accepted, confirming `[starts_at, starts_at + duration)`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-48.md
 
 ### C-49: The same time on a different table succeeds.
 Check: `python3 -c "$P"'
@@ -708,7 +708,7 @@ b=OK(BOOK(t,F+"T19:00","k2",tid="t_3"),201)
 assert a["starts_at"]==b["starts_at"] and a["table_id"]!=b["table_id"],(a,b)
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-49.md
 
 ### C-50: A start that is not on the slot grid is 422 not_on_slot_grid.
 Check: `python3 -c "$P"'
@@ -717,7 +717,7 @@ for at in ["19:15","18:01","19:45","22:15"]:
     ERR(BOOK(t,F+"T"+at,"k-"+at),422,"not_on_slot_grid")
 print("PASS")'`
 Passes when: prints `PASS`. The grid runs in 30-minute steps from the 18:00 opening.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-50.md
 
 ### C-51: A start outside opening hours is 422 outside_opening_hours.
 Check: `python3 -c "$P"'
@@ -729,7 +729,7 @@ t=LOGIN(ADA)
 ERR(BOOK(t,"2027-06-10T19:00","k9"),422,"outside_opening_hours")
 print("PASS")'`
 Passes when: prints `PASS`. A time before opening, after closing and a booking on a day the restaurant has no opening-hours entry are all `outside_opening_hours`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-51.md
 
 ### C-52: A reservation that would end after closes is 422 outside_opening_hours.
 Check: `python3 -c "$P"'
@@ -739,7 +739,7 @@ for at in ["22:30","23:00"]:
     ERR(BOOK(t,F+"T"+at,"k-"+at,tid="t_3"),422,"outside_opening_hours")
 print("PASS")'`
 Passes when: prints `PASS`. 22:00 plus 90 minutes is exactly 23:30 and is allowed; 22:30 and 23:00 would end after the close and are refused even though both are on the grid.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-52.md
 
 ### C-53: A party_size above the table's capacity is 422 party_exceeds_capacity.
 Check: `python3 -c "$P"'
@@ -749,7 +749,7 @@ ERR(BOOK(t,F+"T19:00","k2",tid="t_2",ps=5),422,"party_exceeds_capacity")
 OK(BOOK(t,F+"T19:00","k3",tid="t_1",ps=2),201)
 print("PASS")'`
 Passes when: prints `PASS`. Exactly the capacity is allowed; one more is refused.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-53.md
 
 ### C-54: A party_size below 1 or not an integer is 422 validation_failed.
 Check: `python3 -c "$P"'
@@ -758,7 +758,7 @@ for i,ps in enumerate([0,-1,"4",4.5,True,False,None,[4],{"n":4},"four",""]):
     ERR(BOOK(t,F+"T19:00","k%d"%i,ps=ps),422,"validation_failed")
 print("PASS")'`
 Passes when: prints `PASS`. Strings and booleans are 422 `validation_failed` here, not 400 — the endpoint-specific rule of §5 takes precedence.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-54.md
 
 ### C-55: A starts_at_local that is not a bare local YYYY-MM-DDTHH:MM is 422 validation_failed.
 Check: `python3 -c "$P"'
@@ -768,7 +768,7 @@ for i,at in enumerate(bad):
     ERR(BOOK(t,at,"k%d"%i),422,"validation_failed")
 print("PASS")'`
 Passes when: prints `PASS`. Seconds, a `Z`, an explicit offset and a space separator are all refused.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-55.md
 
 ### C-56: An unknown restaurant, an unknown table, or a table of another restaurant is 404 not_found.
 Check: `python3 -c "$P"'
@@ -779,7 +779,7 @@ ERR(BOOK(t,F+"T19:00","k2",tid="t_nope"),404,"not_found")
 ERR(BOOK(t,F+"T19:00","k3",rid="r_ny",tid="t_2"),404,"not_found")
 print("PASS")'`
 Passes when: prints `PASS`. The third case names a table id that exists, but under a different restaurant.
-Status: unclaimed
+Status: FAILED at 9c8c115 — see verdicts/C-56.md
 
 ### C-57: An unparseable request body is 400 malformed_request.
 Check: `python3 -c "$P"'
@@ -789,7 +789,7 @@ for raw in [b"{not json",b"",b"[]",b"null",b"\"string\"",b"{\"a\":}"]:
     assert s==400 and b.get("error",{}).get("code")=="malformed_request",(raw,s,b)
 print("PASS")'`
 Passes when: prints `PASS`. A body that does not parse, and a parsed value that is not a JSON object, are both 400 `malformed_request`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-57.md
 
 ### C-58: A booking is not refused merely because its start is in the past.
 Check: `python3 -c "$P"'
@@ -799,7 +799,7 @@ assert b["status"]=="confirmed" and b["starts_at_local"]=="2020-06-10T19:00",b
 assert "2020-06-10T19:00" in SLOTS("r_anker","2020-06-10",4)
 print("PASS")'`
 Passes when: prints `PASS`. 2020-06-10 is a Wednesday and open in the fixture; the booking is confirmed despite being years in the past.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-58.md
 
 ### C-59: No request produces a 5xx response.
 Check: `python3 -c "$P"'
@@ -817,7 +817,7 @@ for m,p,bd,tk,k in probes:
 assert not bad,"5xx responses: %r"%bad
 print("PASS")'`
 Passes when: prints `PASS`. Every hostile input returns a 4xx or a success, never a 5xx.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-59.md
 
 ---
 
@@ -838,7 +838,7 @@ assert [r["status"] for r in rs]==["confirmed","confirmed","cancelled"],rs
 assert set(["reservation_id","reference","ends_at","created_at"])<=set(rs[0]),rs[0]
 print("PASS")'`
 Passes when: prints `PASS`. Ordering is by `starts_at` descending, the cancelled booking is still listed, and the other account's booking is absent.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-60.md
 
 ### C-61: An empty reservation list is returned as an empty array.
 Check: `python3 -c "$P"'
@@ -847,7 +847,7 @@ b=OK(LIST(ta),200)
 assert b=={"reservations":[]},b
 print("PASS",b)'`
 Passes when: prints `PASS {'reservations': []}` — the key is present with an empty array, not omitted and not null.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-61.md
 
 ### C-62: GET /reservations/{reference} returns the caller's booking and 404 for anyone else's.
 Check: `python3 -c "$P"'
@@ -858,7 +858,7 @@ assert got["reference"]==a["reference"] and got["reservation_id"]==a["reservatio
 ERR(GETR(tb,a["reference"]),404,"not_found")
 print("PASS")'`
 Passes when: prints `PASS`. The other account gets 404 `not_found`, not 403 — the existence of the booking is not disclosed.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-62.md
 
 ### C-63: An unknown reference is 404 not_found.
 Check: `python3 -c "$P"'
@@ -867,7 +867,7 @@ for ref in ["ZZZZZZ","ABC123","nope","z"*100]:
     ERR(GETR(ta,ref),404,"not_found")
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-63.md
 
 ---
 
@@ -884,7 +884,7 @@ assert "t_2" in FREE("r_anker",F,4,F+"T19:00"),"slot not freed"
 OK(BOOK(ta,F+"T19:00","a2",tid="t_2"),201)
 print("PASS")'`
 Passes when: prints `PASS`. The next availability offers the slot again and it is genuinely re-bookable.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-64.md
 
 ### C-65: Cancelling twice is not an error.
 Check: `python3 -c "$P"'
@@ -896,7 +896,7 @@ assert two["status"]=="cancelled" and two["reference"]==a["reference"],two
 assert two["reservation_id"]==a["reservation_id"],two
 print("PASS")'`
 Passes when: prints `PASS`. The second cancel is 200 with the current state, not a 409.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-65.md
 
 ### C-66: Cancelling within cancellation_cutoff_minutes of the start is 409 cutoff_passed.
 Check: `python3 -c "$P"'
@@ -908,7 +908,7 @@ assert OK(GETR(ta,a["reference"]),200)["status"]=="confirmed","refused cancel st
 assert "t_2" not in FREE("r_anker",F,4,F+"T19:00"),"refused cancel freed the table"
 print("PASS")'`
 Passes when: prints `PASS`. A cutoff wide enough to cover the booking makes cancel 409, and the booking keeps both its status and its occupancy.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-66.md
 
 ### C-67: Cancelling a reservation whose start has already passed is 409 cutoff_passed.
 Check: `python3 -c "$P"'
@@ -918,7 +918,7 @@ ERR(CANCEL(ta,"SEED01"),409,"cutoff_passed")
 assert OK(GETR(ta,"SEED01"),200)["status"]=="confirmed"
 print("PASS")'`
 Passes when: prints `PASS`. "Within the cutoff of `starts_at`, or later" covers a start in the past.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-67.md
 
 ### C-68: Cancelling someone else's reservation is 404 not_found.
 Check: `python3 -c "$P"'
@@ -928,7 +928,7 @@ ERR(CANCEL(tb,a["reference"]),404,"not_found")
 assert OK(GETR(ta,a["reference"]),200)["status"]=="confirmed"
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-68.md
 
 ---
 
@@ -944,7 +944,7 @@ fr=FREE("r_anker",F,4,F+"T19:00")
 assert "t_2" in fr and "t_3" not in fr,fr
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-69.md
 
 ### C-70: PATCH requires no idempotency key.
 Check: `python3 -c "$P"'
@@ -954,7 +954,7 @@ s,b,_=R("PATCH","/reservations/"+a["reference"],{"party_size":2},tok=ta)
 assert s==200,(s,b)
 print("PASS")'`
 Passes when: prints `PASS`. No `Idempotency-Key` header was sent and the amendment still succeeded.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-70.md
 
 ### C-71: reference and reservation_id survive a change.
 Check: `python3 -c "$P"'
@@ -966,7 +966,7 @@ assert b["created_at"]==a["created_at"],(a["created_at"],b["created_at"])
 assert b["table_id"]=="t_3" and b["starts_at_local"]==F+"T21:00" and b["party_size"]==2,b
 print("PASS")'`
 Passes when: prints `PASS`. Identity and creation time are untouched while the changed fields take effect.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-71.md
 
 ### C-72: PATCH validation is identical to POST /reservations.
 Check: `python3 -c "$P"'
@@ -983,7 +983,7 @@ ERR(PATCHR(ta,r,{"starts_at_local":F+"T19:00:00"}),422,"validation_failed")
 ERR(PATCHR(ta,r,{"table_id":"t_nope"}),404,"not_found")
 print("PASS")'`
 Passes when: prints `PASS`. Each create-side error code appears unchanged on the amendment path.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-72.md
 
 ### C-73: PATCH onto a table taken for an overlapping interval is 409 table_unavailable.
 Check: `python3 -c "$P"'
@@ -993,7 +993,7 @@ OK(BOOK(ta,F+"T19:00","a2",tid="t_3"),201)
 ERR(PATCHR(ta,a["reference"],{"table_id":"t_3"}),409,"table_unavailable")
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-73.md
 
 ### C-74: A failed amendment leaves the original booking and its occupancy unchanged.
 Check: `python3 -c "$P"'
@@ -1014,7 +1014,7 @@ assert "t_2" not in fr and "t_3" in fr,fr
 assert "t_3" not in FREE("r_anker",F,4,F+"T21:00")
 print("PASS")'`
 Passes when: prints `PASS`. After five different refused amendments the booking is identical to before and both the old table and the other table hold exactly their original occupancy.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-74.md
 
 ### C-75: Amending a cancelled reservation is 409 reservation_cancelled.
 Check: `python3 -c "$P"'
@@ -1025,7 +1025,7 @@ ERR(PATCHR(ta,a["reference"],{"table_id":"t_3"}),409,"reservation_cancelled")
 ERR(PATCHR(ta,a["reference"],{"party_size":2}),409,"reservation_cancelled")
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-75.md
 
 ### C-76: The amendment cutoff is measured against the current start time, not the requested one.
 Check: `python3 -c "$P"'
@@ -1038,7 +1038,7 @@ ERR(PATCHR(ta,a["reference"],{"party_size":2}),409,"cutoff_passed")
 assert OK(GETR(ta,a["reference"]),200)==a,"refused amendment changed the booking"
 print("PASS")'`
 Passes when: prints `PASS`. Moving the booking far beyond the cutoff is still refused, because the cutoff is judged on where the booking currently starts.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-76.md
 
 ### C-77: Amending someone else's reservation is 404 not_found.
 Check: `python3 -c "$P"'
@@ -1048,7 +1048,7 @@ ERR(PATCHR(tb,a["reference"],{"party_size":2}),404,"not_found")
 ERR(PATCHR(tb,"ZZZZZZ",{"party_size":2}),404,"not_found")
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-77.md
 
 ### C-78: Fields omitted from a PATCH keep their current values.
 Check: `python3 -c "$P"'
@@ -1062,7 +1062,7 @@ c=OK(PATCHR(ta,a["reference"],{}),200)
 assert c["party_size"]==2 and c["table_id"]=="t_2" and c["starts_at_local"]==F+"T19:00",c
 print("PASS")'`
 Passes when: prints `PASS`. An empty PATCH body changes nothing and is not an error.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-78.md
 
 ---
 
@@ -1081,7 +1081,7 @@ for _ in range(3):
 assert len(OK(LIST(ta),200)["reservations"])==1,"replay created a second booking"
 print("PASS")'`
 Passes when: prints `PASS`. Three replays all return 200 with the identical JSON value and exactly one booking exists.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-79.md
 
 ### C-80: A missing or empty Idempotency-Key is 400 missing_idempotency_key.
 Check: `python3 -c "$P"'
@@ -1094,7 +1094,7 @@ ERR(R("POST","/reservation-moves",{"moves":[{"reference":"ZZZZZZ"}]},tok=ta),400
 ERR(R("POST","/reservation-moves",{"moves":[{"reference":"ZZZZZZ"}]},tok=ta,key=""),400,"missing_idempotency_key")
 print("PASS")'`
 Passes when: prints `PASS`. Both keyed write paths refuse an absent and an empty key with 400, and the moves case is refused before its unknown reference would give 404.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-80.md
 
 ### C-81: An Idempotency-Key longer than 255 characters is 422 validation_failed.
 Check: `python3 -c "$P"'
@@ -1105,7 +1105,7 @@ ERR(R("POST","/reservations",body,tok=ta,key="k"*4000),422,"validation_failed")
 OK(R("POST","/reservations",body,tok=ta,key="k"*255),201)
 print("PASS")'`
 Passes when: prints `PASS`. Exactly 255 characters is accepted and 256 is refused.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-81.md
 
 ### C-82: The same key with a different body is 409 idempotency_key_reuse.
 Check: `python3 -c "$P"'
@@ -1117,7 +1117,7 @@ ERR(R("POST","/reservations",dict(body,table_id="t_3"),tok=ta,key="key-1"),409,"
 assert len(OK(LIST(ta),200)["reservations"])==1
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-82.md
 
 ### C-83: Idempotency is resolved before field validation, so a used key with a different invalid body is still 409.
 Check: `python3 -c "$P"'
@@ -1130,7 +1130,7 @@ for alt in [dict(body,party_size=0),dict(body,party_size="four"),dict(body,start
     ERR(R("POST","/reservations",alt,tok=ta,key="key-1"),409,"idempotency_key_reuse")
 print("PASS")'`
 Passes when: prints `PASS`. Each of these bodies would be 422 or 404 on a fresh key; with a used key the reuse conflict wins.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-83.md
 
 ### C-84: The same key with the same body on a different path is a different request and succeeds.
 Check: `python3 -c "$P"'
@@ -1141,7 +1141,7 @@ assert s==201,"moves with a key already used by POST /reservations: %s %r"%(s,b)
 assert b["reservations"][0]["table_id"]=="t_3",b
 print("PASS")'`
 Passes when: prints `PASS`. A key spent on `POST /reservations` does not block `POST /reservation-moves`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-84.md
 
 ### C-85: A key reused after the original request failed with 4xx is treated as a first use.
 Check: `python3 -c "$P"'
@@ -1156,7 +1156,7 @@ OK(BOOK(ta,F+"T22:00","key-3",tid="t_2"),201)
 assert len(OK(LIST(ta),200)["reservations"])==3
 print("PASS")'`
 Passes when: prints `PASS`. A key burnt on a 422 and on a 409 is reusable, and the later different body is accepted rather than reported as reuse.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-85.md
 
 ### C-86: An idempotency key is scoped to the authenticated user.
 Check: `python3 -c "$P"'
@@ -1168,7 +1168,7 @@ s,c,_=R("POST","/reservations",{"restaurant_id":"r_anker","table_id":"t_1","star
 assert s==409 and c["error"]["code"]=="idempotency_key_reuse",(s,c)
 print("PASS")'`
 Passes when: prints `PASS`. The second account books normally with the same key string, and its own reuse of that key is then detected independently.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-86.md
 
 ### C-87: A replay returns the original response even after the reservation is cancelled, and makes no further change.
 Check: `python3 -c "$P"'
@@ -1184,7 +1184,7 @@ assert "t_2" in FREE("r_anker",F,4,F+"T19:00"),"replay re-took the table"
 assert len(OK(LIST(ta),200)["reservations"])==1
 print("PASS")'`
 Passes when: prints `PASS`. The replay echoes the stored `confirmed` response while the live booking stays cancelled and its table stays free.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-87.md
 
 ### C-88: Key order and whitespace do not make a body different.
 Check: `python3 -c "$P"'
@@ -1196,7 +1196,7 @@ assert s==200,"reordered/whitespaced body not treated as a replay: %s %r"%(s,b)
 assert b==first,b
 print("PASS")'`
 Passes when: prints `PASS`. The same JSON value written differently replays rather than conflicting.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-88.md
 
 ### C-89: Concurrent identical requests with an unused key yield exactly one 201 and one booking.
 Check: `python3 -c "$P"'
@@ -1213,7 +1213,7 @@ assert len(bodies)==1,"concurrent replies differ: %r"%bodies
 assert len(OK(LIST(ta),200)["reservations"])==1,"operation took effect more than once"
 print("PASS",cs.count(201),cs.count(200))'`
 Passes when: prints `PASS 1 19`. Twenty simultaneous identical requests produce one 201, nineteen 200s, a single response body and exactly one reservation.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-89.md
 
 ---
 
@@ -1234,7 +1234,7 @@ assert len(res)==1,"double booking: %r"%res
 assert "t_2" not in FREE("r_anker",F,4,F+"T19:00")
 print("PASS")'`
 Passes when: prints `PASS`. Fifty in-flight requests with distinct keys leave one booking; the other forty-nine are 409 `table_unavailable` and none is a 5xx.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-90.md
 
 ### C-91: Fifty concurrent mixed reads and writes produce no 5xx.
 Check: `python3 -c "$P"'
@@ -1254,7 +1254,7 @@ assert not bad,"5xx or transport failure: %r"%bad
 assert OK(R("GET","/health"),200)=={"status":"ok"},"service unhealthy after load"
 print("PASS",sorted(set(r[0] for r in rs)))'`
 Passes when: prints `PASS` and the set of observed statuses, all below 500, with the service still healthy afterwards.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-91.md
 
 ---
 
@@ -1269,7 +1269,7 @@ for at in ["02:00","02:30"]:
 OK(BOOK(ta,"2026-03-29T01:30","k-ok",rid="r_dst"),201)
 print("PASS")'`
 Passes when: prints `PASS`. 02:00 and 02:30 do not exist on 2026-03-29 in Berlin; 01:30 does and is bookable.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-92.md
 
 ### C-93: Local times skipped by Europe/Berlin's spring-forward never appear in availability.
 Check: `python3 -c "$P"'
@@ -1279,7 +1279,7 @@ want=["2026-03-29T"+t for t in ["01:00","01:30","03:00","03:30","04:00","04:30"]
 assert got==want,(got,want)
 print("PASS",len(got))'`
 Passes when: prints `PASS 6`. The 01:00-to-06:00 window yields six slots: the 02:00 and 02:30 steps are absent because those local times do not exist.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-93.md
 
 ### C-94: A local time repeated by Europe/Berlin's fall-back appears exactly once in availability.
 Check: `python3 -c "$P"'
@@ -1294,7 +1294,7 @@ assert sl["2026-10-25T02:00"]=="2026-10-25T02:00:00+02:00",sl["2026-10-25T02:00"
 assert sl["2026-10-25T02:30"]=="2026-10-25T02:30:00+02:00",sl["2026-10-25T02:30"]
 print("PASS",len(got))'`
 Passes when: prints `PASS 8`. The repeated 02:00 and 02:30 each appear once, and the offset advertised is `+02:00`, the first occurrence.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-94.md
 
 ### C-95: Europe/Berlin's repeated hour resolves to the first occurrence.
 Check: `python3 -c "$P"'
@@ -1305,7 +1305,7 @@ assert b["starts_at"]=="2026-10-25T02:00:00+02:00","expected the pre-change offs
 assert "t_2" not in FREE("r_dst","2026-10-25",4,"2026-10-25T02:00")
 print("PASS",b["starts_at"])'`
 Passes when: prints `PASS 2026-10-25T02:00:00+02:00`. The booking landed on the instant before the clocks changed, not the one after.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-95.md
 
 ### C-96: Booking a local time skipped by America/New_York's spring-forward is 422 invalid_local_time.
 Check: `python3 -c "$P"'
@@ -1316,7 +1316,7 @@ for at in ["02:00","02:30"]:
 OK(BOOK(ta,"2026-03-08T01:30","k-ok",rid="r_dst"),201)
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-96.md
 
 ### C-97: Local times skipped by America/New_York's spring-forward never appear in availability.
 Check: `python3 -c "$P"'
@@ -1326,7 +1326,7 @@ want=["2026-03-08T"+t for t in ["01:00","01:30","03:00","03:30","04:00","04:30"]
 assert got==want,(got,want)
 print("PASS",len(got))'`
 Passes when: prints `PASS 6`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-97.md
 
 ### C-98: A local time repeated by America/New_York's fall-back appears exactly once in availability.
 Check: `python3 -c "$P"'
@@ -1339,7 +1339,7 @@ assert sl["2026-11-01T01:00"]=="2026-11-01T01:00:00-04:00",sl["2026-11-01T01:00"
 assert sl["2026-11-01T01:30"]=="2026-11-01T01:30:00-04:00",sl["2026-11-01T01:30"]
 print("PASS",len(got))'`
 Passes when: prints `PASS 8`. The repeated 01:00 and 01:30 each appear once, advertised at `-04:00`, the first occurrence.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-98.md
 
 ### C-99: America/New_York's repeated hour resolves to the first occurrence.
 Check: `python3 -c "$P"'
@@ -1349,7 +1349,7 @@ b=OK(BOOK(ta,"2026-11-01T01:30","k1",rid="r_dst",tid="t_2"),201)
 assert b["starts_at"]=="2026-11-01T01:30:00-04:00","expected the pre-change offset, got %r"%b["starts_at"]
 print("PASS",b["starts_at"])'`
 Passes when: prints `PASS 2026-11-01T01:30:00-04:00`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-99.md
 
 ### C-100: reservation_duration_minutes is absolute time, so a booking across a fall-back ends 90 real minutes later.
 Check: `python3 -c "$P"'
@@ -1363,7 +1363,7 @@ s=D.datetime.fromisoformat(b["starts_at"]); e=D.datetime.fromisoformat(b["ends_a
 assert (e-s)==D.timedelta(minutes=90),(e-s)
 print("PASS",b["ends_at"])'`
 Passes when: prints `PASS 2026-11-01T02:00:00-05:00`. This is the specification's own example: the local `ends_at` reads 02:00, not 03:00, and the elapsed absolute time is exactly 90 minutes.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-100.md
 
 ### C-101: A Europe/Berlin booking across the fall-back also ends 90 real minutes later.
 Check: `python3 -c "$P"'
@@ -1377,7 +1377,7 @@ s=D.datetime.fromisoformat(b["starts_at"]); e=D.datetime.fromisoformat(b["ends_a
 assert (e-s)==D.timedelta(minutes=90),(e-s)
 print("PASS",b["ends_at"])'`
 Passes when: prints `PASS 2026-10-25T02:30:00+01:00`. Starting at 02:00 the wall clock reads 02:30 ninety real minutes later, because the hour repeated.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-101.md
 
 ### C-102: Offsets follow the IANA rules on both sides of each transition, in both zones.
 Check: `python3 -c "$P"'
@@ -1395,7 +1395,7 @@ for rid,d,off in cases:
     assert sl[d+"T19:00"]==d+"T19:00:00"+off,(rid,d,sl[d+"T19:00"])
 print("PASS")'`
 Passes when: prints `PASS`. All eight dates, either side of both transitions in both zones, carry the offset the IANA rules give, consistently in bookings and in availability.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-102.md
 
 ### C-103: A restaurant's times follow its own timezone, so two zones reach the same instant from different local times.
 Check: `python3 -c "$P"'
@@ -1409,7 +1409,7 @@ assert D.datetime.fromisoformat(de["starts_at"])==D.datetime.fromisoformat(us["s
 assert de["starts_at"]!=us["starts_at"],"offsets should differ textually"
 print("PASS",de["starts_at"],us["starts_at"])'`
 Passes when: prints `PASS` with the two timestamps. 19:00 in Berlin and 13:00 in New York on 2027-06-10 are the same absolute instant written with different offsets.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-103.md
 
 ---
 
@@ -1425,7 +1425,7 @@ assert b["format_version"]==1,b.get("format_version")
 assert isinstance(b["state"],dict),type(b.get("state"))
 print("PASS")'`
 Passes when: prints `PASS`. No bearer token was sent.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-104.md
 
 ### C-105: POST /_test/import accepts an unchanged export and returns 204, without authentication.
 Check: `python3 -c "$P"'
@@ -1436,7 +1436,7 @@ s,b,_=R("POST","/_test/import",snap)
 assert s==204,(s,b)
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-105.md
 
 ### C-106: A round trip preserves reservations, references, identities, statuses and timestamps without regenerating them.
 Check: `python3 -c "$P"'
@@ -1453,7 +1453,7 @@ assert OK(GETR(ta,a["reference"]),200)["created_at"]==a["created_at"]
 assert OK(GETR(ta,b["reference"]),200)["status"]=="cancelled"
 print("PASS")'`
 Passes when: prints `PASS`. Every field of both reservations, including `reservation_id`, `reference`, `created_at` and the cancelled status, is identical after the round trip.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-106.md
 
 ### C-107: A round trip preserves existing bearer tokens.
 Check: `python3 -c "$P"'
@@ -1467,7 +1467,7 @@ assert [r["reference"] for r in OK(LIST(extra),200)["reservations"]]==[a["refere
 assert OK(LIST(tb),200)["reservations"]==[]
 print("PASS")'`
 Passes when: prints `PASS`. Tokens issued before the export still authenticate the same accounts after the import, so they were carried in the state and not reissued.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-107.md
 
 ### C-108: A round trip preserves hashed-password login.
 Check: `python3 -c "$P"'
@@ -1482,7 +1482,7 @@ blob=json.dumps(snap)
 assert "hunter2hunter2" not in blob and "correct horse" not in blob,"plaintext password in export"
 print("PASS")'`
 Passes when: prints `PASS`. Both the seeded and the signed-up account still log in after the import, a wrong password is still refused, and no plaintext password travelled in the snapshot.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-108.md
 
 ### C-109: A round trip preserves completed idempotency receipts and their original responses.
 Check: `python3 -c "$P"'
@@ -1498,7 +1498,7 @@ ERR(R("POST","/reservations",dict(body,party_size=3),tok=ta,key="key-1"),409,"id
 assert len(OK(LIST(ta),200)["reservations"])==1
 print("PASS")'`
 Passes when: prints `PASS`. After the import the key still replays the identical original response and still detects a changed body.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-109.md
 
 ### C-110: Keys whose original request failed with 4xx remain reusable after a round trip.
 Check: `python3 -c "$P"'
@@ -1510,7 +1510,7 @@ b=OK(BOOK(ta,F+"T19:00","key-1"),201)
 assert b["status"]=="confirmed",b
 print("PASS")'`
 Passes when: prints `PASS`. A key burnt on a 422 before the export is still a first use after the import.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-110.md
 
 ### C-111: Import is replacement, not merge, and repeating it does not duplicate anything.
 Check: `python3 -c "$P"'
@@ -1526,7 +1526,7 @@ for _ in range(3):
     assert len(OK(R("GET","/restaurants"),200)["restaurants"])==1
 print("PASS")'`
 Passes when: prints `PASS`. The booking made after the export is gone, and three successive imports of the same snapshot leave exactly one reservation and one restaurant.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-111.md
 
 ### C-112: Import removes all previous destination data and credentials.
 Check: `python3 -c "$P"'
@@ -1545,7 +1545,7 @@ assert [r["id"] for r in OK(R("GET","/restaurants"),200)["restaurants"]]==["r_an
 OK(R("POST","/auth/login",{"email":ADA["email"],"password":ADA["password"]}),200)
 print("PASS")'`
 Passes when: prints `PASS`. The destination's own accounts, tokens and restaurants are gone; only the imported state remains.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-112.md
 
 ### C-113: An export is an atomic read-only snapshot that later writes do not change.
 Check: `python3 -c "$P"'
@@ -1564,7 +1564,7 @@ assert rs[0]["status"]=="confirmed","the snapshot recorded a later cancellation"
 ERR(R("POST","/auth/login",{"email":"zoe@example.com","password":"correct horse"}),401,"unauthenticated")
 print("PASS")'`
 Passes when: prints `PASS`. Restoring the snapshot brings back the state as it was at export time, without the later booking, cancellation or signup.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-113.md
 
 ### C-114: An import naming the wrong track is 422 validation_failed and changes nothing.
 Check: `python3 -c "$P"'
@@ -1577,7 +1577,7 @@ for tr in ["pocketful","toy","","TABLEKEEPER",None,1]:
     assert OK(LIST(ta),200)["reservations"]==before,"destination changed by a rejected import"
 print("PASS")'`
 Passes when: prints `PASS`. Each rejected import leaves the destination unchanged.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-114.md
 
 ### C-115: An import naming the wrong format_version is 422 validation_failed and changes nothing.
 Check: `python3 -c "$P"'
@@ -1590,7 +1590,7 @@ for v in [0,2,99,"1",None]:
     assert OK(LIST(ta),200)["reservations"]==before,"destination changed by a rejected import"
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-115.md
 
 ### C-116: An import with a missing field or an invalid state is 422 validation_failed and changes nothing.
 Check: `python3 -c "$P"'
@@ -1606,7 +1606,7 @@ for o in bad:
     assert OK(LIST(ta),200)["reservations"]==before,"destination changed by a rejected import: %r"%sorted(o)
 print("PASS")'`
 Passes when: prints `PASS`. A missing `track`, `format_version` or `state`, and a `state` of the wrong JSON type, are all 422, and the destination is untouched each time.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-116.md
 
 ### C-117: An import whose body does not parse is 400 malformed_request.
 Check: `python3 -c "$P"'
@@ -1619,7 +1619,7 @@ for raw in [b"{not json",b"",b"[1,2,3]",b"\"text\"",b"null"]:
     assert OK(LIST(ta),200)["reservations"]==before
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-117.md
 
 ### C-118: Reset clears imported state.
 Check: `python3 -c "$P"'
@@ -1634,7 +1634,7 @@ b=OK(BOOK(t2,F+"T19:00","k1"),201)
 assert b["status"]=="confirmed","the imported idempotency receipt survived reset"
 print("PASS")'`
 Passes when: prints `PASS`. After a reset neither the imported reservations nor the imported idempotency receipts remain.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-118.md
 
 ---
 
@@ -1650,7 +1650,7 @@ ERR(R("POST","/reservation-moves",mv,key="m2",hdr={"Authorization":"Bearer nope"
 assert OK(GETR(ta,a["reference"]),200)["table_id"]=="t_2"
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-119.md
 
 ### C-120: POST /reservation-moves requires an idempotency key of 1 to 255 characters.
 Check: `python3 -c "$P"'
@@ -1664,7 +1664,7 @@ ERR(R("POST","/reservation-moves",mv,tok=ta,key="k"*256),422,"validation_failed"
 assert OK(GETR(ta,a["reference"]),200)["table_id"]=="t_2"
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-120.md
 
 ### C-121: A successful batch returns 201 with the reservations in input order, including unchanged items.
 Check: `python3 -c "$P"'
@@ -1680,7 +1680,7 @@ assert r["reservations"][1]["party_size"]==1,r["reservations"][1]
 assert r["reservations"][2]["table_id"]=="t_3",r["reservations"][2]
 print("PASS")'`
 Passes when: prints `PASS`. Response order follows the request, and the untouched booking comes back exactly as it was.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-121.md
 
 ### C-122: Two bookings may exchange tables in one batch.
 Check: `python3 -c "$P"'
@@ -1694,7 +1694,7 @@ assert OK(GETR(ta,b["reference"]),200)["table_id"]=="t_2"
 assert FREE("r_anker",F,4,F+"T19:00")==[],FREE("r_anker",F,4,F+"T19:00")
 print("PASS")'`
 Passes when: prints `PASS`. A swap that would conflict if applied one move at a time succeeds, because the batch is judged on its resulting state.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-122.md
 
 ### C-123: A moves list outside 1 to 8 entries is 422 validation_failed.
 Check: `python3 -c "$P"'
@@ -1706,7 +1706,7 @@ ERR(MOVES(ta,"m9",[{"reference":r} for r in refs]),422,"validation_failed")
 OK(MOVES(ta,"m8",[{"reference":r} for r in refs[:8]]),201)
 print("PASS")'`
 Passes when: prints `PASS`. Zero entries and nine entries are refused; eight are accepted.
-Status: unclaimed
+Status: FAILED at 9c8c115 — see verdicts/C-123.md
 
 ### C-124: Duplicate references in a batch are 422 validation_failed.
 Check: `python3 -c "$P"'
@@ -1718,7 +1718,7 @@ ERR(MOVES(ta,"m2",[{"reference":a["reference"]},{"reference":b["reference"]},{"r
 assert OK(GETR(ta,a["reference"]),200)==a
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-124.md
 
 ### C-125: A batch of an invalid shape is 422 validation_failed.
 Check: `python3 -c "$P"'
@@ -1731,7 +1731,7 @@ s,b,_=R("POST","/reservation-moves",{},tok=ta,key="mm")
 assert s==422 and b["error"]["code"]=="validation_failed",(s,b)
 print("PASS")'`
 Passes when: prints `PASS`. A missing `moves`, a `moves` that is not a list of objects, a missing `reference` and a non-string `reference` are all 422 `validation_failed`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-125.md
 
 ### C-126: An unknown reference, or another account's, is 404 not_found.
 Check: `python3 -c "$P"'
@@ -1746,7 +1746,7 @@ assert OK(GETR(ta,a["reference"]),200)==a
 assert OK(GETR(tb,theirs["reference"]),200)==theirs
 print("PASS")'`
 Passes when: prints `PASS`. Another account's reference is 404, not 403, and neither booking changed.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-126.md
 
 ### C-127: References spanning different restaurants are 422 validation_failed.
 Check: `python3 -c "$P"'
@@ -1758,7 +1758,7 @@ ERR(MOVES(ta,"m1",[{"reference":a["reference"],"table_id":"t_3"},{"reference":b[
 assert OK(GETR(ta,a["reference"]),200)==a and OK(GETR(ta,b["reference"]),200)==b
 print("PASS")'`
 Passes when: prints `PASS`. Both bookings belong to the caller and both references exist, so the failure is the cross-restaurant rule, not 404.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-127.md
 
 ### C-128: A cancelled booking in a batch is 409 reservation_cancelled.
 Check: `python3 -c "$P"'
@@ -1771,7 +1771,7 @@ ERR(MOVES(ta,"m2",[{"reference":a["reference"],"table_id":"t_3"},{"reference":b[
 assert OK(GETR(ta,a["reference"]),200)==a,"rejected batch changed the other booking"
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-128.md
 
 ### C-129: A booking inside its own cutoff is 409 cutoff_passed within a batch.
 Check: `python3 -c "$P"'
@@ -1784,7 +1784,7 @@ ERR(MOVES(ta,"m2",[{"reference":a["reference"]},{"reference":b["reference"],"par
 assert OK(GETR(ta,a["reference"]),200)==a and OK(GETR(ta,b["reference"]),200)==b
 print("PASS")'`
 Passes when: prints `PASS`. Each booking's own cutoff applies, and a batch containing one inside its cutoff is refused whole.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-129.md
 
 ### C-130: For one booking, its cutoff error precedes its other errors.
 Check: `python3 -c "$P"'
@@ -1797,7 +1797,7 @@ ERR(MOVES(ta,"m3",[{"reference":a["reference"],"starts_at_local":F+"T12:00"}]),4
 ERR(MOVES(ta,"m4",[{"reference":a["reference"],"table_id":"t_nope"}]),409,"cutoff_passed")
 print("PASS")'`
 Passes when: prints `PASS`. Each of these items would otherwise be 422 `not_on_slot_grid`, 422 `party_exceeds_capacity`, 422 `outside_opening_hours` or 404 `not_found`; the cutoff error wins for that booking.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-130.md
 
 ### C-131: Non-occupancy errors take precedence in input order.
 Check: `python3 -c "$P"'
@@ -1810,7 +1810,7 @@ ERR(MOVES(ta,"m3",[{"reference":a["reference"],"starts_at_local":F+"T12:00"},{"r
 ERR(MOVES(ta,"m4",[{"reference":a["reference"],"table_id":"t_nope"},{"reference":b["reference"],"starts_at_local":F+"T12:00"}]),404,"not_found")
 print("PASS")'`
 Passes when: prints `PASS`. In each pair the reported code is the one belonging to the earlier item in the list, so swapping the order swaps the code.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-131.md
 
 ### C-132: An overlap among the resulting bookings is 409 table_unavailable.
 Check: `python3 -c "$P"'
@@ -1822,7 +1822,7 @@ ERR(MOVES(ta,"m2",[{"reference":a["reference"],"table_id":"t_1","starts_at_local
 assert OK(GETR(ta,a["reference"]),200)==a and OK(GETR(ta,b["reference"]),200)==b
 print("PASS")'`
 Passes when: prints `PASS`. Two moved bookings that would collide with each other are refused, including the case where neither collides with anything that exists today.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-132.md
 
 ### C-133: An overlap with a booking not listed in the batch is 409 table_unavailable.
 Check: `python3 -c "$P"'
@@ -1836,7 +1836,7 @@ assert OK(GETR(ta,a["reference"]),200)==a
 assert OK(GETR(tb,theirs["reference"]),200)==theirs
 print("PASS")'`
 Passes when: prints `PASS`. An unlisted booking of the caller's and one belonging to another account both block the move.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-133.md
 
 ### C-134: A rejected batch changes nothing: no occupancy, no reservation record.
 Check: `python3 -c "$P"'
@@ -1857,7 +1857,7 @@ for i,mv in enumerate(bad):
     assert [OK(AV("r_anker",F,p),200) for p in (2,4)]==av,"rejected batch %d changed occupancy"%i
 print("PASS")'`
 Passes when: prints `PASS`. After four different refused batches every reservation record and the whole availability picture are identical to before.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-134.md
 
 ### C-135: A rejected batch leaves its idempotency key reusable.
 Check: `python3 -c "$P"'
@@ -1868,7 +1868,7 @@ r=OK(MOVES(ta,"m1",[{"reference":a["reference"],"table_id":"t_3"}]),201)
 assert r["reservations"][0]["table_id"]=="t_3",r
 print("PASS")'`
 Passes when: prints `PASS`. The key spent on a refused batch is a first use again, so the later different body is accepted rather than reported as reuse.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-135.md
 
 ### C-136: A batch replay returns the original response with 200, even after later amendments or cancellations.
 Check: `python3 -c "$P"'
@@ -1890,7 +1890,7 @@ assert cur["party_size"]==2,"replay undid the amendment"
 ERR(MOVES(ta,"m1",[{"reference":a["reference"],"table_id":"t_1"}]),409,"idempotency_key_reuse")
 print("PASS")'`
 Passes when: prints `PASS`. All three replays return the stored 201 body as a 200 and make no state change; a different body under the same key is 409.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-136.md
 
 ### C-137: A no-op batch retains every existing value, including identity and creation time.
 Check: `python3 -c "$P"'
@@ -1903,7 +1903,7 @@ assert OK(GETR(ta,a["reference"]),200)==a and OK(GETR(ta,b["reference"]),200)==b
 assert "t_2" not in FREE("r_anker",F,4,F+"T19:00") and "t_3" not in FREE("r_anker",F,4,F+"T21:00")
 print("PASS")'`
 Passes when: prints `PASS`. Omitted fields keep their values, unknown fields are ignored, and both bookings keep their occupancy.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-137.md
 
 ### C-138: Unchanged bookings listed in a batch retain their occupancy.
 Check: `python3 -c "$P"'
@@ -1915,7 +1915,7 @@ ERR(BOOK(tb,F+"T21:00","x1",tid="t_3"),409,"table_unavailable")
 ERR(BOOK(tb,F+"T19:00","x2",tid="t_2"),409,"table_unavailable")
 print("PASS")'`
 Passes when: prints `PASS`. The listed-but-unchanged booking still holds its table against another account, so the batch did not release and forget it.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-138.md
 
 ### C-139: Export and import preserve successful batch receipts as well as the resulting bookings.
 Check: `python3 -c "$P"'
@@ -1932,7 +1932,7 @@ assert b==first,"replayed batch body differs: %r vs %r"%(first,b)
 ERR(MOVES(ta,"m1",[{"reference":a["reference"],"table_id":"t_1"}]),409,"idempotency_key_reuse")
 print("PASS")'`
 Passes when: prints `PASS`.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-139.md
 
 ---
 
@@ -2189,27 +2189,27 @@ Status: passed at da45651 — see verdicts/C-142.md
 ### C-143: At run time the service has no outbound network access, and still serves /health.
 Check: `docker rm -f tk-c143 >/dev/null 2>&1; docker network rm tk-c143-noout >/dev/null 2>&1; docker network create --internal tk-c143-noout && test "$(docker network inspect tk-c143-noout --format '{{.Internal}}')" = "true" && docker build -q -t tk-s1 /Users/aashanjaved/band-work/result/stage-1 >/dev/null && docker run -d --name tk-c143 --network tk-c143-noout -e PORT=8080 tk-s1 >/dev/null && for i in $(seq 1 60); do docker run --rm --network tk-c143-noout alpine:3 wget -qO- -T3 http://tk-c143:8080/health >/dev/null 2>&1 && break; sleep 1; done; docker run --rm --network tk-c143-noout alpine:3 sh -c 'wget -qO- -T5 http://tk-c143:8080/health || exit 1; nslookup example.com >/dev/null 2>&1 && exit 2; nc -w4 -z 1.1.1.1 80 2>/dev/null && exit 3; wget -qO- -T4 http://example.com >/dev/null 2>&1 && exit 4; echo " NO EGRESS"'; r=$?; docker rm -f tk-c143 >/dev/null 2>&1; docker network rm tk-c143-noout >/dev/null 2>&1; exit $r`
 Passes when: exits 0 and prints the `/health` body followed by `NO EGRESS`. Replaces C-2. The service is attached only to an internal network and publishes no port; it is reached by container name from a sibling `alpine:3` container, the way the graded harness reaches it in isolated mode. Exit 1 means the service did not answer, 2 that DNS resolved, 3 that a raw TCP connection opened, 4 that an HTTP fetch succeeded. Because the probe runs in a container whose tools are guaranteed and must print the service's own health body to pass, it cannot pass by a tool being absent. `alpine:3` is pulled once during setup; the no-outbound rule constrains the service, not the auditor's tooling.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-143.md
 
 ### C-144: The service listens on the port given in the PORT environment variable.
 Check: `docker rm -f tk-c144 >/dev/null 2>&1; docker network rm tk-c144-net >/dev/null 2>&1; docker network create tk-c144-net >/dev/null && docker run -d --name tk-c144 --network tk-c144-net -p 18081:9091 -e PORT=9091 tk-s1 >/dev/null && for i in $(seq 1 60); do curl -fsS http://127.0.0.1:18081/health && break; sleep 1; done; r=$?; docker rm -f tk-c144 >/dev/null 2>&1; docker network rm tk-c144-net >/dev/null 2>&1; exit $r`
 Passes when: exits 0 and prints the `/health` body. Replaces C-3. The container port is 9091, not 8080, so a hard-coded port cannot pass.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-144.md
 
 ### C-145: The service listens on port 8080 when PORT is not set.
 Check: `docker rm -f tk-c145 >/dev/null 2>&1; docker network rm tk-c145-net >/dev/null 2>&1; docker network create tk-c145-net >/dev/null && docker run -d --name tk-c145 --network tk-c145-net -p 18082:8080 tk-s1 >/dev/null && for i in $(seq 1 60); do curl -fsS http://127.0.0.1:18082/health && break; sleep 1; done; r=$?; docker rm -f tk-c145 >/dev/null 2>&1; docker network rm tk-c145-net >/dev/null 2>&1; exit $r`
 Passes when: exits 0 and prints the `/health` body. Replaces C-4. No `-e PORT` is passed, so the service must default to 8080.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-145.md
 
 ### C-146: The graded stage-1 suite passes in the mode grading uses.
 Check: `cd /Users/aashanjaved/dark-factory-wearedevs && ./.venv/bin/python -m harness run --track tablekeeper --repo /Users/aashanjaved/band-work/result --stage 1 --mode isolated --out /Users/aashanjaved/band-work/checks/s1-iso-$(date +%s)`
 Passes when: the harness exits 0 and its summary reports zero failures and zero errors for stage 1. Replaces C-141. `--mode isolated` is the grading mode: the service gets no outbound access and is reached by container name. A pass here, unlike a pass in host mode, cannot be earned by a service that fetches something at run time.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-146.md
 
 ### C-147: The shipped stage-1 checks pass in the mode grading uses.
 Check: `cd /Users/aashanjaved/dark-factory-wearedevs && ./.venv/bin/python -m harness run --track tablekeeper --repo /Users/aashanjaved/band-work/result --stage 1 --mode isolated --out /Users/aashanjaved/band-work/checks/s1-iso-shipped-$(date +%s)`
 Passes when: the harness exits 0 and its summary reports zero failures and zero errors for stage 1. Replaces C-140. Host mode is still useful while developing, but per the harness's own warning it must never be the basis of a pass, so no entry in this ledger claims anything from it.
-Status: unclaimed
+Status: passed at 9c8c115 — see verdicts/C-147.md
 
 ## Superseded entries
 
@@ -2329,3 +2329,125 @@ Status: held in reserve (activates per REFUSALS.md at da45651)
 
 These supersessions need `@registrar`'s authorisation, exactly as the first six did, and the same
 bound applies: supersession is not absolution. C-5 through C-139 are untouched by Defect 5.
+
+---
+
+# ERRATA 3 — four Checks contradict this ledger's own occupancy rule
+
+Four Checks have FAIL verdicts at revision `9c8c1158`, each with a quoted run, and all four are
+defects in the Check rather than the implementation. The bound set at `66e7967` is met: a defect
+reproduced in the Check from a run by the seat that cannot change what it judges.
+
+```
+C-28   AssertionError: status 409 want (201,)  {'code': 'table_unavailable'}
+C-46   AssertionError: status 409 want (201,)  {'code': 'table_unavailable'}
+C-123  AssertionError: status 409 want (201,)  {'code': 'table_unavailable'}
+C-56   AssertionError: status 201 want 404     {'restaurant_id': 'r_ny', 'table_id': 't_2'}
+```
+
+The graded suite **passed** at that revision — `120 passed, 0 failed, 0 errors`, mode isolated — so
+the implementation is right and these four checks are wrong.
+
+## Defect 6 — three Checks demand more simultaneous bookings than occupancy permits
+
+With `slot_minutes=30` and `reservation_duration_minutes=90`, two starts thirty minutes apart on one
+table always overlap. The fixture's real ceiling:
+
+```
+bookable starts:                    18:00 18:30 19:00 19:30 20:00 20:30 21:00 21:30 22:00
+mutually non-overlapping per table: 18:00 19:30 21:00                      -> 3
+ceiling across t_1, t_2, t_3:                                              -> 9
+```
+
+- **C-46** asks for 27 confirmed bookings where the ceiling is 9.
+- **C-123** books 9 across `18:00/18:30/19:00 × 3 tables`, where those three times pairwise overlap
+  on every table, so the ceiling for that slot set is 3.
+- **C-28** takes one availability snapshot and then books `available_table_ids[0]` for all nine
+  slots — always `t_2` — so its own first booking invalidates the snapshot it is still reading.
+
+The `409 table_unavailable` all three treat as failure **is what C-21, C-47 and C-48 require**, and
+those three pass. So this is the same class of error as C-0: a Check contradicting a rule stated
+elsewhere in this same file. C-0 broke the one-claim-one-entry rule; these break the occupancy rule.
+
+## Defect 7 — the fixture cannot express "a table of another restaurant"
+
+C-56's third case books `restaurant_id=r_ny` with `table_id=t_2` and expects 404. But `DSTR(...)`
+calls `REST(id=rid, ...)`, and `REST` supplies the default table list, so **`r_ny` has its own
+`t_2`** at capacity 4. `201` is correct and `404` would be wrong. The claim's prose is sound; the
+fixture never creates the situation it describes. C-56's other two cases — `r_nope` and `t_nope` —
+are correct and pass.
+
+## Replacement entries
+
+**These four have NOT been executed against a running service.** The `/tmp/tk-docker.lock` was held
+by `@builder` when they were written, so per §8 this seat waited rather than taking it. Their
+arithmetic is verified against the fixture's ceiling and their bodies are syntax-checked, but that is
+the same standing errata-2's replacements had when `@registrar` refused to supersede working checks
+with unexecuted ones. **Supersession of C-28, C-46, C-56 and C-123 should not be authorised until
+these four have been run.** `@scribe` will run them as soon as the lock frees and report the output.
+
+### C-153: A starts_at_local taken from availability is accepted unchanged by POST /reservations.
+Check: `python3 -c "$P"'
+slots=[(s["starts_at_local"],s["starts_at"]) for s in OK(AV("r_anker",F,4),200)["slots"]]
+assert len(slots)==9,slots
+for at,want in slots:
+    t,_=SETUP()
+    fr=FREE("r_anker",F,4,at)
+    assert fr,("no table free at "+at)
+    b=OK(BOOK(t,at,"k-"+at,tid=fr[0]),201)
+    assert b["starts_at_local"]==at,(at,b["starts_at_local"])
+    assert b["starts_at"]==want,(want,b["starts_at"])
+print("PASS",len(slots))'`
+Passes when: prints `PASS 9`. Replaces C-28. Every advertised slot is bookable verbatim and echoes back the same local and absolute start. State is reset before each slot, so the availability snapshot is never invalidated by the check's own earlier bookings — which is what C-28 got wrong.
+Status: unclaimed
+
+### C-154: References are unique across all reservations.
+Check: `python3 -c "$P"'
+t,_=SETUP()
+refs=[]
+for at in ["18:00","19:30","21:00"]:
+    for tid in ["t_1","t_2","t_3"]:
+        refs.append(OK(BOOK(t,F+"T"+at,"k-%s-%s"%(at,tid),tid=tid,ps=2),201)["reference"])
+assert len(refs)==9,refs
+assert len(set(refs))==9,"duplicate reference among %r"%refs
+for r in refs: assert REF.match(r),"bad reference %r"%r
+print("PASS",len(set(refs)))'`
+Passes when: prints `PASS 9`. Replaces C-46. 18:00, 19:30 and 21:00 are the only mutually non-overlapping starts on this fixture, so nine coexisting confirmed bookings is the ceiling and every one is accepted; each reference is distinct and well-formed.
+Status: unclaimed
+
+### C-155: An unknown restaurant, an unknown table, or a table of another restaurant is 404 not_found.
+Check: `python3 -c "$P"'
+RESET(FX(restaurants=[REST(),REST(id="r_two",name="Two",tables=[{"id":"t_x1","label":"1","capacity":4}])]))
+t=LOGIN(ADA)
+ERR(BOOK(t,F+"T19:00","k1",rid="r_nope"),404,"not_found")
+ERR(BOOK(t,F+"T19:00","k2",tid="t_nope"),404,"not_found")
+ERR(BOOK(t,F+"T19:00","k3",rid="r_anker",tid="t_x1"),404,"not_found")
+ERR(BOOK(t,F+"T19:00","k4",rid="r_two",tid="t_2"),404,"not_found")
+print("PASS")'`
+Passes when: prints `PASS`. Replaces C-56. The two restaurants now have disjoint table ids, so the cross-restaurant case is genuinely expressible and is checked in both directions: `t_x1` exists but under `r_two`, and `t_2` exists but under `r_anker`.
+Status: unclaimed
+
+### C-156: A moves list outside 1 to 8 entries is 422 validation_failed.
+Check: `python3 -c "$P"'
+ta,_=SETUP()
+refs=[OK(BOOK(ta,F+"T"+at,"k-%s-%s"%(at,tid),tid=tid,ps=2),201)["reference"] for at in ["18:00","19:30","21:00"] for tid in ["t_1","t_2","t_3"]]
+assert len(refs)==9,refs
+ERR(MOVES(ta,"m0",[]),422,"validation_failed")
+ERR(MOVES(ta,"m9",[{"reference":r} for r in refs]),422,"validation_failed")
+OK(MOVES(ta,"m8",[{"reference":r} for r in refs[:8]]),201)
+print("PASS")'`
+Passes when: prints `PASS`. Replaces C-123. Zero entries and nine entries are refused; eight are accepted. The nine references are built on the non-overlapping starts, so all nine coexist — the fixture's ceiling is exactly nine and this claim needs exactly nine, with no slack for a spare booking.
+Status: unclaimed
+
+## Superseded by Errata 3 — pending authorisation and a run
+
+| Original | Replaced by | Why |
+|---|---|---|
+| C-28 | C-153 | booked against an availability snapshot its own bookings invalidated |
+| C-46 | C-154 | demanded 27 coexisting bookings where the ceiling is 9 |
+| C-56 | C-155 | fixture gave both restaurants the same table ids |
+| C-123 | C-156 | booked 9 across three pairwise-overlapping starts |
+
+`@registrar` authorises supersession, not `@scribe`, and the errata-2 precedent says entries of
+unexecuted shape should not displace entries of proven shape. These four are unexecuted. The FAIL
+verdicts establish the originals are defective; they do not establish that the replacements work.
