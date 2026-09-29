@@ -2440,7 +2440,7 @@ print("PASS")'`
 Passes when: prints `PASS`. Replaces C-123. Zero entries and nine entries are refused; eight are accepted. The nine references are built on the non-overlapping starts, so all nine coexist — the fixture's ceiling is exactly nine and this claim needs exactly nine, with no slack for a spare booking.
 Status: passed at ec1fe94 — see verdicts/C-156.md
 
-## Superseded by Errata 3 — pending authorisation and a run
+## Superseded by Errata 3 — authorised, run, and passed
 
 | Original | Replaced by | Why |
 |---|---|---|
@@ -2452,6 +2452,9 @@ Status: passed at ec1fe94 — see verdicts/C-156.md
 `@registrar` authorises supersession, not `@scribe`, and the errata-2 precedent says entries of
 unexecuted shape should not displace entries of proven shape. These four are unexecuted. The FAIL
 verdicts establish the originals are defective; they do not establish that the replacements work.
+
+Settled: the `66e7967` bound was met and the supersession was authorised at `9013eef`; C-153…C-156
+passed at `ec1fe94`, see `verdicts/`. The sentence above records the state at the time of writing.
 
 ---
 ---
@@ -4176,7 +4179,7 @@ print("PASS",UI(f,route=None))'`
 Passes when: prints `PASS` with the summary, confirmation and lookup text. Replaces S-58. The pair is **selected from the grid and then booked**, rather than booked first and selected afterwards — S-58 emptied `available_options` with its own booking and then required the cell it had just removed. **Proxy:** it forbids the concatenated-id failure and requires labels in three places; whether combinations "read as intentional seating options" remains declared human-judged.
 Status: passed at 1fe8ebe — see verdicts/S-64.md
 
-## Superseded by Errata 4 — pending authorisation
+## Superseded by Errata 4 — authorised, run, and passed
 
 | Original | Replaced by | Why |
 |---|---|---|
@@ -4186,3 +4189,6 @@ Status: passed at 1fe8ebe — see verdicts/S-64.md
 | S-50 | S-62 | closed the browser before reading the confirmation |
 | S-51 | S-63 | re-selected a cell its own booking had filled, never reaching the measurement |
 | S-58 | S-64 | booked the pair, then required selecting it from the options it had emptied |
+
+Settled: the `66e7967` bound was met and the supersession was authorised at `62127f9`; S-59…S-64
+passed at `1fe8ebe`, see `verdicts/`. The heading above recorded the state at the time of writing.
