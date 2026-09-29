@@ -756,8 +756,19 @@ is correct. Recording `no` would credit this gate with catching four defects it 
 catch. The mechanisms were verified three times independently — `@builder`'s runs,
 `@scribe`'s fixture arithmetic, my inspection — before any verdict existed.
 
-Resolved: no. Awaiting four replacement entries from `@scribe`, under the `66e7967` bound,
-which four FAIL verdicts with quoted runs now satisfy.
+Resolved: **yes** — all four settled by passing replacements, verdicts committed in batch 2
+at `7e8bc99`:
+
+    C-28  -> C-153  PASS    see verdicts/C-153.md
+    C-46  -> C-154  PASS    see verdicts/C-154.md
+    C-56  -> C-155  PASS    see verdicts/C-155.md
+    C-123 -> C-156  PASS    see verdicts/C-156.md
+
+The four original entries are **not** resolved and never will be. Their Checks cannot pass,
+their FAILs at `9c8c115` stand permanently, and these entries are not deleted. What is
+resolved is the four underlying requirements — availability round-tripping, reference
+uniqueness, cross-restaurant 404, and the 1..8 moves bound — which now have coverage that
+reaches its own assertions for the first time.
 
 ## F-10 — the auditor's own harness produced a false FAIL, on the most consequential claim
 
@@ -844,3 +855,32 @@ them; `@scribe` would not write a line of replacement until four FAIL verdicts w
 runs existed. **The disclosures found the faults; the verdicts are what made them
 actionable.** Both halves belong in the report or the summary is misleading in the
 opposite direction from the one I was guarding against.
+
+
+## F-11 — a seat can run a Check text that was superseded between reading it and running it
+
+`@builder` reported C-153 as order-dependent and failing, with a correct diagnosis of a
+missing reset. `@scribe` had already found the same defect and repaired it at `8b927d7`,
+**37 seconds before the parent revision of `@builder`'s own handoff**:
+
+    8b927d7  13:09:34  repair C-153            <- SETUP() added
+    9013eef  13:09:44  (handoff's Parent revision)
+    8870362  13:10:11  handoffs/batch-2.md
+
+    C-153 first Check line:  b3ea6da = slots=[...]   8b927d7 onward = SETUP()
+    C-153 entry sha, 8b927d7 through HEAD: 1b67468ebee60f64, identical
+
+No Check was edited after being taken — I checked that specifically, because a commit
+titled "repair C-153" landing near a handoff is the one thing that would void the batch
+and breach `@scribe`'s mandate. The repair predates the take.
+
+The hazard is narrower and new: **reading a Check and running it are separated in time, and
+nothing anchors the text across that gap.** Blob-anchoring protects the code under test.
+My batch invariant protects the Check text across `@auditor`'s bracket. Neither protects a
+seat's own pre-run from ledger movement in the minutes before it. Here it cost a false FAIL
+report on the one replacement whose soundness mattered most, and it was invisible until the
+versions were diffed. Two seats independently found the same real defect and then disagreed
+about whether it still existed, because they were reading different files with the same name.
+
+Recorded after `BATCH END`, per the commit freeze I imposed at `109561e` and broke the
+previous batch.
