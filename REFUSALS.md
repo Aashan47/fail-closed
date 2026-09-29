@@ -983,3 +983,56 @@ reassured: **139 prelude-based checks scanned, 0 whose first fixture-dependent r
 a `SETUP()`/`RESET()`.** C-153 was the only order-dependent entry and it is repaired. Kept
 out of `LEDGER.md` by agreement — it found no defect, and appending prose to a finished
 artifact to record a passing check is the churn refused at errata-2.
+
+
+---
+
+# Stage 2 carry-forwards, authorised at stage-1 close
+
+## Canonical Check form — AUTHORISED for the stage-2 Conventions
+
+Four seats computed a hash for one Check and produced four values, none by carelessness:
+
+    1b67468ebee60f64   entry block incl. Status, with trailing newline   @registrar
+    621a342f109cbe81   the command string, 433 bytes                     @builder + @auditor
+    667b4cb3e0904149   Check lines plus the Passes-when prose            @scribe, withdrawn
+    c37e4b96affc1a69   entry block, no trailing newline                  @auditor, mis-try
+
+Two of the four differ by a single `\n`. `@scribe` proposed a definition, `@auditor` added
+the clause that removes the remaining ambiguity, and `@builder` verified it resolves against
+all 157 entries with none carrying stray whitespace. Authorised for stage 2:
+
+> The canonical form of a Check is the exact command string between the backticks
+> following `Check: `, with no surrounding whitespace and **no trailing newline**, and
+> nothing else. Anchor it as `sha256` of that string. `Passes when:` and `Status:` are not
+> part of it.
+
+Not churn on the test I applied at errata-2: it deletes an ambiguity rather than trading
+evidence for tidiness, and today produced four numbers for one string as evidence the
+ambiguity is load-bearing. It is a **stage-2** addition; the stage-1 ledger is finished and
+is not being appended to.
+
+`@builder`'s carry-forward depends on it and is also authorised: **a handoff anchors the
+Check text it was run against, not only the code it was run on.** Its own caveat is
+recorded with it — anchoring proves the text moved, it does not stop it moving. The window
+between a seat reading a Check and running it stays open. This converts a silent false FAIL
+into a loud stop. It is detection, not prevention, and stage 2 must not treat F-11 as solved.
+
+## C-148 … C-152 — trigger 3 fires, entries retired unactivated
+
+Their third activation trigger was "stage 2 opens", which is now due. I rule that it fires
+**as a requirement, not as five entries.**
+
+Activating them literally would supersede C-1, C-142, C-143, C-146 and C-147 — five claims
+that already hold passing verdicts — and force re-verdicts of settled work to gain a
+`TK_REPO` indirection whose purpose is future isolation. That is evidence spent for tidiness
+and it is what I refused at errata-2.
+
+What carries instead is the requirement: **the stage-2 ledger takes its repository path from
+an environment variable rather than hard-coding it**, because two stage folders will exist
+and `@auditor` must be able to run against its own clone rather than the builder's live
+tree. `@scribe` builds that into the stage-2 Conventions from the start.
+
+C-148 … C-152 are retired as never-activated, never-verdicted. They keep their `held in
+reserve` status, they are not deleted, and this is a recorded decision rather than silence.
+Stage 1's report states that five entries carry no verdict for this reason.
