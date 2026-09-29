@@ -2714,19 +2714,19 @@ Status: passed at 0b0e01d — see verdicts/S-0.md
 ### S-1: The stage-2 service has no outbound network access at run time and still serves.
 Check: `TK_REPO="${TK_REPO:-/Users/aashanjaved/band-work/result}"; docker rm -f tk-s1x >/dev/null 2>&1; docker network rm tk-s1x-noout >/dev/null 2>&1; docker network create --internal tk-s1x-noout && test "$(docker network inspect tk-s1x-noout --format '{{.Internal}}')" = "true" && docker build -q -t tk-s2 "$TK_REPO/stage-2" >/dev/null && docker run -d --name tk-s1x --network tk-s1x-noout -e PORT=8080 tk-s2 >/dev/null && for i in $(seq 1 60); do docker run --rm --network tk-s1x-noout alpine:3 wget -qO- -T3 http://tk-s1x:8080/health >/dev/null 2>&1 && break; sleep 1; done; docker run --rm --network tk-s1x-noout alpine:3 sh -c 'wget -qO- -T5 http://tk-s1x:8080/health || exit 1; nslookup example.com >/dev/null 2>&1 && exit 2; nc -w4 -z 1.1.1.1 80 2>/dev/null && exit 3; wget -qO- -T4 http://example.com >/dev/null 2>&1 && exit 4; echo " NO EGRESS"'; r=$?; docker rm -f tk-s1x >/dev/null 2>&1; docker network rm tk-s1x-noout >/dev/null 2>&1; exit $r`
 Passes when: exits 0 and prints the `/health` body then `NO EGRESS`. Replicates C-143 against stage 2, because §2's no-outbound rule applies to every stage and the UI adds fonts, scripts and stylesheets — the exact assets a service is tempted to fetch at run time. Exit 1 means the service did not answer, 2 DNS resolved, 3 raw TCP opened, 4 an HTTP fetch succeeded.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-1.md
 
 ### S-2: RUN.md's own command builds and starts the stage-2 service from a clean checkout.
 Check: `TK_REPO="${TK_REPO:-/Users/aashanjaved/band-work/result}"; test -z "$(git -C "$TK_REPO" status --porcelain)" || { echo "TREE NOT CLEAN"; exit 1; }; before=$(git -C "$TK_REPO" rev-parse HEAD); cd "$TK_REPO/stage-2" && docker rm -f tk-s2 >/dev/null 2>&1; awk '/^```/{f=!f;next} f' RUN.md > /tmp/tk-s2-runmd.sh && test -s /tmp/tk-s2-runmd.sh && sh -eux /tmp/tk-s2-runmd.sh && start=$(date +%s) && until curl -fsS http://127.0.0.1:18080/health; do [ $(( $(date +%s) - start )) -lt 60 ] || { echo "NOT HEALTHY"; exit 1; }; sleep 1; done && test -z "$(git -C "$TK_REPO" status --porcelain)" && test "$(git -C "$TK_REPO" rev-parse HEAD)" = "$before" && echo "RUNMD OK AT $before"`
 Passes when: exits 0 and prints the `/health` body then `RUNMD OK AT <revision>`. The fenced blocks of `stage-2/RUN.md` must hold exactly the build-and-start commands, need no editing, and work from the stage directory of any clean checkout. Stage 1's C-1 found a `RUN.md` that attached the container to an `--internal` network and published nothing; this asserts the replacement did not regress.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-2.md
 
 ## Stage 1 must still behave — stage-2/ is graded against suite 1
 
 ### S-3: The stage-1 graded suite passes against stage-2/ in the grading mode.
 Check: `TK_REPO="${TK_REPO:-/Users/aashanjaved/band-work/result}"; test -z "$(git -C "$TK_REPO" status --porcelain)" || { echo "TREE NOT CLEAN"; exit 1; }; before=$(git -C "$TK_REPO" rev-parse HEAD); cd /Users/aashanjaved/dark-factory-wearedevs && ./.venv/bin/python -m harness run --track tablekeeper --repo "$TK_REPO" --stage 2 --mode isolated --out /Users/aashanjaved/band-work/checks/s2-iso-$(date +%s); r=$?; test $r -eq 0 && test -z "$(git -C "$TK_REPO" status --porcelain)" && test "$(git -C "$TK_REPO" rev-parse HEAD)" = "$before" && echo "TREE CLEAN AND UNMOVED AT $before"; exit $?`
 Passes when: the harness exits 0 reporting zero failures and zero errors for **both** stage 1 and stage 2, then `TREE CLEAN AND UNMOVED AT <revision>` prints. `--stage 2` runs suite 1 and suite 2 against `stage-2/`, so a stage-1 regression fails here. A printed failure for stage 3 is expected and required; per `harness/cli.py:459` the next-stage probe's exit code is not this run's and the probe failing is the good case.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-3.md
 
 ### S-4: A single-table booking still works end to end after the copy and widening.
 Check: `$PWPY -c "$W"'
@@ -2741,7 +2741,7 @@ OK(R("POST","/reservations/"+b["reference"]+"/cancel",tok=ta),200)
 assert OK(R("GET","/reservations/"+b["reference"],tok=ta),200)["status"]=="cancelled"
 print("PASS")'`
 Passes when: prints `PASS`. The stage-1 create/read/cancel path is intact, the legacy `table_id` request form still works, and the response carries both `table_id` and `table_ids` for a one-member set.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-4.md
 
 ### S-5: Stage-1 idempotency, export and import still behave after the widening.
 Check: `$PWPY -c "$W"'
@@ -2758,7 +2758,7 @@ assert OK(R("GET","/reservations/"+first["reference"],tok=ta),200)["reference"]=
 ERR(R("POST","/_test/import",dict(snap,track="pocketful")),422,"validation_failed")
 print("PASS")'`
 Passes when: prints `PASS`. Replay returns the identical original response, a changed body is still 409, the export envelope is unchanged, an unchanged export still imports, receipts and bookings survive it, and a wrong track is still refused.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-5.md
 
 ### S-6: The stage-1 DST rules still hold, in both zones, with absolute-time duration.
 Check: `$PWPY -c "$W"'
@@ -2777,7 +2777,7 @@ assert c["ends_at"]=="2026-10-25T02:30:00+01:00",c["ends_at"]
 assert [s["starts_at_local"] for s in OK(AV("r_de","2026-03-29",2),200)["slots"]]==["2026-03-29T"+t for t in ["01:00","01:30","03:00","03:30","04:00","04:30"]]
 print("PASS")'`
 Passes when: prints `PASS`. The skipped hour is still refused and absent from availability in both zones, the repeated hour still resolves to the first occurrence, and duration is still absolute — New York 01:30 ends at local 02:00 at `-05:00`, the specification's own example.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-6.md
 
 ## Model: combinable pairs (§Model)
 
@@ -2794,7 +2794,7 @@ for at in ["18:00","18:30","19:30","20:00"]:
 OK(BOOK(tb,F+"T20:30","s7free",table_id="t_1",ps=2),201)
 print("PASS")'`
 Passes when: prints `PASS`. Both members are occupied for the whole 90 minutes, every overlapping start on either table is refused, and the first non-overlapping start is free — the half-open rule applied to a pair.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-7.md
 
 ### S-8: A pair not listed in combinable is 422 combination_not_allowed.
 Check: `$PWPY -c "$W"'
@@ -2804,7 +2804,7 @@ ERR(BOOK(ta,F+"T19:00","s8b",table_ids=["t_3","t_1"],ps=6),422,"combination_not_
 OK(BOOK(ta,F+"T19:00","s8c",table_ids=["t_1","t_2"],ps=6),201)
 print("PASS")'`
 Passes when: prints `PASS`. `[t_1,t_3]` is refused in both orderings even though the two tables are free and their summed capacity is sufficient, while a declared pair at the same slot is accepted.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-8.md
 
 ### S-9: Combining is not transitive.
 Check: `$PWPY -c "$W"'
@@ -2815,7 +2815,7 @@ RESET(FX()); ta=LOGIN(ADA)
 OK(BOOK(ta,F+"T19:00","s9b",table_ids=["t_2","t_3"],ps=8),201)
 print("PASS")'`
 Passes when: prints `PASS`. `[t_1,t_2]` and `[t_2,t_3]` are both declared and both bookable, and `{t_1,t_3}` is still refused — the specification says transitivity must not be inferred.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-9.md
 
 ### S-10: A combinable entry is an unordered pair.
 Check: `$PWPY -c "$W"'
@@ -2826,7 +2826,7 @@ RESET(FX(restaurants=[REST(combinable=[["t_1","t_2"]])])); ta=LOGIN(ADA)
 OK(BOOK(ta,F+"T19:00","s10b",table_ids=["t_2","t_1"],ps=6),201)
 print("PASS")'`
 Passes when: prints `PASS`. A pair declared `[t_2,t_1]` is bookable as `[t_1,t_2]` and a pair declared `[t_1,t_2]` is bookable as `[t_2,t_1]`. The fixture's ordering does not constrain the request's.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-10.md
 
 ### S-11: More than two tables is 422 combination_not_allowed.
 Check: `$PWPY -c "$W"'
@@ -2836,7 +2836,7 @@ RESET(FX(restaurants=[REST(combinable=[["t_1","t_2"],["t_2","t_3"],["t_1","t_3"]
 ERR(BOOK(ta,F+"T19:00","s11b",table_ids=["t_1","t_2","t_3"],ps=10),422,"combination_not_allowed")
 print("PASS")'`
 Passes when: prints `PASS`. Three tables is refused even when every constituent pair is declared — the rule is pairs only, not "any set whose pairs are all combinable".
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-11.md
 
 ### S-12: A combination's capacity is the sum of its tables' capacities.
 Check: `$PWPY -c "$W"'
@@ -2850,7 +2850,7 @@ RESET(FX()); ta=LOGIN(ADA)
 ERR(BOOK(ta,F+"T19:00","s12d",table_ids=["t_2","t_3"],ps=9),422,"party_exceeds_capacity")
 print("PASS")'`
 Passes when: prints `PASS`. `t_1`+`t_2` seats exactly 6 and refuses 7; `t_2`+`t_3` seats exactly 8 and refuses 9. The boundary is asserted on both sides for both pairs rather than sampled.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-12.md
 
 ### S-13: A duplicate table id in the set is 422 validation_failed.
 Check: `$PWPY -c "$W"'
@@ -2859,7 +2859,7 @@ ERR(BOOK(ta,F+"T19:00","s13a",table_ids=["t_2","t_2"],ps=4),422,"validation_fail
 ERR(BOOK(ta,F+"T19:00","s13b",table_ids=["t_1","t_1"],ps=2),422,"validation_failed")
 print("PASS")'`
 Passes when: prints `PASS`. A duplicate is `validation_failed`, not `combination_not_allowed` — the specification separates a malformed set from an undeclared pair.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-13.md
 
 ### S-14: Any taken table in the set makes the combination 409 table_unavailable.
 Check: `$PWPY -c "$W"'
@@ -2874,7 +2874,7 @@ OK(BOOK(ta,F+"T18:00","s14e",table_id="t_2",ps=4),201)
 ERR(BOOK(tb,F+"T19:00","s14f",table_ids=["t_1","t_2"],ps=6),409,"table_unavailable")
 print("PASS")'`
 Passes when: prints `PASS`. Either member being taken refuses the pair, and an *overlapping* rather than identical booking on one member also refuses it.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-14.md
 
 ### S-15: A seeded reservation may hold table_ids, and a seeded cancelled reservation occupies nothing.
 Check: `$PWPY -c "$W"'
@@ -2890,7 +2890,7 @@ assert OK(R("GET","/reservations/COMBO1",tok=ta),200)["status"]=="cancelled"
 OK(BOOK(tb,F+"T19:00","s15b",table_id="t_1",ps=2),201)
 print("PASS")'`
 Passes when: prints `PASS`. A seeded combination blocks both its tables; a seeded reservation carrying `status: cancelled` blocks nothing and reads back as cancelled.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-15.md
 
 ## API: available_options (§API)
 
@@ -2903,7 +2903,7 @@ opts=[(o["table_ids"],o["capacity"]) for o in s["available_options"]]
 assert opts==[(["t_2"],4),(["t_3"],4),(["t_1","t_2"],6),(["t_2","t_3"],8)],opts
 print("PASS",opts)'`
 Passes when: prints `PASS` and the option list. For party 4: `t_1` is excluded (capacity 2), both capacity-4 singles appear in fixture order, then both declared pairs in `combinable` order, each with its summed capacity.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-16.md
 
 ### S-17: available_options orders singles in fixture order, then pairs in combinable order.
 Check: `$PWPY -c "$W"'
@@ -2913,7 +2913,7 @@ ids=[o["table_ids"] for o in s["available_options"]]
 assert ids==[["t_3"],["t_1"],["t_2"],["t_2","t_3"],["t_1","t_2"]],ids
 print("PASS",ids)'`
 Passes when: prints `PASS` and the order. The fixture deliberately lists tables `t_3,t_1,t_2` and pairs `[t_2,t_3],[t_1,t_2]`, so alphabetical or id-sorted output fails. Singles precede pairs, each group in its own declared order, and `table_ids` within a pair follows `combinable` order.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-17.md
 
 ### S-18: available_table_ids still lists single tables only and is unchanged by combinations.
 Check: `$PWPY -c "$W"'
@@ -2925,7 +2925,7 @@ s2=SLOT("r_anker",F,2,F+"T19:00")
 assert s2["available_table_ids"]==["t_1","t_2","t_3"],s2["available_table_ids"]
 print("PASS")'`
 Passes when: prints `PASS`. `available_table_ids` remains a flat list of single table ids filtered by capacity in fixture order — stage 1's C-20 contract — and gains nothing from `available_options`.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-18.md
 
 ### S-19: An option disappears when any of its tables is taken.
 Check: `$PWPY -c "$W"'
@@ -2939,7 +2939,7 @@ s2=SLOT("r_anker",F,2,F+"T19:00")
 assert ["t_1"] not in s2["available_table_ids"],s2
 print("PASS")'`
 Passes when: prints `PASS`. Booking `t_1` removes both the `t_1` single and the `[t_1,t_2]` pair, while `[t_2,t_3]` and the `t_2` single remain.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-19.md
 
 ### S-20: available_options respects party_size on the summed capacity.
 Check: `$PWPY -c "$W"'
@@ -2952,7 +2952,7 @@ for ps,want in [(2,[["t_1"],["t_2"],["t_3"],["t_1","t_2"],["t_2","t_3"]]),
     assert ids==want,(ps,ids,want)
 print("PASS")'`
 Passes when: prints `PASS`. Party 5 drops every single because none seats 5 while both pairs remain; party 7 leaves only the capacity-8 pair; party 9 leaves nothing and the slot still appears.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-20.md
 
 ### S-21: A closed day and a no-option slot still appear correctly with combinations present.
 Check: `$PWPY -c "$W"'
@@ -2966,7 +2966,7 @@ s=SLOT("r_anker",F,2,F+"T19:00")
 assert s is not None and s["available_table_ids"]==[] and s["available_options"]==[],s
 print("PASS")'`
 Passes when: prints `PASS`. 2027-06-10 is a Thursday, closed in the first fixture, so `slots` is empty. With every table booked the 19:00 slot still appears with both lists empty rather than being omitted.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-21.md
 
 ## API: table_id and table_ids (§API)
 
@@ -2985,7 +2985,7 @@ s,bd,_=R("POST","/reservations",{"restaurant_id":"r_anker","table_id":"t_1","tab
 assert s==422 and bd["error"]["code"]=="validation_failed",(s,bd)
 print("PASS")'`
 Passes when: prints `PASS`. Either field alone works and means the same thing for a one-member set; both together is 422 even when they agree.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-22.md
 
 ### S-23: Responses carry table_id only when the set has exactly one member.
 Check: `$PWPY -c "$W"'
@@ -3003,7 +3003,7 @@ for r in rs:
     assert ("table_id" in r)==(len(r["table_ids"])==1),r
 print("PASS")'`
 Passes when: prints `PASS`. The rule holds on create, on read-by-reference and on the list — `table_ids` always present, `table_id` present exactly when the set is a singleton.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-23.md
 
 ### S-24: PATCH accepts table_ids under the same combination rules.
 Check: `$PWPY -c "$W"'
@@ -3021,7 +3021,7 @@ after=OK(R("GET","/reservations/"+r,tok=ta),200)
 assert after["table_ids"]==["t_1","t_2"] and after["party_size"]==6,after
 print("PASS")'`
 Passes when: prints `PASS`. A single booking widens to a declared pair keeping its identity, every combination rule applies on the amendment path, and the refused amendments leave the booking unchanged.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-24.md
 
 ### S-25: Cancelling a combination frees every table in the set.
 Check: `$PWPY -c "$W"'
@@ -3037,7 +3037,7 @@ assert ["t_1","t_2"] in ids,ids
 OK(BOOK(tb,F+"T19:00","s25b",table_ids=["t_1","t_2"],ps=6),201)
 print("PASS")'`
 Passes when: prints `PASS`. After the cancel both tables return to `available_table_ids`, the pair returns to `available_options`, and another account can book the pair at the same slot.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-25.md
 
 ### S-26: Atomic reservation moves accept table_ids, and no table may end up in overlapping bookings.
 Check: `$PWPY -c "$W"'
@@ -3055,7 +3055,7 @@ ERR(R("POST","/reservation-moves",{"moves":[{"reference":c["reference"],"table_i
 assert OK(R("GET","/reservations/"+c["reference"],tok=ta),200)==c,"rejected batch changed a record"
 print("PASS")'`
 Passes when: prints `PASS`. A move may widen a booking to a declared pair; a move onto a pair whose member is held by an unlisted booking is refused; and a batch whose *resulting* bookings would share `t_2` is refused with both records left untouched.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-26.md
 
 ### S-27: Concurrent bookings of a shared table produce a serialisable outcome with no 5xx.
 Check: `$PWPY -c "$W"'
@@ -3081,7 +3081,7 @@ for tid in held:
     ERR(BOOK(ta,F+"T19:00","post-"+tid,table_id=tid,ps=2),409,"table_unavailable")
 print("PASS",conf[0]["table_ids"])'`
 Passes when: prints `PASS` and the winning set. Forty in-flight requests contend for `t_2` through both a single and a pair; exactly one commits, thirty-nine are 409 `table_unavailable`, none is a 5xx, and the surviving booking genuinely holds its tables — which is what "the same results as executing them one at a time in some order" requires at the read after.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-27.md
 
 ## UI: routes and authentication (§UI)
 
@@ -3100,7 +3100,7 @@ def f(pg):
     return seen
 print("PASS",UI(f,route=None))'`
 Passes when: prints `PASS` and the four routes. Each returns HTTP 200 with `Content-Type: text/html`, and each renders its own distinguishing control — so a single-page app that serves one shell and cannot deep-link fails. §3.4's JSON convention governs the API, not these routes.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-28.md
 
 ### S-29: Signup signs the user in, and current-user shows the display name on every screen.
 Check: `$PWPY -c "$W"'
@@ -3119,7 +3119,7 @@ def f(pg):
     return out
 print("PASS",UI(f))'`
 Passes when: prints `PASS` and the display name seen on each route. The name appears on **every** screen while signed in, a logout control is present on each, and after logout `current-user` is gone.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-29.md
 
 ### S-30: Login signs in and a bad login shows auth-error, which is absent when there is none.
 Check: `$PWPY -c "$W"'
@@ -3139,7 +3139,7 @@ def f(pg):
     return txt
 print("PASS",UI(f,route=None))'`
 Passes when: prints `PASS` and the error text. `auth-error` is absent before any attempt, present and non-empty on a bad login, and gone again after a good one — the specification's "present only when there is one", checked in all three directions.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-30.md
 
 ## UI: the availability grid (§UI)
 
@@ -3164,7 +3164,7 @@ n=UI(f)
 assert n==len(api)*3,(n,len(api))
 print("PASS",n,"cells")'`
 Passes when: prints `PASS 27 cells`. Every table-slot pair has a cell and every `data-available` agrees with `available_table_ids` for the party size that was searched — including the false cells created by the seeded booking. A grid that marks everything available fails.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-31.md
 
 ### S-32: A declared pair that is available for the searched party size gets a combination cell.
 Check: `$PWPY -c "$W"'
@@ -3183,7 +3183,7 @@ def f(pg):
 UI(f)
 print("PASS")'`
 Passes when: prints `PASS`. Both declared pairs get `slot-t_1+t_2-19:00` and `slot-t_2+t_3-19:00` marked available for party 6, the undeclared pair gets no cell, the id is in `combinable` order rather than reversed, and no single table is offered because none seats 6.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-32.md
 
 ### S-33: A combination cell goes unavailable when one of its tables is taken.
 Check: `$PWPY -c "$W"'
@@ -3199,7 +3199,7 @@ def f(pg):
 UI(f)
 print("PASS")'`
 Passes when: prints `PASS`. The pair containing the booked table reads `data-available="false"` while the other pair stays `true`.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-33.md
 
 ### S-34: A closed day shows no-slots instead of the grid.
 Check: `$PWPY -c "$W"'
@@ -3216,7 +3216,7 @@ def f(pg):
     return t
 print("PASS",repr(UI(f)))'`
 Passes when: prints `PASS` and the message. 2027-06-10 is a Thursday and closed, so `no-slots` shows with non-empty text and no slot cells render; the Friday shows the grid and no `no-slots`. The non-empty assertion is what stops a blank box passing.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-34.md
 
 ### S-35: Clicking an available cell opens the booking form for that table and slot; clicking an unavailable one does nothing.
 Check: `$PWPY -c "$W"'
@@ -3236,7 +3236,7 @@ def f(pg):
     return s
 print("PASS",repr(UI(f)))'`
 Passes when: prints `PASS` and the summary. The unavailable cell is inert, the available one opens the form, `booking-summary` names the table by its **label** ("Terrace") and the local start time, and party size is pre-filled from the search.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-35.md
 
 ### S-36: Booking while signed out shows auth-error or navigates to /login.
 Check: `$PWPY -c "$W"'
@@ -3250,7 +3250,7 @@ def f(pg):
     return pg.url
 print("PASS",UI(f))'`
 Passes when: prints `PASS` and the resulting URL. Either branch the specification permits is accepted, and in neither case does a confirmation appear.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-36.md
 
 ### S-37: A booked slot is unavailable on the next search, and cancelling frees it again.
 Check: `$PWPY -c "$W"'
@@ -3272,7 +3272,7 @@ def f(pg):
     return ref
 print("PASS",UI(f))'`
 Passes when: prints `PASS` and the reference. The grid reflects the new booking on re-search, and reflects the cancellation afterwards — the browser is reading the server rather than caching its own optimistic view.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-37.md
 
 ## UI: booking form, confirmation and lookup (§UI)
 
@@ -3295,7 +3295,7 @@ def f(pg):
     return ref,det
 print("PASS",UI(f))'`
 Passes when: prints `PASS` with the reference and details. `confirmation-reference` matches `^[A-Z0-9]{6,12}$` with no surrounding words, and the details name the restaurant and table by their human labels plus the local start time.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-38.md
 
 ### S-39: A combination booking's summary, confirmation and lookup name every table.
 Check: `$PWPY -c "$W"'
@@ -3319,7 +3319,7 @@ def f(pg):
     return ref,s,ct,rt
 print("PASS",UI(f))'`
 Passes when: prints `PASS` with all four strings. Every table in the selection is named by label in `booking-summary`, `confirmation-tables` and `reservation-tables`. Labels rather than ids is the point: `t_1+t_2` appearing instead of "Window" and "Corner" fails.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-39.md
 
 ### S-40: Resubmitting the unchanged booking form returns the same reference and books once.
 Check: `$PWPY -c "$W"'
@@ -3341,7 +3341,7 @@ assert len(rs)==1,"resubmit created %d reservations"%len(rs)
 assert rs[0]["reference"]==ref,(ref,rs)
 print("PASS",ref)'`
 Passes when: prints `PASS` and the reference. The form stays on screen after success, two further unchanged submissions return the same reference with no `booking-error`, and the server holds exactly one reservation — §7 replay driven from the browser.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-40.md
 
 ### S-41: Changing a field makes the next submission a new booking.
 Check: `$PWPY -c "$W"'
@@ -3363,7 +3363,7 @@ refs={r["reference"] for r in rs if r["status"]=="confirmed"}
 assert {a,b}<=refs or b in refs,(a,b,refs)
 print("PASS",a,b)'`
 Passes when: prints `PASS` and two different references. Changing party size produces a genuinely new booking rather than replaying the first — so the browser is varying the idempotency key with the body, not pinning one key per form.
-Status: unclaimed
+Status: FAILED at eb5bcb9 — see verdicts/S-41.md
 
 ### S-42: Lookup shows a reservation, its exact status, and cancels without a manual reload.
 Check: `$PWPY -c "$W"'
@@ -3386,7 +3386,7 @@ def f(pg):
     return st,st2
 print("PASS",UI(f))'`
 Passes when: prints `PASS ('confirmed', 'cancelled')`. The status text is exactly the bare word in both states, the cancel button disappears once cancelled, and the URL is unchanged — the update happened without a manual reload.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-42.md
 
 ### S-43: An unknown reference and a refused cancel both show reservation-error.
 Check: `$PWPY -c "$W"'
@@ -3410,7 +3410,7 @@ def f(pg):
 UI(f)
 print("PASS")'`
 Passes when: prints `PASS`. `reservation-error` is absent initially, shown with non-empty text for an unknown reference with no detail rendered, and shown again when a cancel is refused — the seeded booking starts in 2020, so it is past its cutoff and the cancel is 409 `cutoff_passed`. The status must not flip on a refused cancel.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-43.md
 
 ## UI: competing clients and uncertain outcomes (§Competing clients)
 
@@ -3448,7 +3448,7 @@ assert ap=="true","grid does not describe the newer party-6 search: combination 
 assert a1=="false","late party-2 response restored its own results: slot-t_1-19:00 %r"%a1
 print("PASS",a1,ap)'`
 Passes when: prints `PASS false true`. Search A (party 2) is delayed 1.5s so it genuinely resolves after search B (party 6) — verified achievable with the async driver. The grid must then describe B: the `[t_1,t_2]` combination available, and `t_1` alone unavailable because it seats 2 and B asked for 6. If A's late response wins, `slot-t_1-19:00` reads `true` and this fails.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-44.md
 
 ### S-45: A 409 table_unavailable shows booking-error, refreshes availability, preserves the form and shows no confirmation.
 Check: `$PWPY -c "$W"'
@@ -3472,7 +3472,7 @@ def f(pg):
     return ps,s
 print("PASS",UI(f))'`
 Passes when: prints `PASS` with the preserved input and summary. Another account takes `t_2` after the form opens: the attempt shows non-empty `booking-error`, no confirmation, the form and the diner's edited party size survive, the selected table is still named, and the grid now marks `t_2` unavailable.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-45.md
 
 ### S-46: A lost booking response shows booking-uncertain, and retrying the unchanged form recovers the original reference.
 Check: `$PWPY -c "$W"'
@@ -3521,7 +3521,7 @@ assert ref==rs[0]["reference"],"retry did not recover the original reference: %r
 assert not u2 and not e2,"uncertainty/error elements not removed after a successful retry"
 print("PASS",u,ref)'`
 Passes when: prints `PASS` with the uncertainty text and the reference. The first submission reaches the server and commits while its response is dropped — the mechanism is verified: `route.fetch()` then `route.abort()` leaves the server with the booking and the browser with a network failure. The UI must then show non-empty `booking-uncertain` with **no** `booking-error` and **no** confirmation; retrying the unchanged form must reuse the same idempotency key and body so the server replays rather than books again; and the recovered reference must be the original one with the uncertainty elements removed. Exactly one reservation exists throughout.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-46.md
 
 ### S-47: The uncertainty and refusal rules hold for a combination booking too.
 Check: `$PWPY -c "$W"'
@@ -3563,7 +3563,7 @@ for lab in ["Window","Corner"]:
     assert lab in (tabs or ""),"confirmation-tables omits %r after recovery: %r"%(lab,tabs)
 print("PASS",ref)'`
 Passes when: prints `PASS` and the reference. A lost response on a *combination* booking produces the same uncertainty handling, the retry recovers the original reference, exactly one reservation exists holding both tables, and the recovered confirmation still names both table labels.
-Status: unclaimed
+Status: FAILED at eb5bcb9 — see verdicts/S-47.md
 
 ## Upgrading a stage-1 service (§Existing clients after an upgrade)
 
@@ -3599,7 +3599,7 @@ assert st==200 and rep["reference"]==ref,"stage-1 receipt not replayable on stag
 st,_=R(B,"POST","/auth/login",{"email":"ada@example.com","password":"correct horse"}); assert st==200,st
 print("UPGRADE OK",ref)'; r=$?; docker rm -f tk-up1 tk-up2 >/dev/null 2>&1; docker network rm tk-up-net >/dev/null 2>&1; exit $r`
 Passes when: exits 0 and prints `UPGRADE OK <reference>`. A real stage-1 image produces the export and a real stage-2 image imports it — not a stage-2 service importing its own snapshot. The pre-upgrade bearer token still authenticates, the retained reference still resolves, the stage-1 idempotency receipt still replays to the original response, and hashed-password login still works. The response now also carries `table_ids`, which stage 1 never wrote.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-48.md
 
 ### S-49: A browser signed in before the upgrade stays signed in, and its retained reference works through the lookup screen.
 Check: `$PWPY -c "$W"'
@@ -3621,7 +3621,7 @@ def f(pg):
     return cu2
 print("PASS",UI(f,route=None))'`
 Passes when: prints `PASS` and the display name. The import lands between browser requests, as the specification scopes it; the session survives with no reload or new screen, and the retained reference resolves through `/lookup` with status `confirmed`.
-Status: unclaimed
+Status: FAILED at eb5bcb9 — see verdicts/S-49.md
 
 ### S-50: A booking whose response was lost before the export is still recoverable after the import, with the same key and body.
 Check: `$PWPY -c "$W"'
@@ -3665,7 +3665,7 @@ assert ref==rs[0]["reference"],"original confirmation not recovered after the up
 assert not u2 and not e2,"uncertainty/error not cleared after a successful post-upgrade retry"
 print("PASS",ref)'`
 Passes when: prints `PASS` and the reference. The booking commits, its response is dropped, the state is exported and imported — the upgrade — and the unchanged form then retries with the same key and body and recovers the original reference. Exactly one reservation exists. This is the requirement that the pending retry identity survives the upgrade, and it is the hardest thing in the stage.
-Status: unclaimed
+Status: FAILED at eb5bcb9 — see verdicts/S-50.md
 
 ## UI quality — the part a human scores (§Product and visual direction)
 
@@ -3703,7 +3703,7 @@ same=[(a,b) for a,b in pairs if st[a]==st[b]]
 assert not same,"states not visually distinct: %r"%same
 print("PASS",len(st),"states,",len(pairs),"pairs all distinct")'`
 Passes when: prints `PASS` with every pair distinct. **Proxy:** it compares seven computed style vectors — background, border, colour, opacity, outline, text-decoration, font-weight — and requires every pair to differ in at least one. **What it does not establish:** that the differences are *legible* to a person, that colour is not the only channel, or that the states look deliberate. A human still judges that; this only makes "all seven render identically" impossible to pass. The `uncertain` state is covered separately by S-46, which asserts its text is non-empty.
-Status: unclaimed
+Status: FAILED at eb5bcb9 — see verdicts/S-51.md
 
 ### S-52: The empty results state says what is absent, rather than rendering a blank area.
 Check: `$PWPY -c "$W"'
@@ -3721,7 +3721,7 @@ def f(pg):
     return t
 print("PASS",repr(UI(f)))'`
 Passes when: prints `PASS` and the message. **Proxy:** the element is visible, occupies real area, and carries at least twelve characters forming three or more words. **What it does not establish:** that the wording is helpful or says what to do next. It does make the specific defect the registrar named — "an empty results area rendering as a blank box with no text" — impossible to pass.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-52.md
 
 ### S-53: A loading state is shown while a search is in flight.
 Check: `$PWPY -c "$W"'
@@ -3756,7 +3756,7 @@ assert not (after["busy"] and not mid["busy"]),"loading indicator appeared only 
 assert not after["busy"] or not mid["busy"] or True
 print("PASS",mid)'`
 Passes when: prints `PASS` and the observed mid-flight state. **Proxy:** with the availability response delayed 1.2s, at 350ms the page must show at least one of `aria-busy="true"`, `data-loading="true"`, a `search-loading` element, a disabled search button, or loading text. **What it does not establish:** that the indicator is well-placed, non-jarring or informative. It does make "no loading state at all" impossible to pass.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-53.md
 
 ### S-54: The required flows have no horizontal page scrolling at a 375-pixel viewport.
 Check: `$PWPY -c "$W"'
@@ -3784,7 +3784,7 @@ bad=UI(f,w=375,h=780)
 assert not bad,"horizontal page scrolling at 375px: %r"%bad
 print("PASS no horizontal scroll at 375px")'`
 Passes when: prints `PASS no horizontal scroll at 375px`. Checks all four routes plus the populated grid, the open booking form and the lookup detail, since overflow usually appears only once real content lands. A wide grid is allowed to scroll **inside its own container**; what fails is the document scrolling.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-54.md
 
 ### S-55: The grid scrolls inside its own container at 375px and its caption stays readable and unclipped.
 Check: `$PWPY -c "$W"'
@@ -3813,7 +3813,7 @@ if cap is not None:
     assert not cap["clipped"],"caption is clipped at 375px: %r"%cap
 print("PASS",m,cap)'`
 Passes when: prints `PASS` with the grid metrics and caption. **Proxy:** if the grid is wider than its box it must declare `overflow-x: auto|scroll`, the document must not scroll, and any heading immediately preceding the grid must fit inside the viewport and not be ellipsis-clipped. **What it does not establish:** that the scroll affordance is discoverable, or that the caption reads well. A grid with no caption passes this entry — the caption requirement is only enforced when one exists.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-55.md
 
 ### S-56: Every required input has a visible label, and keyboard focus is apparent.
 Check: `$PWPY -c "$W"'
@@ -3846,7 +3846,7 @@ assert not missing,"inputs without a visible associated label: %r"%missing
 assert not unfoc,"inputs whose focused appearance is identical to unfocused: %r"%unfoc
 print("PASS all required inputs labelled and focus-visible")'`
 Passes when: prints `PASS`. **Proxy for labels:** each input resolves to a `<label>` with non-empty text that has real dimensions and is not `hidden`/`display:none`/transparent — so `aria-label` alone does **not** pass, because the requirement is a *visible* label. **Proxy for focus:** the computed outline, box-shadow, border or background must differ between focused and unfocused. **What neither establishes:** that the label wording is clear or the focus ring has adequate contrast.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-56.md
 
 ### S-57: Key text meets a 4.5:1 contrast ratio against its background.
 Check: `$PWPY -c "$W"'
@@ -3875,7 +3875,7 @@ bad=UI(f,route=None)
 assert not bad,"text below 4.5:1 contrast: %r"%bad
 print("PASS contrast >= 4.5:1 on sampled key text")'`
 Passes when: prints `PASS`. **Proxy:** computes the WCAG ratio from resolved foreground colour against the nearest non-transparent ancestor background, for five named elements across two screens. **What it does not establish:** contrast for every element, for text over images or gradients, or for disabled and hover variants. It is a sample, deliberately named as one — a service can fail contrast elsewhere and still pass this.
-Status: unclaimed
+Status: passed at eb5bcb9 — see verdicts/S-57.md
 
 ### S-58: Restaurants and tables are shown by human-readable name, not by raw identifier.
 Check: `$PWPY -c "$W"'
@@ -3899,7 +3899,7 @@ def f(pg):
     return s,rt
 print("PASS",UI(f,route=None))'`
 Passes when: prints `PASS` with the summary and lookup text. **Proxy:** the restaurant name and all three table labels appear as rendered text, and neither the booking summary nor the lookup detail contains the literal `t_1+t_2`. **What it does not establish:** that combinations "read as intentional seating options" — that phrasing is a human judgement. It does forbid the specific failure of surfacing the concatenated technical identifier to the diner. Note the `data-testid` values legitimately contain ids; this checks visible text, not attributes.
-Status: unclaimed
+Status: FAILED at eb5bcb9 — see verdicts/S-58.md
 
 ## Declared human-judged — no entry written
 
