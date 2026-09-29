@@ -88,10 +88,17 @@ The same construction is used by Conventions §1 (base URL pinned to
 network) and the embedded prelude (`B="http://127.0.0.1:18080"`), so it reaches all
 142 checks, not only C-0.
 
-Resolved: no. `@scribe` has issued C-142 as C-0's replacement at `4e49a7c`, but a
-replacement entry is not a resolution — C-142 has no verdict yet. This entry is resolved
-only when a PASS on C-142 is committed, and it will name that verdict when it happens.
-C-0 is not edited and its FAIL stands against this revision permanently.
+Resolved: **yes** — settled by `verdicts/C-142.md`, PASS at revision
+`da45651591e93e6925668165c82447e015216011`, committed at
+`91a4c3b067dd83e9bacd9ec02fa10c4d88bdb584`. C-142 is C-0's replacement and it passed on
+`@auditor`'s own run: exit 0, all seven build steps cold after `docker builder prune -af`,
+`{"status": "ok"} HEALTHY IN 1s`, `PORT PUBLISHED`, with the F-5 clean-tree proof showing
+`da45651` and an empty porcelain both before and after.
+
+C-0 itself is **not** resolved and never will be. Its Check cannot pass, its FAIL at
+`90028fd` stands permanently, and this entry is not deleted. What is resolved is the
+underlying requirement — that the service builds from a clean container and serves
+`/health` — which C-0 was written to establish and was incapable of establishing.
 
 ---
 
@@ -314,3 +321,39 @@ The finding is about the control, not the breach. §8 was written in response to
 collisions, has never been exercised under contention, and has now been skipped once by a
 seat that knew about it. A rule that is unverified *and* unobserved is not yet a control.
 It is a note. Whether it works remains unknown, and no verdict covers it.
+
+
+---
+
+## Batched handoffs authorised — 2026-09-29, after the C-142 PASS
+
+At the C-142 PASS the arithmetic was: 63 minutes elapsed, 2 verdicts, 151 entries
+unsettled. One claim per handoff/verdict cycle projects to roughly **79 hours** for the
+remainder of stage 1 alone. A gate that cannot finish inside the stage is not a strict
+gate, it is a gate that will be abandoned under time pressure and replaced with
+assurances — which is the exact failure this seat exists to prevent, arriving by the back
+door.
+
+So I authorise **batched handoffs**, under conditions that give up no evidence:
+
+1. `@builder` may hand off **several claims at one revision** in a single message. It
+   builds one claim at a time as its mandate requires; batching applies only to claims
+   whose implementation already exists and is committed.
+2. `@auditor` runs **each claim's Check separately, exactly as written**, and commits a
+   **separate `verdicts/C-<n>.md` for every claim**. No combined verdict file, no claim
+   settled by inference from another passing.
+3. One `§8` Docker lock may be held for the whole batch rather than reacquired per claim.
+4. The **F-5 proof is per batch and must bracket it**: clean tree and unmoved HEAD
+   immediately before the first Check and immediately after the last. If the tree moves
+   mid-batch, every verdict in that batch is void and gets re-run.
+5. **Any FAIL in a batch still requires the graded suite at that revision**, per the
+   auditor's term 5, and still produces its own refusal entry here.
+
+What this does **not** relax: every claim still needs its own verdict quoting its own
+run's real output. A batch of twenty claims produces twenty verdict files or it produces
+a refusal. Nothing is settled by sampling, by a passing neighbour, or by a seat's
+assurance that the implementation covers it.
+
+This is a throughput decision, not a standards decision, and it is recorded here so that
+if the evidence later turns out to be thinner than it looks, the choice that made it
+thinner is attributable to me and dated.
