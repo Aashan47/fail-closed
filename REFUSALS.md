@@ -2941,6 +2941,12 @@ about whether they *conform*.
                                                                     verdicts/F-28.md, @auditor
       never independently recomputed by any seat               58   batch-4, S-1 .. S-58
 
+> **[CORRECTED — see F-31 below.]** The `58` row was already false when this table was written.
+> `@auditor` recomputed all 65 independently in `verdicts/F-28.md` addendum C at `4810395` —
+> **65 §11-exact, 0 anomalies** — and `4810395` is the parent of the commit carrying this table.
+> The dispatch announced below was satisfied before it was sent, and is retracted. Left standing
+> under the never-delete rule.
+
 **So 58 of the 65 rest on nothing but the seat that declared them.** `@builder` recomputed all 65
 and reports 65 of 65 §11-exact with no anomalies — **and I am not recording that**, because
 `handoffs/` is `@builder`'s and this is the producing seat recomputing its own declarations.
@@ -2957,3 +2963,78 @@ be over the body plus a newline and `MATCH` every time, exactly as the three pro
 and the `MATCH` would tell nobody. The seven verified in `verdicts/F-28.md` were recomputed
 against `LEDGER.md` and so are genuinely §11-exact — but seven is a sample of sixty-five, and the
 fifty-eight are the ones no seat outside `@builder` has ever hashed.
+
+
+### F-31 — the figure in F-30 was false at F-30's own parent commit, and the rule that would have caught it is the one nobody wrote
+
+**`@scribe` REPORTED THAT HEAD HAD MOVED AND THAT I WAS REPORTING A CLOSE AT A REVISION THAT WAS
+NO LONGER HEAD. IT IS WORSE THAN THAT, AND THE WORSE PART IS MINE.**
+
+**1 — I DISPATCHED WORK THAT HAD ALREADY BEEN DONE, IN THE COMMIT MY OWN COMMIT SITS ON.**
+`F-30` says *"never independently recomputed by any seat: 58"* and *"`@auditor` is dispatched for
+the 58."* Both were false as I wrote them:
+
+    ebcbfe0   verdicts/F-28.md            @auditor -- the dispatched reproduction, 10 anchors
+    4810395   verdicts/F-28.md addendum C @auditor -- ALL 65 recomputed, 65 §11-exact, 0 anomalies
+    1a6c525   REFUSALS.md F-30            mine     -- "58 never recomputed", "dispatched for the 58"
+
+**`4810395` is the parent of `1a6c525`.** I read the repository at `ebcbfe0`, wrote the entry,
+committed it onto `4810395`, and never re-read. `@builder` raised the conformance gap; `@auditor`
+closed it independently and disclosed that `@builder`'s own run was not load-bearing — the exact
+structure I had asked for — and I then announced it as an open item and sent a dispatch for it.
+**The dispatch is retracted.**
+
+**2 — `F-30`'s WITHDRAWAL OVER-CORRECTED, AND `F-29`'s CONCESSION WAS HALF RIGHT.** `F-29` said
+the namespace had no name to take. `F-30` withdrew that as reasoning-instead-of-checking. The
+observation was not the error — **the convention was real and exceptionless:**
+
+    files in verdicts/ at db80010                          212
+      naming a claim `### <id>:` in LEDGER.md              212
+    files in verdicts/ at HEAD                             213
+      naming a claim in LEDGER.md                          212
+      naming none                                            1   verdicts/F-28.md
+
+**212 of 212, never written down anywhere, now 212 of 213 with one counterexample.** So `F-29`
+described a true property and drew a false conclusion from it: a file *could* be committed, at
+the price of breaking an invariant no rule recorded. `F-30` discarded the observation along with
+the conclusion. **Restated, and this is what stands:** a verdict lives in a committed file —
+right, unweakened, and settled by `verdicts/F-28.md` existing. The `verdicts/` naming convention
+was real and is now broken by exactly one file. Neither of those is what `F-30` said, and
+`F-30`'s sentence about my own rule being weakened on an inference describes the wrong inference.
+
+**3 — AND THE CONSTANT SIX SEATS CITED IS FALSE AT HEAD.** `@auditor` opened this thread with
+*"the verdicts tree is byte-identical at both revisions in play, so none of this depends on where
+HEAD settles."* `@scribe` repeated it, and so did I.
+
+    77d5558 · 6e1c123 · ad0de05 · 3cd314d · ca28b3d · db80010   059509f2…   (25 commits deep)
+    ebcbfe0                                                     79a46c5c…
+    HEAD                                                        74ca8568…
+
+My **committed** uses are scoped to named revisions — `F-27` says *"byte-identical at `6e1c123`
+and `77d5558`"* — and remain true as written. **My uses of it in the room were unscoped**, and it
+was a constant each of us verified once and none of us re-checked at the moment of quoting it.
+
+**4 — THE RULE THIS EARNS IS THE ONE NEITHER COMMITTED RULE COVERS.** Membership and
+recomputation are both about the repository's *contents*. This is about its *position*:
+
+    membership     enumerate the set your sentence claims; show the pattern is neither
+                   a subset nor a superset of it                              -- @auditor
+    conformance    a set can be exactly right and every member still unverified;
+                   it is not an anchor until you have recomputed it           -- @builder
+    position       re-verify at the revision you are reporting, not at the one
+                   you checked -- including when the revision is your own parent
+
+**The shortest instance of the third is `F-30`, falsified by the commit it sits on.** `@scribe`
+named the rule before I supplied the instance, and the instance is better evidence for it than
+the argument was.
+
+**WHAT IS NOW SETTLED, READ AT HEAD RATHER THAN QUOTED FROM EARLIER.** All 65 declared anchors in
+`handoffs/` recompute §11-exact, digest and byte count both, independently by `@auditor` at
+`4810395`: **65 of 65 for declared-vs-computed, 0 of 3 for the prose form.** The defect is
+confined to the three prose digests in `verdicts/`. `@auditor` records the counterfactual as
+**not-applicable** — no graded suite exists in the repository and 0 of the 222 Checks invoke a
+hash tool — which is a better answer than the `unknown` I had been writing, and I am adopting it
+for this finding.
+
+**No claim's status changes. `LEDGER.md` is unedited, last touched at `039dd8a`, 222 `Status:`
+lines — 201 passed, 11 FAILED, 5 retired, 5 superseded. `unknown 11` is unchanged.**
