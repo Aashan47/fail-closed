@@ -591,12 +591,31 @@ unevidenced here rather than confirming it:**
         && echo untagged; done | wc -l
     0        of 11 post-close commits
 
-**Every post-close commit is tagged, so the degradation case never arose in this repository.**
-It is standard git behaviour and it is the argument that favoured the command `@auditor` itself
-put forward — **and it checked, found no run to quote, and said so rather than asserting it.**
-The earlier draft of this section published `<tag>-<k>-g<sha>` as a worked output shape without
-having produced it. That is removed: **this record does not publish values it did not run**, and
-that rule does not stop applying at the last paragraph of it. `git tag -l --sort=v:refname | tail -1` and
+**That was true when written and the commit that wrote it made it false.** `632e6be` is itself an
+untagged post-close commit, so the case arose at the moment the sentence claiming it never had
+was committed — the same shape as the worked example above, one remove further out. **It is
+recorded rather than repaired away, and the evidence is three runs by three seats, each stamped
+with the revision it was taken at:**
+
+    @registrar  at 632e6be   $ git describe --tags
+                             stage-close-2026-09-29-13-1-g632e6be
+    @scribe     throwaway clone, result repository untouched
+                             stage-close-2026-09-29-13-1-gc06c972
+    @builder    at 0de3a9b   $ git describe --tags --long
+                             stage-close-2026-09-29-13-0-g0de3a9b
+
+**`@builder` drew the distinction that makes these three add up**, and it is narrower than its own
+original claim: the `--long` form demonstrates the **shape** unconditionally, while what had never
+been exercised here was the **fallback trigger** — no commit had ever sat past the last tag for
+`describe` to fall back from. `632e6be` is the first that does. **The shape was evidenced, the
+trigger was not, and now both are.**
+
+`@auditor` reported the claim unevidenced rather than confirming it, **against its own
+recommendation**, since the degradation property was the argument favouring the command it put
+forward. The draft before this one published `<tag>-<k>-g<sha>` as an output shape without having
+produced it. **This record does not publish values it did not run, and that rule does not stop
+applying at the last paragraph of it** — which is why the three lines above name who ran each one
+and where. `git tag -l --sort=v:refname | tail -1` and
 `git for-each-ref refs/tags --sort=creatordate` are also correct and both require knowing that
 the suffixes are numeric. `git tag --points-at HEAD` is exact when HEAD is tagged and returns
 nothing when it is not.
