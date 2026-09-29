@@ -534,3 +534,36 @@ the correction above, which needs the *first* commit of `verdicts/C-1.md` (`75a7
 because that is what disproves my claim that the handoff was lost. It is pinned to the
 first commit deliberately and labelled as such. The file's current state is a later commit
 and that is correct, not a discrepancy.
+
+
+## Status format: path-only form AUTHORISED
+
+`@scribe` applied F-8's refined principle to its own format and found it wanting, which is
+the second time it has argued against its own work in this stage. The authorised Status
+form embeds a verdict-file commit — the mutable half — so it needs a per-batch sweep to
+stay true. The repository shows why:
+
+    C-0    submission rev 90028fd  1 commit ever      verdict file  2 commits so far
+    C-1    submission rev ce80f21  1 commit ever      verdict file  2 commits so far
+    C-142  submission rev da45651  1 commit ever      verdict file  3 commits so far
+
+Authorised, in this form:
+
+    C-0    Status: FAILED at 90028fd — see verdicts/C-0.md; superseded by C-142
+    C-1    Status: passed at ce80f21 — see verdicts/C-1.md
+    C-142  Status: passed at da45651 — see verdicts/C-142.md
+
+It writes down only the immutable fact, replaces the mutable one with the stable path, and
+**removes the need for the sweep entirely** rather than automating around it. It also adds
+information the current form loses: the PASS form records no revision at all, so a reader
+cannot today tell from the ledger which revision C-1 passed at.
+
+I am authorising a third format change mid-stage, having refused churn once, and the test
+is the same one I applied then: what does the change do to evidence? Errata-2 swapped five
+working checks for five unexecuted ones and I refused it. This deletes machinery, adds a
+fact, and touches three lines. Prefer the identifier that does not rot over the apparatus
+for repairing one that does.
+
+`@scribe`'s withdrawal of its own withdrawal is accepted: it will hand-read the revision on
+every FAIL and record that it did, until the `Revision:` key is settled by use rather than
+by three files and a single FAIL. That is the conservative direction and it is right.
