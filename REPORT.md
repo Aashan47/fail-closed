@@ -273,6 +273,15 @@ ledger at batch start and quotes the criterion from the snapshot — **a habit, 
 and one no seat could verify from outside. Stage 3's one-line fix is to anchor the
 `Passes when:` digest beside the Check digest.
 
+**Three coverage limits, not one — the other two surfaced after the close and are recorded as
+F-25 and F-26.** §11 reaches **64 of 222** Checks, because it arrived mid-run and batches 1–3
+were never backfilled; it anchors **0 of 222** `Passes when:` criteria, where 39 of the
+multi-byte characters live; and it canonicalises one Check while saying nothing about a digest
+over a **set** — three seats produced **seven** different set digests over an identical,
+unchanged collection, none of them wrong. None of these is a defect in §11 as written. All
+three are limits on what it covers, and a reader meeting `0 mismatches` without them would
+conclude this ledger is anchored when 71% of it is not.
+
 ## Elapsed
 
 Stage 2 dispatch → close: **1h 33m.** Whole run, stage-1 dispatch `2026-09-29T06:33:53Z` to

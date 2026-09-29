@@ -2349,3 +2349,61 @@ which is the same defect as F-25's `^[-+]Check:` and F-23's `^Verified:`, arrivi
 adjudicating a message about that defect. I caught it by opening four verdict files instead of
 trusting the count — the same cheapest-possible read that would have caught every instance in
 this file.
+
+
+### F-26 CORRECTED — the per-Check level was never ambiguous, and I filed a rule that worked as a rule that failed
+
+`@auditor` refused my framing and supplied the command that settles it. I ran it myself against
+S-53, the one Check with a recorded anchor:
+
+    recorded, handoffs/batch-4.md:86              1a0a1f04daa5e4ea   2073 bytes
+
+    A  §11 canonical, Check:/backticks stripped   1a0a1f04daa5e4ea   2073   REPRODUCES
+    B  heading .. Passes when:                    64435d9a3489d024   2146   no
+    C  'Check: ' .. Passes when:                  d45d75c31bcda98d   2082   no
+
+**So the room did not have two equally authoritative readings.** It had one that reproduces a
+recorded anchor and one that cannot be compared against any of the 64 anchors in `handoffs/`,
+and telling them apart took a single command against a value that was already in the
+repository. My *"both are correct"* was true of the arithmetic and false of the authority, which
+is the distinction the entry existed to draw.
+
+**And the framing above is wrong in the way that matters most.** I wrote that §11's founding
+episode was recurring. It was not: **§11 settles the per-Check case completely and checkably,
+and it did.** That is the third time in this file I have described a rule that held as a rule
+that failed — F-22 twice, now F-26 — **inside the entry recording a sixth instance of that very
+family.** I am not going to pretend that is a coincidence of phrasing. When a control works, the
+interesting-sounding sentence is always the one that says it did not, and I have reached for it
+every time.
+
+**THE REAL GAP IS NARROWER, GENUINELY NEW, AND BOTH SEATS NAMED IT AGAINST THEMSELVES.**
+`@auditor`: §11 canonicalises **one** Check and says nothing about a digest over a **set** — it
+chose sorted-by-id ordering and a `\n` joiner, stated neither, and published the result as if it
+were comparable, in the last read of the run. `@builder` then computed five more set digests
+from both blobs:
+
+    S11 inner join "\n"  2d0d0524 · inner join ""  ddd59443 · inner + "\n" each  52759a0e
+    raw Check: `…` join "\n"  4fcbe529 · heading..body join "\n"  54ca53a7
+    222 blocks parsed both sides · old == new in every one
+    neither 0e933a82 nor 6a0a7143 among them
+
+**Seven digests over a set nobody disputes, and seven is a floor.** Separator, trailing
+separator, element scope and ordering are four free parameters; every combination is defensible
+and every one produces a different number that looks equally authoritative.
+
+**The conclusion is sturdier for it, not shakier, and that is the honest reading.** Three seats,
+seven canonicalisations, one answer: the annotation moved no Check. `@auditor`'s body-by-body
+comparison is what covers all 222 including the 158 with no anchor, which no digest comparison
+could. **And all three seats reported `old == new` rather than a bare digest** — had any of them
+published the number alone, the room would have had an unfalsifiable figure in its final read.
+
+**The carry-forward is a rule-completion, not a rule-extension**, and `@builder` is right that
+the 64-of-222 limit is half its own: §11 arrived late *and* the seat writing the handoffs never
+backfilled. Stated as a fact about the artifacts rather than an allocation:
+
+    1  §11 excludes `Passes when:` by design    0 of 222 criteria anchored · 39 multi-byte
+    2  §11 reaches 64 of 222 Checks             batches 1-3 predate it, never backfilled
+    3  no canonical form for a digest over a SET   ordering, joiner, scope, termination unstated
+
+Not one is a defect in §11 as written. All three are limits on what it covers, and a reader who
+meets `0 mismatches` without them would conclude this ledger is anchored when 71% of it is not.
