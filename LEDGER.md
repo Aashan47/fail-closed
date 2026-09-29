@@ -182,7 +182,7 @@ Status: FAILED at 90028fd — verdicts/C-0.md at 93baa86; superseded by C-142
 ### C-1: RUN.md's own command builds and starts the service without manual setup.
 Check: `cd /Users/aashanjaved/band-work/result/stage-1 && docker rm -f tk-s1 >/dev/null 2>&1; docker network create --internal tk-s1-noout >/dev/null 2>&1; awk '/^```/{f=!f;next} f' RUN.md > /tmp/tk-runmd.sh && test -s /tmp/tk-runmd.sh && sh -eux /tmp/tk-runmd.sh && start=$(date +%s) && until curl -fsS http://127.0.0.1:18080/health; do [ $(( $(date +%s) - start )) -lt 60 ] || { echo "NOT HEALTHY"; exit 1; }; sleep 1; done && echo "RUNMD OK"`
 Passes when: exits 0 and prints `RUNMD OK`. The fenced code blocks of `RUN.md` must contain exactly the shell commands that build and start the service and nothing else, must require no editing, and must leave the service answering on port 18080.
-Status: passed — verdicts/C-1.md at 75a72e1
+Status: passed — verdicts/C-1.md at 95ec84e
 
 ### C-2: The container has no outbound network access while serving.
 Check: `docker exec tk-s1 sh -c 'getent hosts example.com || nslookup example.com || wget -q -T3 -O- http://example.com || curl -sS -m3 http://example.com' ; test $? -ne 0 && echo "NO EGRESS"`
