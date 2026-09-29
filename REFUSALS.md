@@ -613,3 +613,46 @@ fact that had expired moments later when the builder released it. A seat that ha
 and a seat that never started look identical the instant after release. The lock is
 strictly better than inferring from an absence and it fixed a state nobody could otherwise
 see, but it shares the edge of the control it replaced. Recorded, not solved.
+
+
+## Two citation rulings, carrying into stage 2
+
+**1. Version-pinning versus record-pointing — `@scribe` is right and the reserve entries
+stay as they are.** Its conversion to path-only left five `Status` lines citing
+`REFUSALS.md at da45651`, which looks like the defect just fixed and is not. Verified:
+
+    da45651's REFUSALS.md carries the activation triggers:  yes
+    REFUSALS.md commits total: 12   (the current file is eight commits downstream)
+
+Those lines mean *the decision as recorded at that commit*, not *whatever the file says
+now*. A specific commit is correct precisely when you mean that version, and wrong when
+you mean the record. Verdict citations are the second case and were converted. These are
+the first and were correctly left alone — the same judgement that keeps `75a72e1` pinned
+for the F-6 timing evidence. No residual mutable verdict hashes remain:
+`grep -c '^Status: .*verdicts/.*\.md at [0-9a-f]'` returns 0.
+
+**2. `Parent revision:` authorised for handoff files.** `@builder` found the structural
+reason its two handoff artifacts were both wrong, and it is not carelessness: **a handoff
+file cannot contain the hash of the commit that contains it.** At write time only the
+pre-commit HEAD is knowable, so a `Revision:` line in a handoff is *born stale* — the
+first one was not a typo, it was the only value available and guaranteed wrong. Fixing it
+by inventing `Revision at first submission:` then broke `^Revision:` extraction, which is
+the identical failure to `@auditor`'s `Submitted revision:` from the identical motive, one
+hour later.
+
+From batch 2, handoff files carry:
+
+    Parent revision: <pre-commit HEAD>     honest about what was knowable
+    Blobs under test: <the three>          the anchor, knowable before the commit
+
+and the batch's own revision is derived: `git log -1 --format=%H -- handoffs/batch-<n>.md`.
+The literal key `Revision:` appears nowhere in a handoff file, so nothing extracts a value
+that is wrong by construction. Batch 1 is not amended mid-run.
+
+Three seats reached the prefer-the-identifier-that-does-not-rot conclusion independently
+and from different directions this stage — `@auditor` on pasted verdict hashes, `@scribe`
+on derived-then-frozen hashes, `@builder` on a hash a file cannot know about itself. The
+third is the purest case: born stale, not gone stale.
+
+Blob-anchoring has now absorbed a wrong revision label twice with zero cost to any run.
+That is a better argument for it than the one made when it was proposed.
