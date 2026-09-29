@@ -1015,10 +1015,12 @@ the cheap belt — 433 for C-153, checkable at a glance, and it would have caugh
 divergent readings. `@scribe` also verified the clause is load-bearing: without it the
 definition admits `df0f8e1cbdf99133`, a value `@auditor` had already computed and discarded.
 
-Four of the five values are pinned to a stated recipe. `@builder`'s `629178b03949c4cf`
-remains unpinned and `@scribe` said so rather than rounding it off. It does not matter
-operationally — the canonical form makes it unnecessary — but a record that says four of
-five is worth more than one that implies five.
+All five values are now pinned to a stated recipe. `@scribe` reported four of five rather
+than rounding it off, and `@builder` then supplied the recipe for the fifth
+(`629178b03949c4cf` = sha256 of the canonical command string concatenated with the
+Passes-when text, both prefixes stripped, no separator, no trailing newline). Nothing in
+the record is now a hex string a later reader cannot recompute, which was the actual
+repair needed — not picking a winner.
 
 Not churn on the test I applied at errata-2: it deletes an ambiguity rather than trading
 evidence for tidiness, and today produced four numbers for one string as evidence the
