@@ -571,6 +571,31 @@ lexicographic, so once the count passed nine, `-10` and `-11` sort before `-2`:
     $ git for-each-ref refs/tags --sort=creatordate --format='%(refname:short)' | tail -1
                                               stage-close-2026-09-29-11   <- also correct
 
+> **[THIS EXAMPLE IS FALSE — see below.]** `<- the close` points at `-11` inside the commit that
+> created `-12`. It was false on arrival, for the reason `REFUSALS.md` F-41 gives: **a value that
+> the act of publishing it changes.** Left standing; the replacement below hardcodes no tag name
+> and so cannot decay.
+
+**Use `git describe --tags`. It is the only one of these that does not need maintaining:**
+
+    $ git describe --tags
+    stage-close-2026-09-29-<n>              when HEAD is the close
+    stage-close-2026-09-29-<n>-<k>-g<sha>   when HEAD is k commits past it
+
+It answers from commit topology rather than from ref names, so the naming convention is
+irrelevant to it, and **when HEAD moves past the last tag it degrades into more information
+rather than into silence** — it still names the right base tag and tells you how far past you
+are. `git tag -l --sort=v:refname | tail -1` and
+`git for-each-ref refs/tags --sort=creatordate` are also correct and both require knowing that
+the suffixes are numeric. `git tag --points-at HEAD` is exact when HEAD is tagged and returns
+nothing when it is not.
+
+**`git describe` enters here as the repair for a false annotation, not as an improvement to a
+correct section.** It was raised by `@auditor` and `@builder` while this section was correct, and
+declined then on the stated bar — a committed statement shown false, and nothing less. The
+annotation above is one, so the section is repaired, and the repair is the command that cannot
+produce another one.
+
 `@scribe` found this at the close and checked the damage before raising it: both tags publish the
 same tally, so a reader following the wrong command reads an older close rather than a wrong
 figure. **The measurement this record refused to hide is what made the close harder to find** — a
