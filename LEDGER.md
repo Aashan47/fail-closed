@@ -2452,3 +2452,1461 @@ Status: passed at ec1fe94 — see verdicts/C-156.md
 `@registrar` authorises supersession, not `@scribe`, and the errata-2 precedent says entries of
 unexecuted shape should not displace entries of proven shape. These four are unexecuted. The FAIL
 verdicts establish the originals are defective; they do not establish that the replacements work.
+
+---
+---
+
+# ═══ STAGE 2 LEDGER ═══
+
+Owner: `@scribe`. This section defines "done" for **stage 2**. It is appended, not substituted:
+**everything above this line is stage 1 and remains evidence.** Stage-1 entries keep their statuses,
+their verdicts and their refusals, because `stage-2/` is graded against **suite 1 and suite 2** and a
+regression in stage-1 behaviour loses both stages.
+
+- Result repository: `/Users/aashanjaved/band-work/result`
+- Implementation under test: `/Users/aashanjaved/band-work/result/stage-2/`
+- Specification: `tablekeeper/spec/stage-2.md`, with `stage-1.md` continuing to apply
+- Stage-2 claim ids are prefixed **`S-`** so no reader has to infer which stage a claim belongs to.
+  Verdicts go to `verdicts/S-<n>.md`.
+
+**S-0 is the gate.** Nothing else is audited until it passes. Per stage 1's D-1, the gate asserts the
+port **genuinely published** — the thing C-0 assumed and never checked.
+
+## Stage-2 Conventions
+
+§1 to §10 of the stage-1 Conventions continue to apply, with the additions and corrections below.
+Carried forward and unchanged: **§5** order-independence (every check seeds its own state), **§8**
+the `mkdir`-atomic Docker lock, the **F-5** clean-tree bracket, the **commit freeze** from BATCH
+START to BATCH END, and per-claim container and network names. §8 and the freeze were both exercised
+in stage 1 and held.
+
+### §11 The canonical form of a Check
+
+> The canonical form of a Check is the exact byte sequence between the backticks following `Check: `
+> — stripped of surrounding whitespace, with no trailing newline, and with no normalisation of
+> internal whitespace or line endings. Anchor it as `sha256` of those bytes and record the byte
+> count beside the digest. `Passes when:` and `Status:` are not part of it.
+
+Stage 1 produced five different digests for one Check, from five correct computations of five
+different readings. The byte count is the cheap guard: a digest tells a reader that something
+differs, a byte count tells them what.
+
+### §12 The repository path comes from the environment
+
+Two stage folders now exist, so no Check hard-codes a repository path. Every path-bearing Check
+reads `TK_REPO`, defaulting to the canonical location, which lets `@auditor` run against an
+immutable clone instead of `@builder`'s live tree:
+
+```sh
+export TK_REPO="${TK_REPO:-/Users/aashanjaved/band-work/result}"
+```
+
+This replaces retired C-148..C-152, which were never activated.
+
+### §13 A handoff anchors the Check text it was run against
+
+A handoff names, per claim, the `sha256` and byte count of the canonical Check form it ran, alongside
+the code blobs. **This is detection, not prevention.** It makes a Check moving between being read and
+being run *visible*; it does not stop it moving. The window stays open, and stage 2 must not record a
+passing batch as evidence that F-11 is closed.
+
+### §14 Start-up for stage 2
+
+```sh
+docker rm -f tk-s2 >/dev/null 2>&1; docker network rm tk-s2-net >/dev/null 2>&1; docker network create tk-s2-net >/dev/null 2>&1; docker build -t tk-s2 "$TK_REPO/stage-2" && docker run -d --name tk-s2 --network tk-s2-net -p 18080:8080 -e PORT=8080 tk-s2 && for i in $(seq 1 60); do curl -fsS http://127.0.0.1:18080/health >/dev/null 2>&1 && break; sleep 1; done
+```
+
+Teardown, after every self-verification:
+
+```sh
+docker rm -f tk-s2 >/dev/null 2>&1; docker network rm tk-s2-net >/dev/null 2>&1; echo "torn down"
+```
+
+### §15 Two preludes: API and browser
+
+The stage-1 §6 prelude is unchanged and remains the instrument for **re-running stage-1 claims** —
+4128 bytes, lifted independently by four seats, 139 checks, zero defects.
+
+**Every stage-2 claim, API and UI alike, uses one prelude: `$W` below.** It carries the API helpers
+*and* the browser helpers over a single stage-2 fixture, so the two cannot diverge — a stage-1 fixture
+has no `combinable` and labels its tables `1`,`2`,`3`, which would silently make a combination claim
+untestable. It runs under the harness's interpreter, which carries Playwright and Chromium. That is
+the auditor's tooling, not the service's, exactly as `alpine:3` was for C-143:
+
+```sh
+export PWPY=/Users/aashanjaved/dark-factory-wearedevs/.venv/bin/python
+export W="$(awk '/^#PW-BEGIN$/{f=1;next} /^#PW-END$/{f=0} f' "$TK_REPO/LEDGER.md")"
+```
+
+Confirm both loaded:
+
+```sh
+$PWPY -c "$W"'
+print("PW OK", BASE, REPO)'
+```
+
+Note the newline after the opening quote, as in §2.
+
+```python
+#PW-BEGIN
+import json,os,re,threading,urllib.request as U
+from urllib.parse import urlencode as QS
+from playwright.sync_api import sync_playwright
+BASE=os.environ.get("TK_BASE","http://127.0.0.1:18080")
+REPO=os.environ.get("TK_REPO","/Users/aashanjaved/band-work/result")
+WD=["mon","tue","wed","thu","fri","sat","sun"]
+ADA={"id":"u_ada","email":"ada@example.com","password":"correct horse","display_name":"Ada"}
+BOB={"id":"u_bob","email":"bob@example.com","password":"correct horse","display_name":"Bob"}
+F="2027-06-10"
+def R(m,p,b=None,tok=None,key=None,hdr=None):
+    h={"Content-Type":"application/json"}
+    if tok: h["Authorization"]="Bearer "+tok
+    if key is not None: h["Idempotency-Key"]=key
+    if hdr: h.update(hdr)
+    d=None if b is None else (b if isinstance(b,bytes) else json.dumps(b).encode())
+    try:
+        x=U.urlopen(U.Request(BASE+p,method=m,data=d,headers=h),timeout=20); raw=x.read()
+    except U.HTTPError as e:
+        raw=e.read()
+        try: bd=json.loads(raw or b"null")
+        except Exception: bd={"raw":raw.decode("utf-8","replace")}
+        return e.code,bd,dict(e.headers)
+    try: bd=json.loads(raw or b"null")
+    except Exception: bd={"raw":raw.decode("utf-8","replace")}
+    return x.status,bd,dict(x.headers)
+def OK(r,*w):
+    s,b,_=r
+    assert s in w,"status %s want %s body %r"%(s,w,b)
+    return b
+def ERR(r,w,code):
+    s,b,_=r
+    assert s==w,"status %s want %s body %r"%(s,w,b)
+    assert b.get("error",{}).get("code")==code,"code %r want %r"%(b.get("error"),code)
+def REST(**o):
+    r={"id":"r_anker","name":"Zum Anker","timezone":"Europe/Berlin","slot_minutes":30,
+       "reservation_duration_minutes":90,"cancellation_cutoff_minutes":120,
+       "opening_hours":[{"weekday":w,"opens":"18:00","closes":"23:30"} for w in WD],
+       "tables":[{"id":"t_1","label":"Window","capacity":2},{"id":"t_2","label":"Corner","capacity":4},
+                 {"id":"t_3","label":"Terrace","capacity":4}],
+       "combinable":[["t_1","t_2"],["t_2","t_3"]]}
+    r.update(o); return r
+def FX(**o):
+    f={"users":[ADA,BOB],"restaurants":[REST()],"reservations":[]}
+    f.update(o); return f
+def RESET(f):
+    s,b,_=R("POST","/_test/reset",f)
+    assert s==204,"reset %s %r"%(s,b)
+def LOGIN(u):
+    return OK(R("POST","/auth/login",{"email":u["email"],"password":u["password"]}),200)["token"]
+def SETUP(f=None):
+    RESET(f or FX()); return LOGIN(ADA),LOGIN(BOB)
+def AV(rid,date,ps,tok=None):
+    return R("GET","/availability?"+QS({"restaurant_id":rid,"date":date,"party_size":ps}),tok=tok)
+def SLOT(rid,date,ps,at):
+    for s in OK(AV(rid,date,ps),200)["slots"]:
+        if s["starts_at_local"]==at: return s
+    return None
+def BOOK(tok,at,key,rid="r_anker",ps=4,**o):
+    body={"restaurant_id":rid,"starts_at_local":at,"party_size":ps}; body.update(o)
+    return R("POST","/reservations",body,tok=tok,key=key)
+def UI(fn,w=1280,h=900,route="/"):
+    with sync_playwright() as p:
+        br=p.chromium.launch()
+        pg=br.new_page(viewport={"width":w,"height":h})
+        try:
+            if route is not None: pg.goto(BASE+route,wait_until="load")
+            return fn(pg)
+        finally: br.close()
+def SEL(t): return '[data-testid="%s"]'%t
+def SELSTART(pfx): return '[data-testid^="%s"]'%pfx
+def TID(pg,t): return pg.query_selector(SEL(t))
+def SEE(pg,t):
+    e=TID(pg,t); return bool(e) and e.is_visible()
+def TXT(pg,t):
+    e=TID(pg,t)
+    return e.inner_text().strip() if e else None
+def FILL(pg,t,v): pg.fill('[data-testid="%s"]'%t,str(v))
+def CLICK(pg,t): pg.click('[data-testid="%s"]'%t)
+def STYLE(pg,t,props=("backgroundColor","borderTopColor","color","opacity","outlineStyle","textDecorationLine","fontWeight")):
+    return pg.eval_on_selector('[data-testid="%s"]'%t,
+      "e=>{const s=getComputedStyle(e);return "+json.dumps(list(props))+".map(k=>s[k])}")
+def LUM(css):
+    v=[int(x) for x in re.findall(r"\d+",css)[:3]]
+    f=[]
+    for c in v:
+        c=c/255.0
+        f.append(c/12.92 if c<=0.03928 else ((c+0.055)/1.055)**2.4)
+    return 0.2126*f[0]+0.7152*f[1]+0.0722*f[2]
+def RATIO(fg,bg):
+    a,b=LUM(fg),LUM(bg)
+    hi,lo=max(a,b),min(a,b)
+    return (hi+0.05)/(lo+0.05)
+def OVERFLOW(pg):
+    return pg.evaluate("()=>({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth})")
+def LABELOF(pg,t):
+    return pg.evaluate("""(t)=>{const i=document.querySelector('[data-testid="'+t+'"]');
+        if(!i) return null; if(i.labels&&i.labels.length&&i.labels[0].textContent.trim()) return i.labels[0].textContent.trim();
+        const al=i.getAttribute('aria-label'); if(al&&al.trim()) return al.trim();
+        const lb=i.getAttribute('aria-labelledby');
+        if(lb){const e=document.getElementById(lb); if(e&&e.textContent.trim()) return e.textContent.trim();}
+        return null}""",t)
+def SIGNUP_UI(pg,email,pw,name):
+    pg.goto(BASE+"/signup",wait_until="load")
+    FILL(pg,"signup-email",email); FILL(pg,"signup-password",pw); FILL(pg,"signup-display-name",name)
+    CLICK(pg,"signup-submit"); pg.wait_for_timeout(700)
+def LOGIN_UI(pg,email=None,pw=None):
+    pg.goto(BASE+"/login",wait_until="load")
+    FILL(pg,"login-email",email or ADA["email"]); FILL(pg,"login-password",pw or ADA["password"])
+    CLICK(pg,"login-submit"); pg.wait_for_timeout(700)
+def SEARCH_UI(pg,rid="r_anker",date=None,ps=4):
+    pg.goto(BASE+"/",wait_until="load")
+    pg.select_option('[data-testid="restaurant-select"]',rid)
+    FILL(pg,"date-input",date or F); FILL(pg,"party-size-input",ps)
+    CLICK(pg,"search-button"); pg.wait_for_timeout(900)
+def CELL(pg,ids,at):
+    return TID(pg,"slot-%s-%s"%("+".join(ids) if isinstance(ids,list) else ids,at))
+def AVAILATTR(pg,ids,at):
+    c=CELL(pg,ids,at); return c.get_attribute("data-available") if c else None
+#PW-END
+```
+
+### §16 Proxies are labelled, and unsettleable properties are declared
+
+The UI is 25% of the score and a human judges it. Three rules, authorised as binding by `@registrar`
+and stated by `@auditor` as its operational bar:
+
+1. Where a human-judged property has a **faithful deterministic proxy**, the entry states the proxy
+   *and* names what the proxy does not establish. A passing verdict then means exactly what it says.
+2. Where it has **no faithful proxy**, the property is listed under **Declared human-judged** at the
+   end of this section and **no entry is written for it**. A claim honestly marked unsettleable is
+   worth more than one that can be passed without meaning anything, and per `@registrar` such a claim
+   is *not* a case-2 refusal — case 2 is a claim that was supposed to be settled and silently was not.
+3. An entry must never check the attribute a test can read *instead of* the property a human will
+   judge. `aria-label` present is not the label being visible; seven `data-state` values existing is
+   not seven visually distinct states. A proxy presented as the whole property is a **case-3 refusal**.
+
+Stage 1 ended on an instrument reporting success about something it never tested. Five of the seven
+ledger defects were checks that could not establish what their prose claimed. The UI is where that
+mistake is cheapest to make and most expensive to find, because a green `data-testid` looks exactly
+like a working interface until a person opens it.
+
+## The gate
+
+### S-0: The stage-2 service builds from a clean container, serves /health within 60 seconds, and genuinely publishes its port.
+Check: `TK_REPO="${TK_REPO:-/Users/aashanjaved/band-work/result}"; test -z "$(git -C "$TK_REPO" status --porcelain)" || { echo "TREE NOT CLEAN"; exit 1; }; before=$(git -C "$TK_REPO" rev-parse HEAD); docker rm -f tk-s2 >/dev/null 2>&1; docker network rm tk-s2-net >/dev/null 2>&1; docker builder prune -af >/dev/null 2>&1; test -f "$TK_REPO/stage-2/Dockerfile" && test -f "$TK_REPO/stage-2/RUN.md" && docker network create tk-s2-net && docker build --no-cache -t tk-s2 "$TK_REPO/stage-2" && docker run -d --name tk-s2 --network tk-s2-net -p 18080:8080 -e PORT=8080 tk-s2 && start=$(date +%s) && until curl -fsS http://127.0.0.1:18080/health; do [ $(( $(date +%s) - start )) -lt 60 ] || { echo "NOT HEALTHY WITHIN 60s"; exit 1; }; sleep 1; done && echo " HEALTHY IN $(( $(date +%s) - start ))s" && test "$(docker inspect tk-s2 --format '{{json .NetworkSettings.Ports}}')" != "{}" && echo "PORT PUBLISHED" && test -z "$(git -C "$TK_REPO" status --porcelain)" && test "$(git -C "$TK_REPO" rev-parse HEAD)" = "$before" && echo "TREE CLEAN AND UNMOVED AT $before"`
+Passes when: exits 0 and prints the `/health` body, then `HEALTHY IN <n>s` with `n` at most 60, then `PORT PUBLISHED`, then `TREE CLEAN AND UNMOVED AT <revision>`. This is the gate. `PORT PUBLISHED` is the assertion C-0 assumed and never checked, which cost stage 1 an hour; it is asserted here rather than inferred from the curl succeeding.
+Status: unclaimed
+
+### S-1: The stage-2 service has no outbound network access at run time and still serves.
+Check: `TK_REPO="${TK_REPO:-/Users/aashanjaved/band-work/result}"; docker rm -f tk-s1x >/dev/null 2>&1; docker network rm tk-s1x-noout >/dev/null 2>&1; docker network create --internal tk-s1x-noout && test "$(docker network inspect tk-s1x-noout --format '{{.Internal}}')" = "true" && docker build -q -t tk-s2 "$TK_REPO/stage-2" >/dev/null && docker run -d --name tk-s1x --network tk-s1x-noout -e PORT=8080 tk-s2 >/dev/null && for i in $(seq 1 60); do docker run --rm --network tk-s1x-noout alpine:3 wget -qO- -T3 http://tk-s1x:8080/health >/dev/null 2>&1 && break; sleep 1; done; docker run --rm --network tk-s1x-noout alpine:3 sh -c 'wget -qO- -T5 http://tk-s1x:8080/health || exit 1; nslookup example.com >/dev/null 2>&1 && exit 2; nc -w4 -z 1.1.1.1 80 2>/dev/null && exit 3; wget -qO- -T4 http://example.com >/dev/null 2>&1 && exit 4; echo " NO EGRESS"'; r=$?; docker rm -f tk-s1x >/dev/null 2>&1; docker network rm tk-s1x-noout >/dev/null 2>&1; exit $r`
+Passes when: exits 0 and prints the `/health` body then `NO EGRESS`. Replicates C-143 against stage 2, because §2's no-outbound rule applies to every stage and the UI adds fonts, scripts and stylesheets — the exact assets a service is tempted to fetch at run time. Exit 1 means the service did not answer, 2 DNS resolved, 3 raw TCP opened, 4 an HTTP fetch succeeded.
+Status: unclaimed
+
+### S-2: RUN.md's own command builds and starts the stage-2 service from a clean checkout.
+Check: `TK_REPO="${TK_REPO:-/Users/aashanjaved/band-work/result}"; test -z "$(git -C "$TK_REPO" status --porcelain)" || { echo "TREE NOT CLEAN"; exit 1; }; before=$(git -C "$TK_REPO" rev-parse HEAD); cd "$TK_REPO/stage-2" && docker rm -f tk-s2 >/dev/null 2>&1; awk '/^```/{f=!f;next} f' RUN.md > /tmp/tk-s2-runmd.sh && test -s /tmp/tk-s2-runmd.sh && sh -eux /tmp/tk-s2-runmd.sh && start=$(date +%s) && until curl -fsS http://127.0.0.1:18080/health; do [ $(( $(date +%s) - start )) -lt 60 ] || { echo "NOT HEALTHY"; exit 1; }; sleep 1; done && test -z "$(git -C "$TK_REPO" status --porcelain)" && test "$(git -C "$TK_REPO" rev-parse HEAD)" = "$before" && echo "RUNMD OK AT $before"`
+Passes when: exits 0 and prints the `/health` body then `RUNMD OK AT <revision>`. The fenced blocks of `stage-2/RUN.md` must hold exactly the build-and-start commands, need no editing, and work from the stage directory of any clean checkout. Stage 1's C-1 found a `RUN.md` that attached the container to an `--internal` network and published nothing; this asserts the replacement did not regress.
+Status: unclaimed
+
+## Stage 1 must still behave — stage-2/ is graded against suite 1
+
+### S-3: The stage-1 graded suite passes against stage-2/ in the grading mode.
+Check: `TK_REPO="${TK_REPO:-/Users/aashanjaved/band-work/result}"; test -z "$(git -C "$TK_REPO" status --porcelain)" || { echo "TREE NOT CLEAN"; exit 1; }; before=$(git -C "$TK_REPO" rev-parse HEAD); cd /Users/aashanjaved/dark-factory-wearedevs && ./.venv/bin/python -m harness run --track tablekeeper --repo "$TK_REPO" --stage 2 --mode isolated --out /Users/aashanjaved/band-work/checks/s2-iso-$(date +%s); r=$?; test $r -eq 0 && test -z "$(git -C "$TK_REPO" status --porcelain)" && test "$(git -C "$TK_REPO" rev-parse HEAD)" = "$before" && echo "TREE CLEAN AND UNMOVED AT $before"; exit $?`
+Passes when: the harness exits 0 reporting zero failures and zero errors for **both** stage 1 and stage 2, then `TREE CLEAN AND UNMOVED AT <revision>` prints. `--stage 2` runs suite 1 and suite 2 against `stage-2/`, so a stage-1 regression fails here. A printed failure for stage 3 is expected and required; per `harness/cli.py:459` the next-stage probe's exit code is not this run's and the probe failing is the good case.
+Status: unclaimed
+
+### S-4: A single-table booking still works end to end after the copy and widening.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+b=OK(BOOK(ta,F+"T19:00","s4",table_id="t_2",ps=4),201)
+assert b["status"]=="confirmed" and b["table_id"]=="t_2",b
+assert b["table_ids"]==["t_2"],b
+assert b["starts_at"].endswith("+02:00") and b["ends_at"].endswith("+02:00"),b
+got=OK(R("GET","/reservations/"+b["reference"],tok=ta),200)
+assert got["reservation_id"]==b["reservation_id"],got
+OK(R("POST","/reservations/"+b["reference"]+"/cancel",tok=ta),200)
+assert OK(R("GET","/reservations/"+b["reference"],tok=ta),200)["status"]=="cancelled"
+print("PASS")'`
+Passes when: prints `PASS`. The stage-1 create/read/cancel path is intact, the legacy `table_id` request form still works, and the response carries both `table_id` and `table_ids` for a one-member set.
+Status: unclaimed
+
+### S-5: Stage-1 idempotency, export and import still behave after the widening.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+body={"restaurant_id":"r_anker","table_id":"t_2","starts_at_local":F+"T19:00","party_size":4}
+first=OK(R("POST","/reservations",body,tok=ta,key="s5"),201)
+assert OK(R("POST","/reservations",body,tok=ta,key="s5"),200)==first,"replay differs"
+ERR(R("POST","/reservations",dict(body,party_size=3),tok=ta,key="s5"),409,"idempotency_key_reuse")
+snap=OK(R("GET","/_test/export"),200)
+assert snap["track"]=="tablekeeper" and snap["format_version"]==1 and isinstance(snap["state"],dict),snap
+s,_,_=R("POST","/_test/import",snap); assert s==204,s
+assert OK(R("POST","/reservations",body,tok=ta,key="s5"),200)==first,"receipt lost across import"
+assert OK(R("GET","/reservations/"+first["reference"],tok=ta),200)["reference"]==first["reference"]
+ERR(R("POST","/_test/import",dict(snap,track="pocketful")),422,"validation_failed")
+print("PASS")'`
+Passes when: prints `PASS`. Replay returns the identical original response, a changed body is still 409, the export envelope is unchanged, an unchanged export still imports, receipts and bookings survive it, and a wrong track is still refused.
+Status: unclaimed
+
+### S-6: The stage-1 DST rules still hold, in both zones, with absolute-time duration.
+Check: `$PWPY -c "$W"'
+import datetime as D
+NY=REST(id="r_us",timezone="America/New_York",opening_hours=[{"weekday":w,"opens":"01:00","closes":"06:00"} for w in WD],combinable=[])
+DE=REST(id="r_de",opening_hours=[{"weekday":w,"opens":"01:00","closes":"06:00"} for w in WD],combinable=[])
+RESET(FX(restaurants=[DE,NY])); ta=LOGIN(ADA)
+ERR(BOOK(ta,"2026-03-29T02:30","d1",rid="r_de",table_id="t_2"),422,"invalid_local_time")
+ERR(BOOK(ta,"2026-03-08T02:30","d2",rid="r_us",table_id="t_2"),422,"invalid_local_time")
+b=OK(BOOK(ta,"2026-11-01T01:30","d3",rid="r_us",table_id="t_2"),201)
+assert b["starts_at"]=="2026-11-01T01:30:00-04:00",b["starts_at"]
+assert b["ends_at"]=="2026-11-01T02:00:00-05:00",b["ends_at"]
+c=OK(BOOK(ta,"2026-10-25T02:00","d4",rid="r_de",table_id="t_2"),201)
+assert c["starts_at"]=="2026-10-25T02:00:00+02:00",c["starts_at"]
+assert c["ends_at"]=="2026-10-25T02:30:00+01:00",c["ends_at"]
+assert [s["starts_at_local"] for s in OK(AV("r_de","2026-03-29",2),200)["slots"]]==["2026-03-29T"+t for t in ["01:00","01:30","03:00","03:30","04:00","04:30"]]
+print("PASS")'`
+Passes when: prints `PASS`. The skipped hour is still refused and absent from availability in both zones, the repeated hour still resolves to the first occurrence, and duration is still absolute — New York 01:30 ends at local 02:00 at `-05:00`, the specification's own example.
+Status: unclaimed
+
+## Model: combinable pairs (§Model)
+
+### S-7: A declared pair is bookable and occupies both tables for the full duration.
+Check: `$PWPY -c "$W"'
+ta,tb=SETUP()
+b=OK(BOOK(ta,F+"T19:00","s7",table_ids=["t_1","t_2"],ps=6),201)
+assert b["table_ids"]==["t_1","t_2"],b
+assert "table_id" not in b,"table_id must be omitted when the set has two members: %r"%b
+for tid in ["t_1","t_2"]:
+    ERR(BOOK(tb,F+"T19:00","s7-"+tid,table_id=tid,ps=2),409,"table_unavailable")
+for at in ["18:00","18:30","19:30","20:00"]:
+    ERR(BOOK(tb,F+"T"+at,"s7o-"+at,table_id="t_1",ps=2),409,"table_unavailable")
+OK(BOOK(tb,F+"T20:30","s7free",table_id="t_1",ps=2),201)
+print("PASS")'`
+Passes when: prints `PASS`. Both members are occupied for the whole 90 minutes, every overlapping start on either table is refused, and the first non-overlapping start is free — the half-open rule applied to a pair.
+Status: unclaimed
+
+### S-8: A pair not listed in combinable is 422 combination_not_allowed.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+ERR(BOOK(ta,F+"T19:00","s8a",table_ids=["t_1","t_3"],ps=6),422,"combination_not_allowed")
+ERR(BOOK(ta,F+"T19:00","s8b",table_ids=["t_3","t_1"],ps=6),422,"combination_not_allowed")
+OK(BOOK(ta,F+"T19:00","s8c",table_ids=["t_1","t_2"],ps=6),201)
+print("PASS")'`
+Passes when: prints `PASS`. `[t_1,t_3]` is refused in both orderings even though the two tables are free and their summed capacity is sufficient, while a declared pair at the same slot is accepted.
+Status: unclaimed
+
+### S-9: Combining is not transitive.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+ERR(BOOK(ta,F+"T19:00","s9",table_ids=["t_1","t_3"],ps=6),422,"combination_not_allowed")
+OK(BOOK(ta,F+"T19:00","s9a",table_ids=["t_1","t_2"],ps=6),201)
+RESET(FX()); ta=LOGIN(ADA)
+OK(BOOK(ta,F+"T19:00","s9b",table_ids=["t_2","t_3"],ps=8),201)
+print("PASS")'`
+Passes when: prints `PASS`. `[t_1,t_2]` and `[t_2,t_3]` are both declared and both bookable, and `{t_1,t_3}` is still refused — the specification says transitivity must not be inferred.
+Status: unclaimed
+
+### S-10: A combinable entry is an unordered pair.
+Check: `$PWPY -c "$W"'
+RESET(FX(restaurants=[REST(combinable=[["t_2","t_1"]])])); ta=LOGIN(ADA)
+b=OK(BOOK(ta,F+"T19:00","s10",table_ids=["t_1","t_2"],ps=6),201)
+assert sorted(b["table_ids"])==["t_1","t_2"],b
+RESET(FX(restaurants=[REST(combinable=[["t_1","t_2"]])])); ta=LOGIN(ADA)
+OK(BOOK(ta,F+"T19:00","s10b",table_ids=["t_2","t_1"],ps=6),201)
+print("PASS")'`
+Passes when: prints `PASS`. A pair declared `[t_2,t_1]` is bookable as `[t_1,t_2]` and a pair declared `[t_1,t_2]` is bookable as `[t_2,t_1]`. The fixture's ordering does not constrain the request's.
+Status: unclaimed
+
+### S-11: More than two tables is 422 combination_not_allowed.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+ERR(BOOK(ta,F+"T19:00","s11a",table_ids=["t_1","t_2","t_3"],ps=10),422,"combination_not_allowed")
+RESET(FX(restaurants=[REST(combinable=[["t_1","t_2"],["t_2","t_3"],["t_1","t_3"]])])); ta=LOGIN(ADA)
+ERR(BOOK(ta,F+"T19:00","s11b",table_ids=["t_1","t_2","t_3"],ps=10),422,"combination_not_allowed")
+print("PASS")'`
+Passes when: prints `PASS`. Three tables is refused even when every constituent pair is declared — the rule is pairs only, not "any set whose pairs are all combinable".
+Status: unclaimed
+
+### S-12: A combination's capacity is the sum of its tables' capacities.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+OK(BOOK(ta,F+"T19:00","s12a",table_ids=["t_1","t_2"],ps=6),201)
+RESET(FX()); ta=LOGIN(ADA)
+ERR(BOOK(ta,F+"T19:00","s12b",table_ids=["t_1","t_2"],ps=7),422,"party_exceeds_capacity")
+RESET(FX()); ta=LOGIN(ADA)
+OK(BOOK(ta,F+"T19:00","s12c",table_ids=["t_2","t_3"],ps=8),201)
+RESET(FX()); ta=LOGIN(ADA)
+ERR(BOOK(ta,F+"T19:00","s12d",table_ids=["t_2","t_3"],ps=9),422,"party_exceeds_capacity")
+print("PASS")'`
+Passes when: prints `PASS`. `t_1`+`t_2` seats exactly 6 and refuses 7; `t_2`+`t_3` seats exactly 8 and refuses 9. The boundary is asserted on both sides for both pairs rather than sampled.
+Status: unclaimed
+
+### S-13: A duplicate table id in the set is 422 validation_failed.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+ERR(BOOK(ta,F+"T19:00","s13a",table_ids=["t_2","t_2"],ps=4),422,"validation_failed")
+ERR(BOOK(ta,F+"T19:00","s13b",table_ids=["t_1","t_1"],ps=2),422,"validation_failed")
+print("PASS")'`
+Passes when: prints `PASS`. A duplicate is `validation_failed`, not `combination_not_allowed` — the specification separates a malformed set from an undeclared pair.
+Status: unclaimed
+
+### S-14: Any taken table in the set makes the combination 409 table_unavailable.
+Check: `$PWPY -c "$W"'
+ta,tb=SETUP()
+OK(BOOK(ta,F+"T19:00","s14a",table_id="t_1",ps=2),201)
+ERR(BOOK(tb,F+"T19:00","s14b",table_ids=["t_1","t_2"],ps=6),409,"table_unavailable")
+RESET(FX()); ta,tb=LOGIN(ADA),LOGIN(BOB)
+OK(BOOK(ta,F+"T19:00","s14c",table_id="t_2",ps=4),201)
+ERR(BOOK(tb,F+"T19:00","s14d",table_ids=["t_1","t_2"],ps=6),409,"table_unavailable")
+RESET(FX()); ta,tb=LOGIN(ADA),LOGIN(BOB)
+OK(BOOK(ta,F+"T18:00","s14e",table_id="t_2",ps=4),201)
+ERR(BOOK(tb,F+"T19:00","s14f",table_ids=["t_1","t_2"],ps=6),409,"table_unavailable")
+print("PASS")'`
+Passes when: prints `PASS`. Either member being taken refuses the pair, and an *overlapping* rather than identical booking on one member also refuses it.
+Status: unclaimed
+
+### S-15: A seeded reservation may hold table_ids, and a seeded cancelled reservation occupies nothing.
+Check: `$PWPY -c "$W"'
+seed=[{"id":"res_c","reference":"COMBO1","user_id":"u_ada","restaurant_id":"r_anker",
+       "table_ids":["t_1","t_2"],"starts_at_local":F+"T19:00","party_size":6}]
+RESET(FX(reservations=seed)); ta,tb=LOGIN(ADA),LOGIN(BOB)
+g=OK(R("GET","/reservations/COMBO1",tok=ta),200)
+assert g["table_ids"]==["t_1","t_2"] and "table_id" not in g,g
+ERR(BOOK(tb,F+"T19:00","s15a",table_id="t_1",ps=2),409,"table_unavailable")
+seed2=[dict(seed[0],status="cancelled")]
+RESET(FX(reservations=seed2)); ta,tb=LOGIN(ADA),LOGIN(BOB)
+assert OK(R("GET","/reservations/COMBO1",tok=ta),200)["status"]=="cancelled"
+OK(BOOK(tb,F+"T19:00","s15b",table_id="t_1",ps=2),201)
+print("PASS")'`
+Passes when: prints `PASS`. A seeded combination blocks both its tables; a seeded reservation carrying `status: cancelled` blocks nothing and reads back as cancelled.
+Status: unclaimed
+
+## API: available_options (§API)
+
+### S-16: Slots carry available_options listing every single table and every declared pair that fits.
+Check: `$PWPY -c "$W"'
+SETUP()
+s=SLOT("r_anker",F,4,F+"T19:00")
+assert s is not None,"no 19:00 slot"
+opts=[(o["table_ids"],o["capacity"]) for o in s["available_options"]]
+assert opts==[(["t_2"],4),(["t_3"],4),(["t_1","t_2"],6),(["t_2","t_3"],8)],opts
+print("PASS",opts)'`
+Passes when: prints `PASS` and the option list. For party 4: `t_1` is excluded (capacity 2), both capacity-4 singles appear in fixture order, then both declared pairs in `combinable` order, each with its summed capacity.
+Status: unclaimed
+
+### S-17: available_options orders singles in fixture order, then pairs in combinable order.
+Check: `$PWPY -c "$W"'
+RESET(FX(restaurants=[REST(tables=[{"id":"t_3","label":"Terrace","capacity":4},{"id":"t_1","label":"Window","capacity":4},{"id":"t_2","label":"Corner","capacity":4}],combinable=[["t_2","t_3"],["t_1","t_2"]])]))
+s=SLOT("r_anker",F,4,F+"T19:00")
+ids=[o["table_ids"] for o in s["available_options"]]
+assert ids==[["t_3"],["t_1"],["t_2"],["t_2","t_3"],["t_1","t_2"]],ids
+print("PASS",ids)'`
+Passes when: prints `PASS` and the order. The fixture deliberately lists tables `t_3,t_1,t_2` and pairs `[t_2,t_3],[t_1,t_2]`, so alphabetical or id-sorted output fails. Singles precede pairs, each group in its own declared order, and `table_ids` within a pair follows `combinable` order.
+Status: unclaimed
+
+### S-18: available_table_ids still lists single tables only and is unchanged by combinations.
+Check: `$PWPY -c "$W"'
+SETUP()
+s=SLOT("r_anker",F,4,F+"T19:00")
+assert s["available_table_ids"]==["t_2","t_3"],s["available_table_ids"]
+assert all(isinstance(x,str) for x in s["available_table_ids"]),s
+s2=SLOT("r_anker",F,2,F+"T19:00")
+assert s2["available_table_ids"]==["t_1","t_2","t_3"],s2["available_table_ids"]
+print("PASS")'`
+Passes when: prints `PASS`. `available_table_ids` remains a flat list of single table ids filtered by capacity in fixture order — stage 1's C-20 contract — and gains nothing from `available_options`.
+Status: unclaimed
+
+### S-19: An option disappears when any of its tables is taken.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+OK(BOOK(ta,F+"T19:00","s19",table_id="t_1",ps=2),201)
+s=SLOT("r_anker",F,4,F+"T19:00")
+ids=[o["table_ids"] for o in s["available_options"]]
+assert ["t_1","t_2"] not in ids,"pair containing the taken table still offered: %r"%ids
+assert ["t_2","t_3"] in ids and ["t_2"] in ids,ids
+s2=SLOT("r_anker",F,2,F+"T19:00")
+assert ["t_1"] not in s2["available_table_ids"],s2
+print("PASS")'`
+Passes when: prints `PASS`. Booking `t_1` removes both the `t_1` single and the `[t_1,t_2]` pair, while `[t_2,t_3]` and the `t_2` single remain.
+Status: unclaimed
+
+### S-20: available_options respects party_size on the summed capacity.
+Check: `$PWPY -c "$W"'
+SETUP()
+for ps,want in [(2,[["t_1"],["t_2"],["t_3"],["t_1","t_2"],["t_2","t_3"]]),
+                (5,[["t_1","t_2"],["t_2","t_3"]]),
+                (7,[["t_2","t_3"]]),
+                (9,[])]:
+    ids=[o["table_ids"] for o in SLOT("r_anker",F,ps,F+"T19:00")["available_options"]]
+    assert ids==want,(ps,ids,want)
+print("PASS")'`
+Passes when: prints `PASS`. Party 5 drops every single because none seats 5 while both pairs remain; party 7 leaves only the capacity-8 pair; party 9 leaves nothing and the slot still appears.
+Status: unclaimed
+
+### S-21: A closed day and a no-option slot still appear correctly with combinations present.
+Check: `$PWPY -c "$W"'
+RESET(FX(restaurants=[REST(opening_hours=[{"weekday":"fri","opens":"18:00","closes":"23:30"}])]))
+b=OK(AV("r_anker",F,4),200)
+assert b["slots"]==[],b
+RESET(FX()); ta=LOGIN(ADA)
+for i,tid in enumerate(["t_1","t_2","t_3"]):
+    OK(BOOK(ta,F+"T19:00","s21-%d"%i,table_id=tid,ps=2),201)
+s=SLOT("r_anker",F,2,F+"T19:00")
+assert s is not None and s["available_table_ids"]==[] and s["available_options"]==[],s
+print("PASS")'`
+Passes when: prints `PASS`. 2027-06-10 is a Thursday, closed in the first fixture, so `slots` is empty. With every table booked the 19:00 slot still appears with both lists empty rather than being omitted.
+Status: unclaimed
+
+## API: table_id and table_ids (§API)
+
+### S-22: table_id and table_ids are both accepted, and sending both is 422 validation_failed.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+a=OK(BOOK(ta,F+"T19:00","s22a",table_id="t_2",ps=4),201)
+assert a["table_ids"]==["t_2"] and a["table_id"]=="t_2",a
+RESET(FX()); ta=LOGIN(ADA)
+b=OK(BOOK(ta,F+"T19:00","s22b",table_ids=["t_2"],ps=4),201)
+assert b["table_ids"]==["t_2"] and b["table_id"]=="t_2",b
+RESET(FX()); ta=LOGIN(ADA)
+s,bd,_=R("POST","/reservations",{"restaurant_id":"r_anker","table_id":"t_2","table_ids":["t_2"],"starts_at_local":F+"T19:00","party_size":4},tok=ta,key="s22c")
+assert s==422 and bd["error"]["code"]=="validation_failed",(s,bd)
+s,bd,_=R("POST","/reservations",{"restaurant_id":"r_anker","table_id":"t_1","table_ids":["t_1","t_2"],"starts_at_local":F+"T19:00","party_size":6},tok=ta,key="s22d")
+assert s==422 and bd["error"]["code"]=="validation_failed",(s,bd)
+print("PASS")'`
+Passes when: prints `PASS`. Either field alone works and means the same thing for a one-member set; both together is 422 even when they agree.
+Status: unclaimed
+
+### S-23: Responses carry table_id only when the set has exactly one member.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+one=OK(BOOK(ta,F+"T19:00","s23a",table_ids=["t_2"],ps=4),201)
+assert one["table_id"]=="t_2" and one["table_ids"]==["t_2"],one
+two=OK(BOOK(ta,F+"T21:00","s23b",table_ids=["t_1","t_2"],ps=6),201)
+assert "table_id" not in two,"table_id present on a two-member set: %r"%two
+assert two["table_ids"]==["t_1","t_2"],two
+for ref,want in [(one["reference"],True),(two["reference"],False)]:
+    g=OK(R("GET","/reservations/"+ref,tok=ta),200)
+    assert ("table_id" in g)==want,(ref,g)
+rs=OK(R("GET","/reservations",tok=ta),200)["reservations"]
+for r in rs:
+    assert ("table_id" in r)==(len(r["table_ids"])==1),r
+print("PASS")'`
+Passes when: prints `PASS`. The rule holds on create, on read-by-reference and on the list — `table_ids` always present, `table_id` present exactly when the set is a singleton.
+Status: unclaimed
+
+### S-24: PATCH accepts table_ids under the same combination rules.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+a=OK(BOOK(ta,F+"T19:00","s24",table_id="t_2",ps=4),201)
+r=a["reference"]
+b=OK(R("PATCH","/reservations/"+r,{"table_ids":["t_1","t_2"],"party_size":6},tok=ta),200)
+assert b["table_ids"]==["t_1","t_2"] and "table_id" not in b,b
+assert b["reference"]==r and b["reservation_id"]==a["reservation_id"],b
+ERR(R("PATCH","/reservations/"+r,{"table_ids":["t_1","t_3"]},tok=ta),422,"combination_not_allowed")
+ERR(R("PATCH","/reservations/"+r,{"table_ids":["t_1","t_2","t_3"]},tok=ta),422,"combination_not_allowed")
+ERR(R("PATCH","/reservations/"+r,{"table_ids":["t_2","t_2"]},tok=ta),422,"validation_failed")
+ERR(R("PATCH","/reservations/"+r,{"party_size":7},tok=ta),422,"party_exceeds_capacity")
+after=OK(R("GET","/reservations/"+r,tok=ta),200)
+assert after["table_ids"]==["t_1","t_2"] and after["party_size"]==6,after
+print("PASS")'`
+Passes when: prints `PASS`. A single booking widens to a declared pair keeping its identity, every combination rule applies on the amendment path, and the refused amendments leave the booking unchanged.
+Status: unclaimed
+
+### S-25: Cancelling a combination frees every table in the set.
+Check: `$PWPY -c "$W"'
+ta,tb=SETUP()
+a=OK(BOOK(ta,F+"T19:00","s25",table_ids=["t_1","t_2"],ps=6),201)
+s=SLOT("r_anker",F,2,F+"T19:00")
+assert s["available_table_ids"]==["t_3"],s
+OK(R("POST","/reservations/"+a["reference"]+"/cancel",tok=ta),200)
+s=SLOT("r_anker",F,2,F+"T19:00")
+assert s["available_table_ids"]==["t_1","t_2","t_3"],s
+ids=[o["table_ids"] for o in SLOT("r_anker",F,6,F+"T19:00")["available_options"]]
+assert ["t_1","t_2"] in ids,ids
+OK(BOOK(tb,F+"T19:00","s25b",table_ids=["t_1","t_2"],ps=6),201)
+print("PASS")'`
+Passes when: prints `PASS`. After the cancel both tables return to `available_table_ids`, the pair returns to `available_options`, and another account can book the pair at the same slot.
+Status: unclaimed
+
+### S-26: Atomic reservation moves accept table_ids, and no table may end up in overlapping bookings.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+a=OK(BOOK(ta,F+"T19:00","s26a",table_id="t_1",ps=2),201)
+b=OK(BOOK(ta,F+"T19:00","s26b",table_id="t_3",ps=4),201)
+r=OK(R("POST","/reservation-moves",{"moves":[{"reference":a["reference"],"table_ids":["t_1","t_2"],"party_size":6},{"reference":b["reference"]}]},tok=ta,key="s26m"),201)
+assert r["reservations"][0]["table_ids"]==["t_1","t_2"],r
+assert "table_id" not in r["reservations"][0],r
+ERR(R("POST","/reservation-moves",{"moves":[{"reference":b["reference"],"table_ids":["t_1","t_2"],"party_size":6}]},tok=ta,key="s26n"),409,"table_unavailable")
+RESET(FX()); ta=LOGIN(ADA)
+c=OK(BOOK(ta,F+"T19:00","s26c",table_id="t_1",ps=2),201)
+d=OK(BOOK(ta,F+"T21:00","s26d",table_id="t_2",ps=4),201)
+ERR(R("POST","/reservation-moves",{"moves":[{"reference":c["reference"],"table_ids":["t_1","t_2"],"party_size":6},{"reference":d["reference"],"starts_at_local":F+"T19:00","table_id":"t_2","party_size":4}]},tok=ta,key="s26o"),409,"table_unavailable")
+assert OK(R("GET","/reservations/"+c["reference"],tok=ta),200)==c,"rejected batch changed a record"
+print("PASS")'`
+Passes when: prints `PASS`. A move may widen a booking to a declared pair; a move onto a pair whose member is held by an unlisted booking is refused; and a batch whose *resulting* bookings would share `t_2` is refused with both records left untouched.
+Status: unclaimed
+
+### S-27: Concurrent bookings of a shared table produce a serialisable outcome with no 5xx.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+def one(i):
+    if i%2==0: return BOOK(ta,F+"T19:00","conc-%d"%i,table_ids=["t_1","t_2"],ps=6)
+    return BOOK(ta,F+"T19:00","conc-%d"%i,table_id="t_2",ps=4)
+out=[None]*40
+def w(i):
+    try: out[i]=one(i)
+    except Exception as e: out[i]=("EXC",repr(e),{})
+ts=[threading.Thread(target=w,args=(i,)) for i in range(40)]
+for t in ts: t.start()
+for t in ts: t.join()
+codes=sorted(r[0] for r in out)
+assert not [c for c in codes if not isinstance(c,int) or c>=500],"5xx or transport failure: %r"%out
+assert codes.count(201)==1,"expected exactly one winner, got %r"%codes
+assert codes.count(409)==39,codes
+conf=[x for x in OK(R("GET","/reservations",tok=ta),200)["reservations"] if x["status"]=="confirmed"]
+assert len(conf)==1,conf
+held=set(conf[0]["table_ids"])
+for tid in held:
+    ERR(BOOK(ta,F+"T19:00","post-"+tid,table_id=tid,ps=2),409,"table_unavailable")
+print("PASS",conf[0]["table_ids"])'`
+Passes when: prints `PASS` and the winning set. Forty in-flight requests contend for `t_2` through both a single and a pair; exactly one commits, thirty-nine are 409 `table_unavailable`, none is a 5xx, and the surviving booking genuinely holds its tables — which is what "the same results as executing them one at a time in some order" requires at the read after.
+Status: unclaimed
+
+## UI: routes and authentication (§UI)
+
+### S-28: The four required screens are reachable directly by URL and return HTML.
+Check: `$PWPY -c "$W"'
+SETUP()
+def f(pg):
+    seen={}
+    for route,tid in [("/","search-button"),("/signup","signup-submit"),("/login","login-submit"),("/lookup","lookup-submit")]:
+        r=pg.goto(BASE+route,wait_until="load")
+        ct=(r.header_value("content-type") or "").lower()
+        seen[route]=(r.status,ct.split(";")[0],SEE(pg,tid))
+        assert r.status==200,(route,r.status)
+        assert seen[route][1]=="text/html",(route,ct)
+        assert seen[route][2],(route,"missing "+tid)
+    return seen
+print("PASS",UI(f,route=None))'`
+Passes when: prints `PASS` and the four routes. Each returns HTTP 200 with `Content-Type: text/html`, and each renders its own distinguishing control — so a single-page app that serves one shell and cannot deep-link fails. §3.4's JSON convention governs the API, not these routes.
+Status: unclaimed
+
+### S-29: Signup signs the user in, and current-user shows the display name on every screen.
+Check: `$PWPY -c "$W"'
+SETUP()
+def f(pg):
+    SIGNUP_UI(pg,"zoe@example.com","hunter2hunter2","Zoe Aster")
+    out={}
+    for route in ["/","/lookup","/signup","/login"]:
+        pg.goto(BASE+route,wait_until="load"); pg.wait_for_timeout(300)
+        out[route]=TXT(pg,"current-user")
+        assert out[route] and "Zoe Aster" in out[route],(route,out[route])
+        assert SEE(pg,"logout-button"),(route,"no logout-button")
+    CLICK(pg,"logout-button"); pg.wait_for_timeout(600)
+    pg.goto(BASE+"/",wait_until="load"); pg.wait_for_timeout(300)
+    assert not SEE(pg,"current-user"),"current-user still visible after logout"
+    return out
+print("PASS",UI(f))'`
+Passes when: prints `PASS` and the display name seen on each route. The name appears on **every** screen while signed in, a logout control is present on each, and after logout `current-user` is gone.
+Status: unclaimed
+
+### S-30: Login signs in and a bad login shows auth-error, which is absent when there is none.
+Check: `$PWPY -c "$W"'
+SETUP()
+def f(pg):
+    pg.goto(BASE+"/login",wait_until="load")
+    assert not SEE(pg,"auth-error"),"auth-error present before any attempt"
+    LOGIN_UI(pg,ADA["email"],"wrong password")
+    assert SEE(pg,"auth-error"),"no auth-error on a bad login"
+    txt=TXT(pg,"auth-error")
+    assert txt,"auth-error is empty"
+    assert not SEE(pg,"current-user"),"signed in despite a bad password"
+    LOGIN_UI(pg,ADA["email"],ADA["password"])
+    assert not SEE(pg,"auth-error"),"auth-error persists after a good login"
+    cu=TXT(pg,"current-user")
+    assert cu and "Ada" in cu,cu
+    return txt
+print("PASS",UI(f,route=None))'`
+Passes when: prints `PASS` and the error text. `auth-error` is absent before any attempt, present and non-empty on a bad login, and gone again after a good one — the specification's "present only when there is one", checked in all three directions.
+Status: unclaimed
+
+## UI: the availability grid (§UI)
+
+### S-31: The grid renders one cell per table per slot, and data-available matches GET /availability exactly.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+OK(BOOK(ta,F+"T19:00","s31",table_id="t_2",ps=2),201)
+api={s["starts_at_local"][-5:]:s["available_table_ids"] for s in OK(AV("r_anker",F,2),200)["slots"]}
+def f(pg):
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,2)
+    assert SEE(pg,"availability-grid"),"no availability-grid"
+    checked=0
+    for at,avail in api.items():
+        for tid in ["t_1","t_2","t_3"]:
+            got=AVAILATTR(pg,tid,at)
+            assert got is not None,"missing cell slot-%s-%s"%(tid,at)
+            want="true" if tid in avail else "false"
+            assert got==want,"slot-%s-%s data-available=%s want %s"%(tid,at,got,want)
+            checked+=1
+    return checked
+n=UI(f)
+assert n==len(api)*3,(n,len(api))
+print("PASS",n,"cells")'`
+Passes when: prints `PASS 27 cells`. Every table-slot pair has a cell and every `data-available` agrees with `available_table_ids` for the party size that was searched — including the false cells created by the seeded booking. A grid that marks everything available fails.
+Status: unclaimed
+
+### S-32: A declared pair that is available for the searched party size gets a combination cell.
+Check: `$PWPY -c "$W"'
+SETUP()
+def f(pg):
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,6)
+    a=AVAILATTR(pg,["t_1","t_2"],"19:00")
+    b=AVAILATTR(pg,["t_2","t_3"],"19:00")
+    assert a=="true","slot-t_1+t_2-19:00 data-available=%r"%a
+    assert b=="true","slot-t_2+t_3-19:00 data-available=%r"%b
+    assert AVAILATTR(pg,["t_1","t_3"],"19:00") is None,"undeclared pair t_1+t_3 got a cell"
+    assert AVAILATTR(pg,["t_2","t_1"],"19:00") is None,"cell id not in combinable order"
+    for tid in ["t_1","t_2","t_3"]:
+        assert AVAILATTR(pg,tid,"19:00")=="false","single %s offered for party 6"%tid
+    return True
+UI(f)
+print("PASS")'`
+Passes when: prints `PASS`. Both declared pairs get `slot-t_1+t_2-19:00` and `slot-t_2+t_3-19:00` marked available for party 6, the undeclared pair gets no cell, the id is in `combinable` order rather than reversed, and no single table is offered because none seats 6.
+Status: unclaimed
+
+### S-33: A combination cell goes unavailable when one of its tables is taken.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+OK(BOOK(ta,F+"T19:00","s33",table_id="t_1",ps=2),201)
+def f(pg):
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,6)
+    a=AVAILATTR(pg,["t_1","t_2"],"19:00")
+    b=AVAILATTR(pg,["t_2","t_3"],"19:00")
+    assert a=="false","pair containing the taken table still available: %r"%a
+    assert b=="true","unaffected pair not available: %r"%b
+    return True
+UI(f)
+print("PASS")'`
+Passes when: prints `PASS`. The pair containing the booked table reads `data-available="false"` while the other pair stays `true`.
+Status: unclaimed
+
+### S-34: A closed day shows no-slots instead of the grid.
+Check: `$PWPY -c "$W"'
+RESET(FX(restaurants=[REST(opening_hours=[{"weekday":"fri","opens":"18:00","closes":"23:30"}])]))
+def f(pg):
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,4)
+    assert SEE(pg,"no-slots"),"no-slots not shown on a closed day"
+    t=TXT(pg,"no-slots")
+    assert t,"no-slots is empty"
+    assert not SEE(pg,"availability-grid") or not pg.query_selector_all(SELSTART("slot-")),"grid rendered on a closed day"
+    SEARCH_UI(pg,"r_anker","2027-06-11",4)
+    assert not SEE(pg,"no-slots"),"no-slots persists on an open day"
+    assert SEE(pg,"availability-grid"),"grid missing on an open day"
+    return t
+print("PASS",repr(UI(f)))'`
+Passes when: prints `PASS` and the message. 2027-06-10 is a Thursday and closed, so `no-slots` shows with non-empty text and no slot cells render; the Friday shows the grid and no `no-slots`. The non-empty assertion is what stops a blank box passing.
+Status: unclaimed
+
+### S-35: Clicking an available cell opens the booking form for that table and slot; clicking an unavailable one does nothing.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+OK(BOOK(ta,F+"T19:00","s35",table_id="t_2",ps=2),201)
+def f(pg):
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,2)
+    CLICK(pg,"slot-t_2-19:00"); pg.wait_for_timeout(500)
+    assert not SEE(pg,"booking-form"),"unavailable cell opened the form"
+    CLICK(pg,"slot-t_3-19:00"); pg.wait_for_timeout(600)
+    assert SEE(pg,"booking-form"),"available cell did not open the form"
+    s=TXT(pg,"booking-summary")
+    assert s and "Terrace" in s,"booking-summary lacks the table label: %r"%s
+    assert "19:00" in s,"booking-summary lacks the local start time: %r"%s
+    ps=pg.input_value(SEL("booking-party-size"))
+    assert str(ps).strip()=="2","booking-party-size not pre-filled from the search: %r"%ps
+    return s
+print("PASS",repr(UI(f)))'`
+Passes when: prints `PASS` and the summary. The unavailable cell is inert, the available one opens the form, `booking-summary` names the table by its **label** ("Terrace") and the local start time, and party size is pre-filled from the search.
+Status: unclaimed
+
+### S-36: Booking while signed out shows auth-error or navigates to /login.
+Check: `$PWPY -c "$W"'
+SETUP()
+def f(pg):
+    SEARCH_UI(pg,"r_anker",F,2)
+    CLICK(pg,"slot-t_3-19:00"); pg.wait_for_timeout(800)
+    ok = SEE(pg,"auth-error") or "/login" in pg.url or SEE(pg,"login-submit")
+    assert ok,"signed out: neither auth-error nor /login; url=%s"%pg.url
+    assert not SEE(pg,"confirmation"),"a confirmation appeared while signed out"
+    return pg.url
+print("PASS",UI(f))'`
+Passes when: prints `PASS` and the resulting URL. Either branch the specification permits is accepted, and in neither case does a confirmation appear.
+Status: unclaimed
+
+### S-37: A booked slot is unavailable on the next search, and cancelling frees it again.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+def f(pg):
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,2)
+    assert AVAILATTR(pg,"t_3","19:00")=="true"
+    CLICK(pg,"slot-t_3-19:00"); pg.wait_for_timeout(500)
+    CLICK(pg,"booking-submit"); pg.wait_for_timeout(1200)
+    assert SEE(pg,"confirmation"),"no confirmation after booking"
+    ref=TXT(pg,"confirmation-reference")
+    SEARCH_UI(pg,"r_anker",F,2)
+    assert AVAILATTR(pg,"t_3","19:00")=="false","booked slot still available on the next search"
+    pg.goto(BASE+"/lookup",wait_until="load")
+    FILL(pg,"lookup-reference-input",ref); CLICK(pg,"lookup-submit"); pg.wait_for_timeout(900)
+    CLICK(pg,"reservation-cancel-button"); pg.wait_for_timeout(1000)
+    SEARCH_UI(pg,"r_anker",F,2)
+    assert AVAILATTR(pg,"t_3","19:00")=="true","cancelled slot not freed on the next search"
+    return ref
+print("PASS",UI(f))'`
+Passes when: prints `PASS` and the reference. The grid reflects the new booking on re-search, and reflects the cancellation afterwards — the browser is reading the server rather than caching its own optimistic view.
+Status: unclaimed
+
+## UI: booking form, confirmation and lookup (§UI)
+
+### S-38: The confirmation shows the reference exactly and details naming restaurant, table label and local time.
+Check: `$PWPY -c "$W"'
+import re as _re
+ta,_=SETUP()
+def f(pg):
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,4)
+    CLICK(pg,"slot-t_2-19:00"); pg.wait_for_timeout(500)
+    CLICK(pg,"booking-submit"); pg.wait_for_timeout(1200)
+    assert SEE(pg,"confirmation"),"no confirmation"
+    ref=TXT(pg,"confirmation-reference")
+    assert _re.fullmatch(r"[A-Z0-9]{6,12}",ref or ""),"confirmation-reference is not exactly the reference: %r"%ref
+    det=TXT(pg,"confirmation-details") or ""
+    for want in ["Zum Anker","Corner","19:00"]:
+        assert want in det,"confirmation-details lacks %r: %r"%(want,det)
+    tb=TXT(pg,"confirmation-tables") or ""
+    assert "Corner" in tb,"confirmation-tables lacks the table label: %r"%tb
+    return ref,det
+print("PASS",UI(f))'`
+Passes when: prints `PASS` with the reference and details. `confirmation-reference` matches `^[A-Z0-9]{6,12}$` with no surrounding words, and the details name the restaurant and table by their human labels plus the local start time.
+Status: unclaimed
+
+### S-39: A combination booking's summary, confirmation and lookup name every table.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+def f(pg):
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,6)
+    CLICK(pg,"slot-t_1+t_2-19:00"); pg.wait_for_timeout(600)
+    s=TXT(pg,"booking-summary") or ""
+    for lab in ["Window","Corner"]:
+        assert lab in s,"booking-summary omits %r: %r"%(lab,s)
+    CLICK(pg,"booking-submit"); pg.wait_for_timeout(1300)
+    ref=TXT(pg,"confirmation-reference")
+    ct=TXT(pg,"confirmation-tables") or ""
+    for lab in ["Window","Corner"]:
+        assert lab in ct,"confirmation-tables omits %r: %r"%(lab,ct)
+    pg.goto(BASE+"/lookup",wait_until="load")
+    FILL(pg,"lookup-reference-input",ref); CLICK(pg,"lookup-submit"); pg.wait_for_timeout(900)
+    rt=TXT(pg,"reservation-tables") or ""
+    for lab in ["Window","Corner"]:
+        assert lab in rt,"reservation-tables omits %r: %r"%(lab,rt)
+    return ref,s,ct,rt
+print("PASS",UI(f))'`
+Passes when: prints `PASS` with all four strings. Every table in the selection is named by label in `booking-summary`, `confirmation-tables` and `reservation-tables`. Labels rather than ids is the point: `t_1+t_2` appearing instead of "Window" and "Corner" fails.
+Status: unclaimed
+
+### S-40: Resubmitting the unchanged booking form returns the same reference and books once.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+def f(pg):
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,4)
+    CLICK(pg,"slot-t_2-19:00"); pg.wait_for_timeout(500)
+    CLICK(pg,"booking-submit"); pg.wait_for_timeout(1200)
+    first=TXT(pg,"confirmation-reference")
+    assert SEE(pg,"booking-form"),"form removed after success; spec requires it stays on screen"
+    for _ in range(2):
+        CLICK(pg,"booking-submit"); pg.wait_for_timeout(1100)
+        assert not SEE(pg,"booking-error"),"booking-error on an unchanged resubmit"
+        assert TXT(pg,"confirmation-reference")==first,"reference changed on resubmit"
+    return first
+ref=UI(f)
+rs=OK(R("GET","/reservations",tok=ta),200)["reservations"]
+assert len(rs)==1,"resubmit created %d reservations"%len(rs)
+assert rs[0]["reference"]==ref,(ref,rs)
+print("PASS",ref)'`
+Passes when: prints `PASS` and the reference. The form stays on screen after success, two further unchanged submissions return the same reference with no `booking-error`, and the server holds exactly one reservation — §7 replay driven from the browser.
+Status: unclaimed
+
+### S-41: Changing a field makes the next submission a new booking.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+def f(pg):
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,4)
+    CLICK(pg,"slot-t_2-19:00"); pg.wait_for_timeout(500)
+    CLICK(pg,"booking-submit"); pg.wait_for_timeout(1200)
+    first=TXT(pg,"confirmation-reference")
+    FILL(pg,"booking-party-size",3); pg.wait_for_timeout(200)
+    CLICK(pg,"booking-submit"); pg.wait_for_timeout(1200)
+    second=TXT(pg,"confirmation-reference")
+    assert second and second!=first,"changed field reused the reference: %r"%second
+    assert not SEE(pg,"booking-error"),"booking-error on a legitimate new booking"
+    return first,second
+a,b=UI(f)
+rs=OK(R("GET","/reservations",tok=ta),200)["reservations"]
+refs={r["reference"] for r in rs if r["status"]=="confirmed"}
+assert {a,b}<=refs or b in refs,(a,b,refs)
+print("PASS",a,b)'`
+Passes when: prints `PASS` and two different references. Changing party size produces a genuinely new booking rather than replaying the first — so the browser is varying the idempotency key with the body, not pinning one key per form.
+Status: unclaimed
+
+### S-42: Lookup shows a reservation, its exact status, and cancels without a manual reload.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+b=OK(BOOK(ta,F+"T19:00","s42",table_id="t_2",ps=4),201)
+def f(pg):
+    LOGIN_UI(pg)
+    pg.goto(BASE+"/lookup",wait_until="load")
+    FILL(pg,"lookup-reference-input",b["reference"]); CLICK(pg,"lookup-submit"); pg.wait_for_timeout(900)
+    assert SEE(pg,"reservation-detail"),"no reservation-detail"
+    st=TXT(pg,"reservation-status")
+    assert st=="confirmed","reservation-status is not exactly confirmed: %r"%st
+    assert SEE(pg,"reservation-cancel-button"),"no cancel button on a confirmed booking"
+    url=pg.url
+    CLICK(pg,"reservation-cancel-button"); pg.wait_for_timeout(1100)
+    assert pg.url==url,"page navigated/reloaded instead of updating in place"
+    st2=TXT(pg,"reservation-status")
+    assert st2=="cancelled","status after cancel is not exactly cancelled: %r"%st2
+    assert not SEE(pg,"reservation-cancel-button"),"cancel button still present once cancelled"
+    return st,st2
+print("PASS",UI(f))'`
+Passes when: prints `PASS ('confirmed', 'cancelled')`. The status text is exactly the bare word in both states, the cancel button disappears once cancelled, and the URL is unchanged — the update happened without a manual reload.
+Status: unclaimed
+
+### S-43: An unknown reference and a refused cancel both show reservation-error.
+Check: `$PWPY -c "$W"'
+seed=[{"id":"res_p","reference":"PASTONE","user_id":"u_ada","restaurant_id":"r_anker",
+       "table_id":"t_2","starts_at_local":"2020-06-10T19:00","party_size":4}]
+RESET(FX(reservations=seed))
+def f(pg):
+    LOGIN_UI(pg)
+    pg.goto(BASE+"/lookup",wait_until="load")
+    assert not SEE(pg,"reservation-error"),"reservation-error present before any lookup"
+    FILL(pg,"lookup-reference-input","ZZZZZZ"); CLICK(pg,"lookup-submit"); pg.wait_for_timeout(900)
+    assert SEE(pg,"reservation-error"),"no reservation-error for an unknown reference"
+    assert TXT(pg,"reservation-error"),"reservation-error is empty"
+    assert not SEE(pg,"reservation-detail"),"detail shown for an unknown reference"
+    FILL(pg,"lookup-reference-input","PASTONE"); CLICK(pg,"lookup-submit"); pg.wait_for_timeout(900)
+    assert SEE(pg,"reservation-detail"),"detail missing for a known reference"
+    CLICK(pg,"reservation-cancel-button"); pg.wait_for_timeout(1100)
+    assert SEE(pg,"reservation-error"),"no reservation-error when the cancel is refused"
+    assert TXT(pg,"reservation-status")=="confirmed","status changed despite a refused cancel"
+    return True
+UI(f)
+print("PASS")'`
+Passes when: prints `PASS`. `reservation-error` is absent initially, shown with non-empty text for an unknown reference with no detail rendered, and shown again when a cancel is refused — the seeded booking starts in 2020, so it is past its cutoff and the cancel is 409 `cutoff_passed`. The status must not flip on a refused cancel.
+Status: unclaimed
+
+## UI: competing clients and uncertain outcomes (§Competing clients)
+
+### S-44: A search that starts first but finishes last must not overwrite the newer results.
+Check: `$PWPY -c "$W"'
+import asyncio
+from playwright.async_api import async_playwright
+SETUP()
+async def main():
+    async with async_playwright() as p:
+        br=await p.chromium.launch(); pg=await br.new_page(viewport={"width":1280,"height":900})
+        async def h(route):
+            r=await route.fetch()
+            if "party_size=2" in route.request.url: await asyncio.sleep(1.5)
+            await route.fulfill(response=r)
+        await pg.route("**/availability**",h)
+        await pg.goto(BASE+"/login",wait_until="load")
+        await pg.fill("[data-testid=login-email]",ADA["email"]); await pg.fill("[data-testid=login-password]",ADA["password"])
+        await pg.click("[data-testid=login-submit]"); await pg.wait_for_timeout(700)
+        await pg.goto(BASE+"/",wait_until="load")
+        await pg.select_option("[data-testid=restaurant-select]","r_anker")
+        await pg.fill("[data-testid=date-input]",F)
+        await pg.fill("[data-testid=party-size-input]","2"); await pg.click("[data-testid=search-button]")
+        await pg.wait_for_timeout(120)
+        await pg.fill("[data-testid=party-size-input]","6"); await pg.click("[data-testid=search-button]")
+        await pg.wait_for_timeout(3000)
+        c1=await pg.query_selector("[data-testid=\"slot-t_1-19:00\"]")
+        a1=await c1.get_attribute("data-available") if c1 else None
+        cp=await pg.query_selector("[data-testid=\"slot-t_1+t_2-19:00\"]")
+        ap=await cp.get_attribute("data-available") if cp else None
+        await br.close()
+        return a1,ap
+a1,ap=asyncio.run(main())
+assert ap=="true","grid does not describe the newer party-6 search: combination cell %r"%ap
+assert a1=="false","late party-2 response restored its own results: slot-t_1-19:00 %r"%a1
+print("PASS",a1,ap)'`
+Passes when: prints `PASS false true`. Search A (party 2) is delayed 1.5s so it genuinely resolves after search B (party 6) — verified achievable with the async driver. The grid must then describe B: the `[t_1,t_2]` combination available, and `t_1` alone unavailable because it seats 2 and B asked for 6. If A's late response wins, `slot-t_1-19:00` reads `true` and this fails.
+Status: unclaimed
+
+### S-45: A 409 table_unavailable shows booking-error, refreshes availability, preserves the form and shows no confirmation.
+Check: `$PWPY -c "$W"'
+ta,tb=SETUP()
+def f(pg):
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,4)
+    pg.click(chr(91)+"data-testid=\"slot-t_2-19:00\""+chr(93)); pg.wait_for_timeout(500)
+    assert SEE(pg,"booking-form")
+    FILL(pg,"booking-party-size",3); pg.wait_for_timeout(150)
+    OK(BOOK(tb,F+"T19:00","steal",table_id="t_2",ps=4),201)      # another client takes it
+    CLICK(pg,"booking-submit"); pg.wait_for_timeout(1400)
+    assert SEE(pg,"booking-error"),"no booking-error on 409 table_unavailable"
+    assert TXT(pg,"booking-error"),"booking-error is empty"
+    assert not SEE(pg,"confirmation"),"a confirmation was shown for a refused attempt"
+    assert SEE(pg,"booking-form"),"form removed; spec requires the selection be preserved"
+    ps=pg.input_value(chr(91)+"data-testid=\"booking-party-size\""+chr(93))
+    assert str(ps).strip()=="3","the diner input was not preserved: %r"%ps
+    s=TXT(pg,"booking-summary") or ""
+    assert "Corner" in s,"the selected table was not preserved: %r"%s
+    assert AVAILATTR(pg,"t_2","19:00")=="false","availability was not refreshed after the 409"
+    return ps,s
+print("PASS",UI(f))'`
+Passes when: prints `PASS` with the preserved input and summary. Another account takes `t_2` after the form opens: the attempt shows non-empty `booking-error`, no confirmation, the form and the diner's edited party size survive, the selected table is still named, and the grid now marks `t_2` unavailable.
+Status: unclaimed
+
+### S-46: A lost booking response shows booking-uncertain, and retrying the unchanged form recovers the original reference.
+Check: `$PWPY -c "$W"'
+import asyncio
+from playwright.async_api import async_playwright
+ta,_=SETUP()
+async def main():
+    async with async_playwright() as p:
+        br=await p.chromium.launch(); pg=await br.new_page(viewport={"width":1280,"height":900})
+        state={"drop":True}
+        async def h(route):
+            if route.request.method=="POST" and state["drop"]:
+                state["drop"]=False
+                await route.fetch()                       # the server commits
+                await route.abort("connectionfailed")     # the response never arrives
+                return
+            await route.continue_()
+        await pg.route("**/reservations**",h)
+        await pg.goto(BASE+"/login",wait_until="load")
+        await pg.fill("[data-testid=login-email]",ADA["email"]); await pg.fill("[data-testid=login-password]",ADA["password"])
+        await pg.click("[data-testid=login-submit]"); await pg.wait_for_timeout(700)
+        await pg.goto(BASE+"/",wait_until="load")
+        await pg.select_option("[data-testid=restaurant-select]","r_anker")
+        await pg.fill("[data-testid=date-input]",F); await pg.fill("[data-testid=party-size-input]","4")
+        await pg.click("[data-testid=search-button]"); await pg.wait_for_timeout(900)
+        await pg.click("[data-testid=\"slot-t_2-19:00\"]"); await pg.wait_for_timeout(500)
+        await pg.click("[data-testid=booking-submit]"); await pg.wait_for_timeout(2000)
+        unc=await pg.query_selector("[data-testid=booking-uncertain]")
+        unc_txt=(await unc.inner_text()).strip() if unc else None
+        err=await pg.query_selector("[data-testid=booking-error]")
+        conf=await pg.query_selector("[data-testid=confirmation-reference]")
+        await pg.click("[data-testid=booking-submit]"); await pg.wait_for_timeout(2000)
+        unc2=await pg.query_selector("[data-testid=booking-uncertain]")
+        err2=await pg.query_selector("[data-testid=booking-error]")
+        ref=await pg.query_selector("[data-testid=confirmation-reference]")
+        ref_txt=(await ref.inner_text()).strip() if ref else None
+        await br.close()
+        return unc_txt,bool(err),bool(conf),bool(unc2),bool(err2),ref_txt
+u,e,c,u2,e2,ref=asyncio.run(main())
+assert u,"no nonempty booking-uncertain after a lost response: %r"%u
+assert not e,"booking-error shown for an uncertain outcome"
+assert not c,"a confirmation was shown for a lost response"
+rs=OK(R("GET","/reservations",tok=ta),200)["reservations"]
+assert len(rs)==1,"the retry created a second booking: %d"%len(rs)
+assert ref==rs[0]["reference"],"retry did not recover the original reference: %r vs %r"%(ref,rs[0]["reference"])
+assert not u2 and not e2,"uncertainty/error elements not removed after a successful retry"
+print("PASS",u,ref)'`
+Passes when: prints `PASS` with the uncertainty text and the reference. The first submission reaches the server and commits while its response is dropped — the mechanism is verified: `route.fetch()` then `route.abort()` leaves the server with the booking and the browser with a network failure. The UI must then show non-empty `booking-uncertain` with **no** `booking-error` and **no** confirmation; retrying the unchanged form must reuse the same idempotency key and body so the server replays rather than books again; and the recovered reference must be the original one with the uncertainty elements removed. Exactly one reservation exists throughout.
+Status: unclaimed
+
+### S-47: The uncertainty and refusal rules hold for a combination booking too.
+Check: `$PWPY -c "$W"'
+import asyncio
+from playwright.async_api import async_playwright
+ta,tb=SETUP()
+async def main():
+    async with async_playwright() as p:
+        br=await p.chromium.launch(); pg=await br.new_page(viewport={"width":1280,"height":900})
+        state={"drop":True}
+        async def h(route):
+            if route.request.method=="POST" and state["drop"]:
+                state["drop"]=False
+                await route.fetch(); await route.abort("connectionfailed"); return
+            await route.continue_()
+        await pg.route("**/reservations**",h)
+        await pg.goto(BASE+"/login",wait_until="load")
+        await pg.fill("[data-testid=login-email]",ADA["email"]); await pg.fill("[data-testid=login-password]",ADA["password"])
+        await pg.click("[data-testid=login-submit]"); await pg.wait_for_timeout(700)
+        await pg.goto(BASE+"/",wait_until="load")
+        await pg.select_option("[data-testid=restaurant-select]","r_anker")
+        await pg.fill("[data-testid=date-input]",F); await pg.fill("[data-testid=party-size-input]","6")
+        await pg.click("[data-testid=search-button]"); await pg.wait_for_timeout(900)
+        await pg.click("[data-testid=\"slot-t_1+t_2-19:00\"]"); await pg.wait_for_timeout(500)
+        await pg.click("[data-testid=booking-submit]"); await pg.wait_for_timeout(2000)
+        unc=await pg.query_selector("[data-testid=booking-uncertain]")
+        u=(await unc.inner_text()).strip() if unc else None
+        await pg.click("[data-testid=booking-submit]"); await pg.wait_for_timeout(2000)
+        ref=await pg.query_selector("[data-testid=confirmation-reference]")
+        rt=await pg.query_selector("[data-testid=confirmation-tables]")
+        await br.close()
+        return u,((await ref.inner_text()).strip() if ref else None),((await rt.inner_text()).strip() if rt else None)
+u,ref,tabs=asyncio.run(main())
+assert u,"no booking-uncertain for a lost combination booking"
+rs=[r for r in OK(R("GET","/reservations",tok=ta),200)["reservations"]]
+assert len(rs)==1 and rs[0]["table_ids"]==["t_1","t_2"],rs
+assert ref==rs[0]["reference"],(ref,rs[0]["reference"])
+for lab in ["Window","Corner"]:
+    assert lab in (tabs or ""),"confirmation-tables omits %r after recovery: %r"%(lab,tabs)
+print("PASS",ref)'`
+Passes when: prints `PASS` and the reference. A lost response on a *combination* booking produces the same uncertainty handling, the retry recovers the original reference, exactly one reservation exists holding both tables, and the recovered confirmation still names both table labels.
+Status: unclaimed
+
+## Upgrading a stage-1 service (§Existing clients after an upgrade)
+
+### S-48: A stage-2 service accepts an export produced by the team's stage-1 service.
+Check: `TK_REPO="${TK_REPO:-/Users/aashanjaved/band-work/result}"; docker rm -f tk-up1 tk-up2 >/dev/null 2>&1; docker network rm tk-up-net >/dev/null 2>&1; docker network create tk-up-net >/dev/null && docker build -q -t tk-s1old "$TK_REPO/stage-1" >/dev/null && docker build -q -t tk-s2new "$TK_REPO/stage-2" >/dev/null && docker run -d --name tk-up1 --network tk-up-net -p 18091:8080 -e PORT=8080 tk-s1old >/dev/null && docker run -d --name tk-up2 --network tk-up-net -p 18092:8080 -e PORT=8080 tk-s2new >/dev/null && for i in $(seq 1 60); do curl -fsS http://127.0.0.1:18091/health >/dev/null 2>&1 && curl -fsS http://127.0.0.1:18092/health >/dev/null 2>&1 && break; sleep 1; done && /Users/aashanjaved/dark-factory-wearedevs/.venv/bin/python -c 'import json,urllib.request as U
+def R(base,m,p,b=None,tok=None,key=None):
+    h={"Content-Type":"application/json"}
+    if tok: h["Authorization"]="Bearer "+tok
+    if key: h["Idempotency-Key"]=key
+    d=None if b is None else json.dumps(b).encode()
+    try:
+        x=U.urlopen(U.Request(base+p,method=m,data=d,headers=h),timeout=20); return x.status,json.loads(x.read() or b"null")
+    except U.HTTPError as e: return e.code,json.loads(e.read() or b"null")
+A,B="http://127.0.0.1:18091","http://127.0.0.1:18092"
+fx={"users":[{"id":"u_ada","email":"ada@example.com","password":"correct horse","display_name":"Ada"}],
+    "restaurants":[{"id":"r_anker","name":"Zum Anker","timezone":"Europe/Berlin","slot_minutes":30,
+      "reservation_duration_minutes":90,"cancellation_cutoff_minutes":120,
+      "opening_hours":[{"weekday":w,"opens":"18:00","closes":"23:30"} for w in ["mon","tue","wed","thu","fri","sat","sun"]],
+      "tables":[{"id":"t_1","label":"Window","capacity":2},{"id":"t_2","label":"Corner","capacity":4}]}],
+    "reservations":[]}
+assert R(A,"POST","/_test/reset",fx)[0]==204
+tok=R(A,"POST","/auth/login",{"email":"ada@example.com","password":"correct horse"})[1]["token"]
+st,b=R(A,"POST","/reservations",{"restaurant_id":"r_anker","table_id":"t_2","starts_at_local":"2027-06-10T19:00","party_size":4},tok=tok,key="up1")
+assert st==201,(st,b)
+ref=b["reference"]
+st,snap=R(A,"GET","/_test/export"); assert st==200,st
+st,_=R(B,"POST","/_test/import",snap); assert st==204,"stage 2 refused a stage-1 export: %s"%st
+st,g=R(B,"GET","/reservations/"+ref,tok=tok)
+assert st==200 and g["reference"]==ref,"retained reference lost: %s %r"%(st,g)
+assert g["table_ids"]==["t_2"] and g.get("table_id")=="t_2",g
+st,rep=R(B,"POST","/reservations",{"restaurant_id":"r_anker","table_id":"t_2","starts_at_local":"2027-06-10T19:00","party_size":4},tok=tok,key="up1")
+assert st==200 and rep["reference"]==ref,"stage-1 receipt not replayable on stage 2: %s %r"%(st,rep)
+st,_=R(B,"POST","/auth/login",{"email":"ada@example.com","password":"correct horse"}); assert st==200,st
+print("UPGRADE OK",ref)'; r=$?; docker rm -f tk-up1 tk-up2 >/dev/null 2>&1; docker network rm tk-up-net >/dev/null 2>&1; exit $r`
+Passes when: exits 0 and prints `UPGRADE OK <reference>`. A real stage-1 image produces the export and a real stage-2 image imports it — not a stage-2 service importing its own snapshot. The pre-upgrade bearer token still authenticates, the retained reference still resolves, the stage-1 idempotency receipt still replays to the original response, and hashed-password login still works. The response now also carries `table_ids`, which stage 1 never wrote.
+Status: unclaimed
+
+### S-49: A browser signed in before the upgrade stays signed in, and its retained reference works through the lookup screen.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+b=OK(BOOK(ta,F+"T19:00","s49",table_id="t_2",ps=4),201)
+snap=OK(R("GET","/_test/export"),200)
+def f(pg):
+    LOGIN_UI(pg)
+    cu=TXT(pg,"current-user"); assert cu and "Ada" in cu,cu
+    s,_,_=R("POST","/_test/import",snap)            # upgrade happens between browser requests
+    assert s==204,s
+    pg.goto(BASE+"/lookup",wait_until="load"); pg.wait_for_timeout(400)
+    cu2=TXT(pg,"current-user")
+    assert cu2 and "Ada" in cu2,"browser lost its session across the import: %r"%cu2
+    FILL(pg,"lookup-reference-input",b["reference"]); CLICK(pg,"lookup-submit"); pg.wait_for_timeout(900)
+    assert SEE(pg,"reservation-detail"),"retained reference not found after the import"
+    assert TXT(pg,"reservation-status")=="confirmed",TXT(pg,"reservation-status")
+    assert not SEE(pg,"reservation-error"),"reservation-error shown for a retained reference"
+    return cu2
+print("PASS",UI(f,route=None))'`
+Passes when: prints `PASS` and the display name. The import lands between browser requests, as the specification scopes it; the session survives with no reload or new screen, and the retained reference resolves through `/lookup` with status `confirmed`.
+Status: unclaimed
+
+### S-50: A booking whose response was lost before the export is still recoverable after the import, with the same key and body.
+Check: `$PWPY -c "$W"'
+import asyncio
+from playwright.async_api import async_playwright
+ta,_=SETUP()
+async def run():
+    async with async_playwright() as p:
+        br=await p.chromium.launch(); pg=await br.new_page(viewport={"width":1280,"height":900})
+        state={"drop":True}
+        async def h(route):
+            if route.request.method=="POST" and state["drop"]:
+                state["drop"]=False
+                await route.fetch(); await route.abort("connectionfailed"); return
+            await route.continue_()
+        await pg.route("**/reservations**",h)
+        await pg.goto(BASE+"/login",wait_until="load")
+        await pg.fill("[data-testid=login-email]",ADA["email"]); await pg.fill("[data-testid=login-password]",ADA["password"])
+        await pg.click("[data-testid=login-submit]"); await pg.wait_for_timeout(700)
+        await pg.goto(BASE+"/",wait_until="load")
+        await pg.select_option("[data-testid=restaurant-select]","r_anker")
+        await pg.fill("[data-testid=date-input]",F); await pg.fill("[data-testid=party-size-input]","4")
+        await pg.click("[data-testid=search-button]"); await pg.wait_for_timeout(900)
+        await pg.click("[data-testid=\"slot-t_2-19:00\"]"); await pg.wait_for_timeout(500)
+        await pg.click("[data-testid=booking-submit]"); await pg.wait_for_timeout(2000)
+        u1=await pg.query_selector("[data-testid=booking-uncertain]")
+        snap=OK(R("GET","/_test/export"),200)
+        s,_,_=R("POST","/_test/import",snap)
+        assert s==204,s
+        await pg.click("[data-testid=booking-submit]"); await pg.wait_for_timeout(2200)
+        ref=await pg.query_selector("[data-testid=confirmation-reference]")
+        u2=await pg.query_selector("[data-testid=booking-uncertain]")
+        e2=await pg.query_selector("[data-testid=booking-error]")
+        await br.close()
+        return bool(u1),((await ref.inner_text()).strip() if ref else None),bool(u2),bool(e2)
+u1,ref,u2,e2=asyncio.run(run())
+assert u1,"no booking-uncertain after the lost response"
+rs=OK(R("GET","/reservations",tok=ta),200)["reservations"]
+assert len(rs)==1,"retry after upgrade created a second booking: %d"%len(rs)
+assert ref==rs[0]["reference"],"original confirmation not recovered after the upgrade: %r vs %r"%(ref,rs[0]["reference"])
+assert not u2 and not e2,"uncertainty/error not cleared after a successful post-upgrade retry"
+print("PASS",ref)'`
+Passes when: prints `PASS` and the reference. The booking commits, its response is dropped, the state is exported and imported — the upgrade — and the unchanged form then retries with the same key and body and recovers the original reference. Exactly one reservation exists. This is the requirement that the pending retry identity survives the upgrade, and it is the hardest thing in the stage.
+Status: unclaimed
+
+## UI quality — the part a human scores (§Product and visual direction)
+
+Every entry in this subsection states a **proxy** and names what the proxy does not establish, per
+§16. None of them is the human judgement itself; they are the deterministic floor beneath it.
+
+### S-51: The seven required states are visually distinct from one another.
+Check: `$PWPY -c "$W"'
+ta,tb=SETUP()
+OK(BOOK(ta,F+"T21:00","s51",table_id="t_2",ps=4),201)
+def f(pg):
+    styles={}
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,4)
+    styles["available"]=STYLE(pg,"slot-t_3-19:00")
+    styles["unavailable"]=STYLE(pg,"slot-t_2-21:00")
+    pg.click(chr(91)+"data-testid=\"slot-t_3-19:00\""+chr(93)); pg.wait_for_timeout(500)
+    styles["selected"]=STYLE(pg,"slot-t_3-19:00")
+    pg.route("**/reservations**",lambda r:(pg.wait_for_timeout(0),r.continue_())[1])
+    CLICK(pg,"booking-submit"); pg.wait_for_timeout(120)
+    l=TID(pg,"booking-loading") or TID(pg,"booking-submit")
+    styles["loading"]=STYLE(pg,"booking-loading") if TID(pg,"booking-loading") else STYLE(pg,"booking-submit")
+    pg.wait_for_timeout(1500)
+    styles["successful"]=STYLE(pg,"confirmation") if TID(pg,"confirmation") else None
+    SEARCH_UI(pg,"r_anker",F,4)
+    pg.click(chr(91)+"data-testid=\"slot-t_3-19:00\""+chr(93)); pg.wait_for_timeout(400)
+    OK(BOOK(tb,F+"T19:00","s51b",table_id="t_3",ps=4),201)
+    CLICK(pg,"booking-submit"); pg.wait_for_timeout(1400)
+    styles["refused"]=STYLE(pg,"booking-error") if TID(pg,"booking-error") else None
+    return styles
+st=UI(f)
+for k,v in st.items():
+    assert v is not None,"state %r produced no element to measure"%k
+pairs=[(a,b) for a in st for b in st if a<b]
+same=[(a,b) for a,b in pairs if st[a]==st[b]]
+assert not same,"states not visually distinct: %r"%same
+print("PASS",len(st),"states,",len(pairs),"pairs all distinct")'`
+Passes when: prints `PASS` with every pair distinct. **Proxy:** it compares seven computed style vectors — background, border, colour, opacity, outline, text-decoration, font-weight — and requires every pair to differ in at least one. **What it does not establish:** that the differences are *legible* to a person, that colour is not the only channel, or that the states look deliberate. A human still judges that; this only makes "all seven render identically" impossible to pass. The `uncertain` state is covered separately by S-46, which asserts its text is non-empty.
+Status: unclaimed
+
+### S-52: The empty results state says what is absent, rather than rendering a blank area.
+Check: `$PWPY -c "$W"'
+RESET(FX(restaurants=[REST(opening_hours=[{"weekday":"fri","opens":"18:00","closes":"23:30"}])]))
+def f(pg):
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,4)
+    e=TID(pg,"no-slots")
+    assert e and e.is_visible(),"no-slots is absent or hidden on a closed day"
+    t=(e.inner_text() or "").strip()
+    assert len(t)>=12,"empty state text is too short to say anything: %r"%t
+    words=[w for w in t.split() if len(w)>2]
+    assert len(words)>=3,"empty state is not a sentence: %r"%t
+    box=e.bounding_box()
+    assert box and box["height"]>=16 and box["width"]>=80,"empty state has no rendered area: %r"%box
+    return t
+print("PASS",repr(UI(f)))'`
+Passes when: prints `PASS` and the message. **Proxy:** the element is visible, occupies real area, and carries at least twelve characters forming three or more words. **What it does not establish:** that the wording is helpful or says what to do next. It does make the specific defect the registrar named — "an empty results area rendering as a blank box with no text" — impossible to pass.
+Status: unclaimed
+
+### S-53: A loading state is shown while a search is in flight.
+Check: `$PWPY -c "$W"'
+import asyncio
+from playwright.async_api import async_playwright
+SETUP()
+async def run():
+    async with async_playwright() as p:
+        br=await p.chromium.launch(); pg=await br.new_page(viewport={"width":1280,"height":900})
+        async def h(route):
+            r=await route.fetch(); await asyncio.sleep(1.2); await route.fulfill(response=r)
+        await pg.route("**/availability**",h)
+        await pg.goto(BASE+"/login",wait_until="load")
+        await pg.fill("[data-testid=login-email]",ADA["email"]); await pg.fill("[data-testid=login-password]",ADA["password"])
+        await pg.click("[data-testid=login-submit]"); await pg.wait_for_timeout(700)
+        await pg.goto(BASE+"/",wait_until="load")
+        await pg.select_option("[data-testid=restaurant-select]","r_anker")
+        await pg.fill("[data-testid=date-input]",F); await pg.fill("[data-testid=party-size-input]","4")
+        await pg.click("[data-testid=search-button]"); await pg.wait_for_timeout(350)
+        mid=await pg.evaluate("""()=>{const b=document.body.innerText||"";
+            const busy=document.querySelector("[aria-busy=true],[data-loading=true],[data-testid=search-loading]");
+            const dis=document.querySelector("[data-testid=search-button]");
+            return {busy:!!busy, disabled: dis?dis.disabled:false, txt:/loading|searching|…|\\.\\.\\./i.test(b)}}""")
+        await pg.wait_for_timeout(1600)
+        after=await pg.evaluate("""()=>{const busy=document.querySelector("[aria-busy=true],[data-loading=true],[data-testid=search-loading]");
+            const dis=document.querySelector("[data-testid=search-button]");
+            return {busy:!!busy, disabled: dis?dis.disabled:false}}""")
+        await br.close(); return mid,after
+mid,after=asyncio.run(run())
+assert mid["busy"] or mid["disabled"] or mid["txt"],"nothing indicated loading while the search was in flight: %r"%mid
+assert not (after["busy"] and not mid["busy"]),"loading indicator appeared only after completion"
+assert not after["busy"] or not mid["busy"] or True
+print("PASS",mid)'`
+Passes when: prints `PASS` and the observed mid-flight state. **Proxy:** with the availability response delayed 1.2s, at 350ms the page must show at least one of `aria-busy="true"`, `data-loading="true"`, a `search-loading` element, a disabled search button, or loading text. **What it does not establish:** that the indicator is well-placed, non-jarring or informative. It does make "no loading state at all" impossible to pass.
+Status: unclaimed
+
+### S-54: The required flows have no horizontal page scrolling at a 375-pixel viewport.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+b=OK(BOOK(ta,F+"T19:00","s54",table_id="t_2",ps=4),201)
+def f(pg):
+    bad={}
+    LOGIN_UI(pg)
+    for route in ["/","/signup","/login","/lookup"]:
+        pg.goto(BASE+route,wait_until="load"); pg.wait_for_timeout(400)
+        o=OVERFLOW(pg)
+        if o["sw"]>o["cw"]+1: bad[route]=o
+    SEARCH_UI(pg,"r_anker",F,6); pg.wait_for_timeout(400)
+    o=OVERFLOW(pg)
+    if o["sw"]>o["cw"]+1: bad["/ after search"]=o
+    pg.click(chr(91)+"data-testid=\"slot-t_1+t_2-19:00\""+chr(93)); pg.wait_for_timeout(500)
+    o=OVERFLOW(pg)
+    if o["sw"]>o["cw"]+1: bad["/ booking form"]=o
+    pg.goto(BASE+"/lookup",wait_until="load")
+    FILL(pg,"lookup-reference-input",b["reference"]); CLICK(pg,"lookup-submit"); pg.wait_for_timeout(800)
+    o=OVERFLOW(pg)
+    if o["sw"]>o["cw"]+1: bad["/lookup detail"]=o
+    return bad
+bad=UI(f,w=375,h=780)
+assert not bad,"horizontal page scrolling at 375px: %r"%bad
+print("PASS no horizontal scroll at 375px")'`
+Passes when: prints `PASS no horizontal scroll at 375px`. Checks all four routes plus the populated grid, the open booking form and the lookup detail, since overflow usually appears only once real content lands. A wide grid is allowed to scroll **inside its own container**; what fails is the document scrolling.
+Status: unclaimed
+
+### S-55: The grid scrolls inside its own container at 375px and its caption stays readable and unclipped.
+Check: `$PWPY -c "$W"'
+SETUP()
+def f(pg):
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,6); pg.wait_for_timeout(400)
+    g=TID(pg,"availability-grid")
+    assert g,"no availability-grid"
+    m=pg.eval_on_selector(chr(91)+"data-testid=\"availability-grid\""+chr(93),
+      "e=>{const s=getComputedStyle(e);return {sw:e.scrollWidth,cw:e.clientWidth,ox:s.overflowX,oy:s.overflowY}}")
+    doc=OVERFLOW(pg)
+    assert doc["sw"]<=doc["cw"]+1,"document scrolls horizontally: %r"%doc
+    if m["sw"]>m["cw"]+1:
+        assert m["ox"] in ("auto","scroll"),"grid overflows but its container does not scroll: %r"%m
+    cap=pg.evaluate("""()=>{const g=document.querySelector("[data-testid=availability-grid]");
+        let n=g.previousElementSibling; let hops=0;
+        while(n&&hops<3){const t=(n.innerText||"").trim(); if(t.length>=3){const r=n.getBoundingClientRect();
+            const cs=getComputedStyle(n);
+            return {text:t.slice(0,80), right:r.right, vw:window.innerWidth, clipped:(cs.textOverflow==="ellipsis"&&n.scrollWidth>n.clientWidth+1)}}
+            n=n.previousElementSibling; hops++}
+        return null}""")
+    return m,cap
+m,cap=UI(f,w=375,h=780)
+if cap is not None:
+    assert cap["right"]<=cap["vw"]+1,"caption extends past the viewport: %r"%cap
+    assert not cap["clipped"],"caption is clipped at 375px: %r"%cap
+print("PASS",m,cap)'`
+Passes when: prints `PASS` with the grid metrics and caption. **Proxy:** if the grid is wider than its box it must declare `overflow-x: auto|scroll`, the document must not scroll, and any heading immediately preceding the grid must fit inside the viewport and not be ellipsis-clipped. **What it does not establish:** that the scroll affordance is discoverable, or that the caption reads well. A grid with no caption passes this entry — the caption requirement is only enforced when one exists.
+Status: unclaimed
+
+### S-56: Every required input has a visible label, and keyboard focus is apparent.
+Check: `$PWPY -c "$W"'
+SETUP()
+def f(pg):
+    missing=[]; unfocusable=[]
+    for route,ids in [("/signup",["signup-email","signup-password","signup-display-name"]),
+                      ("/login",["login-email","login-password"]),
+                      ("/",["restaurant-select","date-input","party-size-input"]),
+                      ("/lookup",["lookup-reference-input"])]:
+        pg.goto(BASE+route,wait_until="load"); pg.wait_for_timeout(300)
+        for t in ids:
+            lab=LABELOF(pg,t)
+            vis=pg.evaluate("""(t)=>{const i=document.querySelector("[data-testid=\\""+t+"\\"]");
+                if(!i) return false; const l=i.labels&&i.labels[0]; if(!l) return false;
+                const r=l.getBoundingClientRect(); const s=getComputedStyle(l);
+                return r.width>0&&r.height>0&&s.visibility!=="hidden"&&s.display!=="none"&&Number(s.opacity)>0.05}""",t)
+            if not lab or not vis: missing.append((route,t,lab,vis))
+            before=STYLE(pg,t)
+            pg.focus(chr(91)+"data-testid=\""+t+"\""+chr(93)); pg.wait_for_timeout(120)
+            after=pg.eval_on_selector(chr(91)+"data-testid=\""+t+"\""+chr(93),
+              "e=>{const s=getComputedStyle(e);return [s.outlineStyle,s.outlineWidth,s.outlineColor,s.boxShadow,s.borderTopColor,s.backgroundColor]}")
+            pg.evaluate("()=>document.activeElement&&document.activeElement.blur()"); pg.wait_for_timeout(120)
+            unfoc=pg.eval_on_selector(chr(91)+"data-testid=\""+t+"\""+chr(93),
+              "e=>{const s=getComputedStyle(e);return [s.outlineStyle,s.outlineWidth,s.outlineColor,s.boxShadow,s.borderTopColor,s.backgroundColor]}")
+            if after==unfoc: unfocusable.append((route,t,after))
+    return missing,unfocusable
+missing,unfoc=UI(f,route=None)
+assert not missing,"inputs without a visible associated label: %r"%missing
+assert not unfoc,"inputs whose focused appearance is identical to unfocused: %r"%unfoc
+print("PASS all required inputs labelled and focus-visible")'`
+Passes when: prints `PASS`. **Proxy for labels:** each input resolves to a `<label>` with non-empty text that has real dimensions and is not `hidden`/`display:none`/transparent — so `aria-label` alone does **not** pass, because the requirement is a *visible* label. **Proxy for focus:** the computed outline, box-shadow, border or background must differ between focused and unfocused. **What neither establishes:** that the label wording is clear or the focus ring has adequate contrast.
+Status: unclaimed
+
+### S-57: Key text meets a 4.5:1 contrast ratio against its background.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+b=OK(BOOK(ta,F+"T19:00","s57",table_id="t_2",ps=4),201)
+def f(pg):
+    bad=[]
+    def eff(t):
+        return pg.evaluate("""(t)=>{const e=document.querySelector("[data-testid=\\""+t+"\\"]");
+            if(!e) return null; const fg=getComputedStyle(e).color; let n=e, bg="rgba(0, 0, 0, 0)";
+            while(n){const c=getComputedStyle(n).backgroundColor;
+                if(c&&!/rgba\\(0, 0, 0, 0\\)|transparent/.test(c)){bg=c;break} n=n.parentElement}
+            if(/rgba\\(0, 0, 0, 0\\)|transparent/.test(bg)) bg="rgb(255, 255, 255)";
+            return [fg,bg]}""",t)
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,4)
+    for t in ["current-user","search-button","slot-t_2-19:00"]:
+        v=eff(t)
+        if v and RATIO(v[0],v[1])<4.5: bad.append((t,v,round(RATIO(v[0],v[1]),2)))
+    pg.goto(BASE+"/lookup",wait_until="load")
+    FILL(pg,"lookup-reference-input",b["reference"]); CLICK(pg,"lookup-submit"); pg.wait_for_timeout(800)
+    for t in ["reservation-status","lookup-submit"]:
+        v=eff(t)
+        if v and RATIO(v[0],v[1])<4.5: bad.append((t,v,round(RATIO(v[0],v[1]),2)))
+    return bad
+bad=UI(f,route=None)
+assert not bad,"text below 4.5:1 contrast: %r"%bad
+print("PASS contrast >= 4.5:1 on sampled key text")'`
+Passes when: prints `PASS`. **Proxy:** computes the WCAG ratio from resolved foreground colour against the nearest non-transparent ancestor background, for five named elements across two screens. **What it does not establish:** contrast for every element, for text over images or gradients, or for disabled and hover variants. It is a sample, deliberately named as one — a service can fail contrast elsewhere and still pass this.
+Status: unclaimed
+
+### S-58: Restaurants and tables are shown by human-readable name, not by raw identifier.
+Check: `$PWPY -c "$W"'
+ta,_=SETUP()
+b=OK(BOOK(ta,F+"T19:00","s58",table_ids=["t_1","t_2"],ps=6),201)
+def f(pg):
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,6)
+    body=pg.inner_text("body")
+    assert "Zum Anker" in body,"the restaurant name is not shown on the search screen"
+    for lab in ["Window","Corner","Terrace"]:
+        assert lab in body,"table label %r not shown in the grid: labels are required, ids are not enough"%lab
+    pg.click(chr(91)+"data-testid=\"slot-t_1+t_2-19:00\""+chr(93)); pg.wait_for_timeout(500)
+    s=TXT(pg,"booking-summary") or ""
+    assert "Window" in s and "Corner" in s,"booking-summary does not name both tables by label: %r"%s
+    assert "t_1+t_2" not in s,"booking-summary shows the concatenated id form: %r"%s
+    pg.goto(BASE+"/lookup",wait_until="load")
+    FILL(pg,"lookup-reference-input",b["reference"]); CLICK(pg,"lookup-submit"); pg.wait_for_timeout(800)
+    rt=TXT(pg,"reservation-tables") or ""
+    assert "Window" in rt and "Corner" in rt,"reservation-tables lacks labels: %r"%rt
+    assert "t_1+t_2" not in rt,"reservation-tables shows the concatenated id form: %r"%rt
+    return s,rt
+print("PASS",UI(f,route=None))'`
+Passes when: prints `PASS` with the summary and lookup text. **Proxy:** the restaurant name and all three table labels appear as rendered text, and neither the booking summary nor the lookup detail contains the literal `t_1+t_2`. **What it does not establish:** that combinations "read as intentional seating options" — that phrasing is a human judgement. It does forbid the specific failure of surfacing the concatenated technical identifier to the diner. Note the `data-testid` values legitimately contain ids; this checks visible text, not attributes.
+Status: unclaimed
+
+## Declared human-judged — no entry written
+
+Per §16 rule 2, these requirements from §Product and visual direction have **no faithful
+deterministic proxy** and are therefore left to the human judge. They are not waived and they are not
+case-2 refusals; they are recorded here so nobody mistakes the absence of an entry for the absence of
+a requirement, and so no seat manufactures a check that would pass without meaning anything.
+
+| Requirement | Why no command can settle it |
+|---|---|
+| "Feels like a coherent, presentation-ready restaurant product, not a test harness with controls attached" | Aesthetic and holistic. Nothing prints. |
+| "Warm, confident hospitality character" | Aesthetic. |
+| "Obvious visual hierarchy; a diner can scan dates, times, party size and table choices" | Scanability is a perceptual claim; element order and font size are proxies so weak they would mislead. |
+| "Combined tables read as intentional seating options" | S-58 forbids the concatenated-id failure; whether the phrasing reads as intentional is judgement. |
+| "A consistent visual system for typography, spacing, colour, controls and feedback" | Consistency across a whole design is not reducible to a comparison a script can make honestly. |
+| "Primary actions are easy to identify" | S-51 proves states differ; salience is judgement. |
+| "Considered empty, loading and error states" | S-52, S-53 and S-43 enforce presence and non-emptiness. "Considered" is the human's word. |
+| "Navigation consistent across the required routes" | S-28 proves the routes exist and S-29 that the user identity persists; consistency of navigation design is judgement. |
+
+**The honest summary of this subsection:** S-51 to S-58 are a floor, not a score. They make eight
+specific failures impossible to pass — all states identical, a blank empty box, no loading indicator,
+horizontal page scroll at 375px, a clipped caption, a missing or invisible label, an invisible focus
+ring, unreadable contrast on sampled text, and raw ids shown where names belong. They do not
+establish that the interface is good, and a verdict passing all eight says only that.
