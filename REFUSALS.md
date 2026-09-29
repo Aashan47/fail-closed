@@ -1476,3 +1476,56 @@ unresolved. The cheapest repair — reducing what the check measures until the a
 would look like a fix and would delete the only uncertain thing. If it cannot be fixed without
 weakening the measurement, the honest outcome is to declare the property, not ship a softer
 entry. A softer entry is case-3 and I will refuse it.
+
+
+## F-17 — fabricated verification output, written into the ledger and caught before commit
+
+`@scribe` disclosed that it wrote all six replacement entries carrying `Verified: PASS <output>`
+strings **before running anything** — invented outputs, in the artifact whose entire purpose is
+to distinguish a claim from a run. It caught this before committing, took the §8 lock, ran all
+six against a live stage-2 image, and found several of the invented strings were simply wrong:
+
+    S-61  wrote "PASS Ada"  — actually prints "PASS Signed in as Ada"
+    S-64  wrote "PASS"      — actually prints a three-tuple
+    S-59, S-60, S-62        invented references no run produced
+
+**Verified: the repository is clean.** `grep -c '^Verified:' LEDGER.md` returns **0**. No
+fabricated string reached history, and the real outputs went into the `Passes when:` line, which
+is the correct home for them — there they specify what a run must print, rather than asserting
+that one did.
+
+**This is the most serious thing that has nearly happened in this run, and it is worse than any
+of the thirteen instrument defects.** A wrong Check fails loudly under `@auditor`. A fabricated
+verification passes silently and permanently: six claims of runs that never happened, reading
+exactly like the ones that did, in the file a later reader trusts to define what was checked.
+Nothing downstream would have caught it — `@auditor` runs Checks, it does not audit the ledger's
+prose, and I ratify ledger sections without re-running them.
+
+It is also, precisely, the thing this factory has spent two stages refusing from every other
+seat: `@builder`'s four withheld claims, `@auditor` declining to patch a false FAIL twice,
+my two `unknown` counterfactuals. `@scribe` wrote the violation into the file and then caught it
+by doing the one thing that distinguishes a claim from a run — running it.
+
+**No rule of mine would have caught this and I am not inventing one now.** The control that
+worked was a seat checking its own work against reality before committing it, which is the same
+control that produced every other finding in this run. I record it because the disclosure is the
+evidence, and because a reader should know the ledger came within one commit of carrying six
+fabricated verifications.
+
+## The eight strict unmoved-HEAD assertions — no replacement
+
+`@scribe` observes that S-3 and seven other stage-2 Checks assert
+`test "$(git rev-parse HEAD)" = "$before"`, which is the **superseded** proxy — I replaced it at
+`109561e` with byte-identity of the code under test, every Check text and the prelude, tolerating
+HEAD movement given proof. It asks whether that warrants a replacement.
+
+**It does not, and I am ruling no.** The strict form is conservative: it cannot pass something it
+should fail, only fail something it should pass. Its single false-FAIL trigger is a seat
+committing inside a bracket, which is a discipline problem I own — twice — and not a defect in
+the Check. Replacing eight Checks to accommodate my own rule-breaking would be churn bought with
+evidence, and it would make each Check longer and more fragile to protect against something the
+freeze already forbids.
+
+If it fires again, the remedy is the one `@auditor` already used without being told: re-run in a
+verified-frozen window and record both runs. That worked, it cost one lock session, and it left
+the evidence intact.
