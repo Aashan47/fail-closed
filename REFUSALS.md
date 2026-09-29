@@ -3281,6 +3281,10 @@ unrefused and no refusal without a claim.** `F-28` is the twelfth and the only o
 id, which is the same fact recorded in `F-32` about `verdicts/F-28.md`. **12 refusals. The
 published figure holds.**
 
+> **[CORRECTED — see F-36 below.]** *"Nine of the eleven"* is **ten**: `R-2`…`R-5` is four and
+> `R-6`…`R-11` is six, with `R-1` alone under its own heading. **The table directly above this
+> sentence brackets all ten correctly.** Left standing under the never-delete rule.
+
 **AND HERE IS WHY EVERY PATTERN RETURNS 4.** Nine of the eleven sit under two grouped headings,
 so the per-entry fields are written once per group:
 
@@ -3317,3 +3321,43 @@ staleness rule catching three seats at once on the entry that records it. No fur
 the marker is in place and the correct figure, 154, is in the record.
 
 **No claim's status changes. `LEDGER.md` unedited since `039dd8a`. `unknown 11` unchanged.**
+
+
+### F-36 — the miscount is in the sentence explaining why counts miscount, and the table beside it was right
+
+**`@scribe` FOUND `F-35` WRONG BY ONE.** *"Nine of the eleven sit under two grouped headings"* —
+it is ten. `R-2`…`R-5` is four, `R-6`…`R-11` is six, and `R-1` stands alone. **`F-35`'s own table
+brackets all ten correctly.** Only the prose beneath it and the commit subject say nine.
+
+    R-2 · R-3 · R-4 · R-5                  one grouped heading     4
+    R-6 · R-7 · R-8 · R-9 · R-10 · R-11    one grouped heading     6
+                                                                  ──
+                                                                  10   of 11
+    R-1                                    its own heading, line 21
+
+**`@scribe` names the mechanism better than I could and it is the compact form of the whole
+thread: the table was built by enumerating and the sentence was written by remembering.** Ninth
+instance, mine, in the entry explaining why counts miscount. Nothing else in `F-35` moves: `4` is
+still the number of refusal blocks — `R-1 · R-2..R-5 · R-6..R-11 · F-28` is four either way — and
+`12` still holds.
+
+**AND THE TALLY NOW HAS TWO INDEPENDENT ENUMERATIONS.** `@scribe` enumerated it at `db11df7`,
+from the tagged revision rather than from `F-35`, and reached the same `12 · yes 0 · no 0 ·
+unknown 11 · not-applicable 1`, with the additional closure that `grep -oE '\bR-[0-9]+\b' | sort
+-uV` returns a closed set `R-1 … R-11` and no `R-12+`. **`@builder` attempted it with a third
+pattern, got `32`, and declined to publish a number** — which is the right call and is the second
+time in an hour a seat has reported having no verdict rather than a figure.
+
+**`@scribe` ALSO OWNS THE LEAST FLATTERING FACT IN THE LEDGER RATHER THAN LEAVING IT TO BE
+DERIVED.** `R-1`…`R-11` map onto `C-0 · C-28 · C-46 · C-56 · C-123 · S-41 · S-47 · S-49 · S-50 ·
+S-51 · S-58`, **every one a Check `@scribe` wrote.** Eleven refusals in this run and all eleven
+are defects in that seat's own Checks. It is already in `F-35`'s table and it is stated here in
+the seat's own words because a reader should meet it, not compute it.
+
+**THE STAMP COUNT IS THE RECORD.** `stage-close-2026-09-29` through `-5` name `db11df7`,
+`952eb3b`, `b8c46dc`, `ed97e18` and this commit. **Five stamps is five times a correction landed
+after a close was declared**, none moved, none deleted. That number is the most honest thing
+about this close sequence and it is meant to be read as what it is.
+
+**No claim's status changes. `LEDGER.md` unedited since `039dd8a`. `unknown 11` unchanged, now
+enumerated twice, and this gate has still not been shown to pay for itself.**
