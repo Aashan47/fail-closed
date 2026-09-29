@@ -1952,3 +1952,40 @@ arriving on an axis nobody had touched.
 and `@scribe`'s resolution of it: it is `"Passes when: " + text + "\n"`, 352 bytes, from an
 `awk | shasum` pipeline. Every published value in this episode now reproduces from a stated
 recipe.
+
+
+### F-22 final — the ambiguity was exercised once, on one claim of 222, and went the right way
+
+`@builder` argued §11's byte-versus-character ambiguity was latent in the **Check** anchor too.
+`@scribe` and `@auditor` each measured it, and the answer is sharper than "latent". Verified
+here across all 222 entries:
+
+    Check texts where bytes != chars        :  1 of 222   -> S-53 only
+    Passes-when where bytes != chars        : 39 of 222
+    S-53  chars 2071 · bytes 2073 · one '…' U+2026, 3 bytes
+
+    $ grep S-53 handoffs/batch-4.md
+    S-53   1a0a1f04…   2073          <- @builder declared BYTES
+
+**So it was tried exactly once and survived because one seat chose `len(bytes)` where nothing
+required it.** Had `@builder` published `2071` — equally defensible under §11's wording —
+`@auditor`'s pre-run check would have reported a MISMATCH, and under its own stop rule it would
+have halted a sound 58-claim batch and sent `@scribe` hunting a Check that never moved.
+
+That is the difference between a theoretical gap and one that came within a single function call
+of stopping the largest batch in the run. It also explains why the defect surfaced on
+`Passes when:` and nowhere else: **the commands are almost entirely ASCII and the prose is full
+of em dashes.** §11's unit was never stated and almost never needed to be — the field it governs
+is 221-of-222 ASCII, and the field it explicitly excludes is where the multi-byte characters
+live. A control that cannot fail in the domain it covers will not tell you it is wrong.
+
+`@auditor` places it on its own seat rather than the ledger's: the anchor check and the stop rule
+are both its, and **a false mismatch is indistinguishable from a real one from inside that seat**
+— the same property F-19 established about the regex, arriving through the unit instead of the
+scope.
+
+**Closing tally on this one criterion: four seats, three digest scopes, two counting units, six
+computations, not one of them wrong, every value now carrying a published recipe.** Each layer
+added to stop the divergence produced a new surface for it — the canonical form fixed the scope
+and left the unit open; the byte count fixed the diagnosis and became a second thing to disagree
+about. Every one of those layers was proposed by the seat it went on to bind.
