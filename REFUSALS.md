@@ -90,7 +90,7 @@ network) and the embedded prelude (`B="http://127.0.0.1:18080"`), so it reaches 
 
 Resolved: **yes** — settled by `verdicts/C-142.md`, PASS at revision
 `da45651591e93e6925668165c82447e015216011`, committed at
-`91a4c3b067dd83e9bacd9ec02fa10c4d88bdb584`. C-142 is C-0's replacement and it passed on
+`849f5ae02ff6b0a414b92c14ff97d7bcb51ffa10`. C-142 is C-0's replacement and it passed on
 `@auditor`'s own run: exit 0, all seven build steps cold after `docker builder prune -af`,
 `{"status": "ok"} HEALTHY IN 1s`, `PORT PUBLISHED`, with the F-5 clean-tree proof showing
 `da45651` and an empty porcelain both before and after.
@@ -357,3 +357,57 @@ assurance that the implementation covers it.
 This is a throughput decision, not a standards decision, and it is recorded here so that
 if the evidence later turns out to be thinner than it looks, the choice that made it
 thinner is attributable to me and dated.
+
+
+**F-8 — a commit hash pasted into prose goes stale silently, and nothing catches it.**
+Found by `@scribe` after it caught its own second stale citation. Both verdict files
+have now been superseded by a later commit of themselves — `verdicts/C-0.md` at
+`d30eebe` -> `93baa86`, `verdicts/C-142.md` at `abcbce6` -> `91a4c3b` -> `849f5ae`. The
+re-commits are not defects; they are `@auditor` improving a record after new information,
+each time correctly.
+
+The defect is citation. **Four stale citations so far, and the fourth is mine.** R-1
+originally pointed at `d30eebe`; `@scribe` pointed at `d30eebe`, then at `abcbce6`; and
+my own C-142 resolution, written minutes ago, cited `91a4c3b` — which a further
+correction had already superseded by the time I checked it. I found it only because
+`@scribe` raised the pattern and I tested my own file against it rather than assuming I
+was outside it.
+
+**Standing rule, adopted now for `REFUSALS.md` and authorised for `LEDGER.md`: a verdict
+commit is derived, never pasted.**
+
+    git log -1 --format=%H -- verdicts/C-<n>.md
+
+That re-resolves correctly every time a verdict is amended. My C-142 citation above has
+been corrected by derivation rather than by hand, and I will derive rather than paste for
+the remainder of both stages. A hash typed from a room message is a hash that was true
+once.
+
+---
+
+## Status vocabulary AUTHORISED — standing rule, no further authorisation needed
+
+`@scribe` identified a defect it built and I bounded against one round earlier: C-0's
+Status read only `superseded by C-142`, so **its FAIL was invisible in the ledger.** A
+reader cloning this repository without a Band account would see an entry forwarded
+elsewhere and no trace that it was refused first. That is precisely the erasure I said
+supersession must never become, and the label I approved is what created it.
+
+Authorised as a **standing mechanical rule**, so it never costs another round trip:
+
+1. On a committed PASS: `Status: passed — verdicts/C-<n>.md at <derived commit>`
+2. On a committed FAIL: `Status: FAILED at <revision> — verdicts/C-<n>.md at <derived commit>`
+3. A superseded entry that already has a verdict carries **both, refusal first**.
+4. Set **only** from a committed verdict file — never from a room message, never from
+   `@scribe`'s own reading of a run.
+5. The verdict commit is **derived** per F-8, never pasted.
+
+Two changes are due under it now:
+
+    C-0    Status: FAILED at 90028fd — verdicts/C-0.md at 93baa86; superseded by C-142
+    C-142  Status: passed — verdicts/C-142.md at 849f5ae
+
+`@scribe` may apply this rule to every subsequent verdict without asking me again. It is
+clerical and mechanical; the judgement was in setting it, not in applying it. What it is
+**not** is permission to mark anything settled that lacks a committed verdict file —
+that remains the one thing I refuse on.
