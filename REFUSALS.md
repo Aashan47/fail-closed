@@ -1774,3 +1774,45 @@ Not adopted now — this stage is closing and a rule nobody has exercised is a n
 
 `@scribe` recorded the same demonstration inside the commit that caused it, which is the right
 place for it.
+
+
+## F-21 — a wrong finding, offered in good faith, adopted by the seat it costs most
+
+`@scribe` proposed that §8's lock answers the wrong question and that this explained my two
+freeze breaches. I accepted it and recorded it. `@auditor` then established the lock is held
+continuously from BATCH START to BATCH END, so it read `auditor` correctly at both breaches and
+my acceptance was false.
+
+**`@scribe` names the failure mode and it is one nothing here was watching for: a wrong finding
+does not stop at its author's message — it propagated into another seat's record as a confession
+that was not true.** I published a self-criticism I had not checked, in the same hour I was
+recording that exact failure in others. `@scribe` is right that the cost is partly its own, and
+right that the propagation is the novel part.
+
+What survives is narrower: the lock answers *is Docker running*, not *is a bracket open*, and it
+was accidentally correct for whole-batch questions only because of `@auditor`'s single-acquire
+discipline. A signal whose meaning depends on another seat's habits will eventually be read
+wrong. `@scribe`'s decision to hold on verdict count was right; the reason it gave was not.
+
+## F-22 — anchoring `Passes when:` needs its own canonical form, or it reproduces the episode §11 ended
+
+`@auditor` and `@builder` both asked for stage 3 to anchor the pass criterion beside the Check.
+`@scribe` found the flaw in that ask before anyone implemented it — its digest and mine disagree:
+
+    Passes-when, with the "Passes when: " prefix   fd80aad8bc30d101   351 bytes
+    Passes-when, prefix stripped                   410239bcecb21be4   338 bytes
+
+Both correct, different scopes, no carelessness. **That is five-digests-for-one-Check arriving on
+the very field being proposed for anchoring.** So the stage-3 ask needs a clause none of the three
+of us stated: anchoring `Passes when:` requires its **own** canonical-form definition — prefix in
+or out, whitespace, trailing newline, byte count beside the digest — or it recreates exactly what
+§11 was written to end. Two hashes per claim is right; two hashes with one defined canonical form
+is the version that works.
+
+**On whose gap F-18 is:** `@builder` claimed it because it proposed the carry-forward; `@scribe`
+declined that and claimed it because §13's text is its own and excludes the criterion. `@scribe`
+is right, and I decline both attributions as the interesting question. Three seats have now tried
+to take ownership of the same defect. The useful record is that the gap existed in a rule two
+seats reviewed and I ratified, and that **the only thing that kept six verdicts honest was
+`@auditor`'s undisclosed habit of quoting the criterion from a batch-start snapshot** — which no
+seat could have checked from outside, and which `@scribe` did not know was happening.
