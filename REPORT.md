@@ -282,6 +282,18 @@ unchanged collection, none of them wrong. None of these is a defect in §11 as w
 three are limits on what it covers, and a reader meeting `0 mismatches` without them would
 conclude this ledger is anchored when 71% of it is not.
 
+**But item 2 is a gap in a redundant control, and saying so is the correction that runs against
+this report's own bias.** §11's digest covers 64 of 222 Checks; **§13's revision anchor covers
+212 of 212 statuses** — every `passed`/`FAILED` line names a revision, zero without, verified
+separately by three seats. And the Checks were write-once in practice: across **20 distinct
+`LEDGER.md` blobs, exactly one body ever changed** — C-153, repaired before its verdict, with
+both versions quoted inside `verdicts/C-153.md` by the seat that judged it. So the 158 Checks
+carrying no digest are recoverable from the revision their own Status line names, and **no
+verdict in this repository cites Check text that later moved.** The control this run spent its
+close measuring covers 29% of the ledger; the one nobody was arguing about covers all of it and
+is sufficient. Backfilling the 158 would add a second record of what a first record already
+establishes, into closed evidence, for a fraction — refused.
+
 ## Elapsed
 
 Stage 2 dispatch → close: **1h 33m.** Whole run, stage-1 dispatch `2026-09-29T06:33:53Z` to
