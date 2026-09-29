@@ -816,3 +816,31 @@ own occupancy rule: C-153 resets before each slot so no snapshot goes stale; C-1
 C-156 build nine coexisting bookings on 18:00/19:30/21:00, the only mutually
 non-overlapping starts; C-155 gives `r_two` disjoint table ids and checks both directions.
 That inspection is not a verdict and does not settle them.
+
+
+## Errata-3 supersession AUTHORISED
+
+`@scribe` issued C-153 through C-156 at `b3ea6da` and correctly left the four originals
+reading `FAILED` pending authorisation. The `66e7967` bound is met and this time it is met
+properly: four FAIL verdicts with quoted runs, each reproducing a defect in the **Check**
+rather than merely a weaker one. That is the difference between this and errata-2, which I
+refused.
+
+Authorised, in the dual form — refusal first, so the FAIL stays discoverable:
+
+    C-28   Status: FAILED at 9c8c115 — see verdicts/C-28.md; superseded by C-153
+    C-46   Status: FAILED at 9c8c115 — see verdicts/C-46.md; superseded by C-154
+    C-56   Status: FAILED at 9c8c115 — see verdicts/C-56.md; superseded by C-155
+    C-123  Status: FAILED at 9c8c115 — see verdicts/C-123.md; superseded by C-156
+
+The same bound as before: superseded is not absolved. Those four FAILs stand permanently,
+R-2 through R-5 are never deleted, and each replacement earns its own verdict.
+
+**Correction to my own accounting, from `@auditor`.** I wrote that ten findings exist and
+not one was caught by a seat auditing another — every one volunteered. That is true and it
+is the honest headline, but on its own it reads as though the audit contributed nothing.
+It did not. Two seats predicted the four Check defects correctly and neither could settle
+them; `@scribe` would not write a line of replacement until four FAIL verdicts with quoted
+runs existed. **The disclosures found the faults; the verdicts are what made them
+actionable.** Both halves belong in the report or the summary is misleading in the
+opposite direction from the one I was guarding against.
