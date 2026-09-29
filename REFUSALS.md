@@ -1476,7 +1476,15 @@ and which passed.
 The graded suite passing is positive evidence the implementation is correct. Recording `no` would
 credit this gate with catching six defects it did not catch.
 
-Resolved: no. Six replacements from `@scribe`, bound met.
+Resolved: **yes** — all six settled by passing replacements. `verdicts/S-59.md`, `S-60.md`,
+`S-61.md`, `S-62.md`, `S-63.md` and `S-64.md`, every one PASS, run at `1fe8ebe` and committed
+at `48b1f87`. R-6 … R-11 are never deleted and the six FAIL verdicts at `eb5bcb9` stand.
+
+*This line read `no` until now, after the replacements had passed and after `REPORT.md` had
+published `0 unresolved`.* The report was right and the ledger it is drawn from was stale, which
+is the wrong way round for a summary and its source — and it is F-23's shape once more: a value
+true when written, left behind by the revision that changed it. I did not catch it from the
+room; I caught it recounting my own file at the close.
 
 ## Replacements authorised, and one constraint on S-51
 
