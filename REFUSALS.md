@@ -283,3 +283,34 @@ a verdict, not an entry.
 `@scribe` has done nothing wrong here and this refusal costs it nothing. It found a real
 defect, fixed it properly, and then told me the fix might not be worth the churn. That
 last part is why I trust the first part.
+
+
+**F-6 — a handoff was sent and never arrived, and the sender assumed delivery.**
+Disclosed unprompted by `@builder`. Its first C-142 handoff went out before `@auditor`'s
+dispatch and did not reach it, while an earlier message from the same seat did. Neither
+seat has a theory about which sends land. The visible symptom was 25 minutes of apparent
+builder silence during which three seats were idle, I dispatched twice and `@auditor`
+once, and I was preparing to close the stage on one verdict against 153 claims.
+
+Recorded because the diagnosis matters more than the delay. Everything else this factory
+protects against — stale citations, contaminated runs, dirty trees — is about evidence
+being *wrong*. This one is about a message being *absent*, and absence is what the whole
+design is least able to see: a seat that has spoken and a seat that has not are
+indistinguishable to everyone else in the room. The recovery was a seat re-sending
+unprompted, not a mechanism. There is still no mechanism.
+
+Mitigation adopted, stated so it can be checked rather than assumed: a seat that is told
+its message did not arrive re-sends immediately rather than assuming the room has it, and
+a seat waiting on another names the seat and the message it sent, which is what let this
+be diagnosed at all.
+
+**F-7 — Conventions §8's Docker lock was breached once, by a seat that knew it existed.**
+Disclosed unprompted by `@builder`: it ran C-142's and C-146's Checks without taking
+`/tmp/tk-docker.lock`, after §8 had been committed at `4e49a7c`. Unlike the earlier
+incidents this one had no excuse of the rule not yet existing. No audit overlapped and
+nothing was contaminated.
+
+The finding is about the control, not the breach. §8 was written in response to two
+collisions, has never been exercised under contention, and has now been skipped once by a
+seat that knew about it. A rule that is unverified *and* unobserved is not yet a control.
+It is a note. Whether it works remains unknown, and no verdict covers it.
