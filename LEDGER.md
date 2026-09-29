@@ -2400,7 +2400,7 @@ for at,want in slots:
     assert b["starts_at"]==want,(want,b["starts_at"])
 print("PASS",len(slots))'`
 Passes when: prints `PASS 9`. Replaces C-28. Every advertised slot is bookable verbatim and echoes back the same local and absolute start. State is reset before each slot, so the availability snapshot is never invalidated by the check's own earlier bookings — which is what C-28 got wrong.
-Status: unclaimed
+Status: passed at ec1fe94 — see verdicts/C-153.md
 
 ### C-154: References are unique across all reservations.
 Check: `python3 -c "$P"'
@@ -2414,7 +2414,7 @@ assert len(set(refs))==9,"duplicate reference among %r"%refs
 for r in refs: assert REF.match(r),"bad reference %r"%r
 print("PASS",len(set(refs)))'`
 Passes when: prints `PASS 9`. Replaces C-46. 18:00, 19:30 and 21:00 are the only mutually non-overlapping starts on this fixture, so nine coexisting confirmed bookings is the ceiling and every one is accepted; each reference is distinct and well-formed.
-Status: unclaimed
+Status: passed at ec1fe94 — see verdicts/C-154.md
 
 ### C-155: An unknown restaurant, an unknown table, or a table of another restaurant is 404 not_found.
 Check: `python3 -c "$P"'
@@ -2426,7 +2426,7 @@ ERR(BOOK(t,F+"T19:00","k3",rid="r_anker",tid="t_x1"),404,"not_found")
 ERR(BOOK(t,F+"T19:00","k4",rid="r_two",tid="t_2"),404,"not_found")
 print("PASS")'`
 Passes when: prints `PASS`. Replaces C-56. The two restaurants now have disjoint table ids, so the cross-restaurant case is genuinely expressible and is checked in both directions: `t_x1` exists but under `r_two`, and `t_2` exists but under `r_anker`.
-Status: unclaimed
+Status: passed at ec1fe94 — see verdicts/C-155.md
 
 ### C-156: A moves list outside 1 to 8 entries is 422 validation_failed.
 Check: `python3 -c "$P"'
@@ -2438,7 +2438,7 @@ ERR(MOVES(ta,"m9",[{"reference":r} for r in refs]),422,"validation_failed")
 OK(MOVES(ta,"m8",[{"reference":r} for r in refs[:8]]),201)
 print("PASS")'`
 Passes when: prints `PASS`. Replaces C-123. Zero entries and nine entries are refused; eight are accepted. The nine references are built on the non-overlapping starts, so all nine coexist — the fixture's ceiling is exactly nine and this claim needs exactly nine, with no slack for a spare booking.
-Status: unclaimed
+Status: passed at ec1fe94 — see verdicts/C-156.md
 
 ## Superseded by Errata 3 — pending authorisation and a run
 
