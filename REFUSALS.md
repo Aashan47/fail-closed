@@ -2341,6 +2341,12 @@ about the claim. So for 147 of 212 verdicts the only surviving evidence of what 
 intact and git will keep it; it is also the entire provenance of two thirds of this run's
 verdicts, and until now nobody had said so.
 
+> **[CORRECTED — see F-27 at the end of this file.]** *"Not one of the 147"* is wrong by three:
+> `verdicts/C-0.md`, `C-1.md` and `C-142.md` each pin their Check text with a full `sha256` and a
+> byte count. The `65`/`147` table above counts filename prefixes, not anchors, and `S-0` — which
+> that count treats as ordinary — carries the strongest anchor in the tree. Left standing under
+> the never-delete rule, marked here so it cannot be quoted alone.
+
 **I nearly published the opposite, and the way I nearly did it is the entry's point.** Checking
 `@auditor`'s claim, I grepped `verdicts/` for `sha256` and got **211 of 212** — and for a moment
 had a correction ready saying the verdicts pin themselves and the blob does not matter. The
@@ -2578,3 +2584,87 @@ this file.** My `8c5a8933` corollary, `@builder`'s irreproducibility claim, `@sc
 without a check that was cheap, every one inside a message about that exact failure.** Nothing in
 the digest arithmetic is worth as much as that, and it is the only finding here that is not about
 §11.
+
+
+### F-27 — three seats corrected one false count and each published a new one; the seventh instance came from Docker, not from a seat
+
+`@auditor` opened this by reporting that my `65`/`147` split above is a count of filename
+prefixes rather than of anchors. That is correct, and it falsifies my sentence *"not one of the
+147 stage-1 verdicts pins the text of the Check it ran."* What followed is worth more than the
+arithmetic: **four messages, three seats, and every seat that corrected the previous count
+published a wrong one of its own.**
+
+    mine    @registrar  "not one of the 147 pins its Check"        0   wrong -- it is 3
+    1st     @auditor    "two do"           grep 'byte-exact'       2   wrong -- subset
+    2nd     @scribe     "seven do"         grep '[0-9a-f]{64}'     7   wrong -- superset
+    3rd     @auditor    "four C- verdicts" grep on C-*.md          4   wrong -- superset
+
+**Every one is the same defect**, and `@scribe` had already written the rule that catches it:
+name the set the sentence claims, then show the command enumerates that set and not some other.
+Mine and `@auditor`'s first were subsets. `@scribe`'s and `@auditor`'s second were **supersets**
+-- the correction overshooting in the opposite direction, which had not happened before.
+
+**And the superset has a cause that is not a seat's prose.** A Docker container id is 64 hex
+characters. `docker run -d` prints one, and the verdicts capture it in `## Output`. All ten
+occurrences in the tree, each classified by opening the file:
+
+    $ grep -nE '[0-9a-f]{64}' verdicts/*.md
+
+    verdicts/C-0.md:19     e9cea2545c3f769b...  CHECK DIGEST  684 bytes, prose
+    verdicts/C-0.md:128    e9cea2545c3f769b...  CHECK DIGEST  same command, restated
+    verdicts/C-1.md:33     4dfcc3b53476e96c...  CHECK DIGEST  436 bytes, prose
+    verdicts/C-1.md:63     ae1f2f5c932c1371...  docker container id, after `+ docker run -d`
+    verdicts/C-142.md:18   42e34a465745d428...  CHECK DIGEST  778 bytes, prose
+    verdicts/C-143.md:31   f64623be9ad2a0e5...  docker container id, first line of `## Output`
+    verdicts/S-0.md:20     afd44aa64b447323...  CHECK DIGEST  declared by @builder, 1050 bytes
+    verdicts/S-0.md:21     afd44aa64b447323...  CHECK DIGEST  computed here, 1050 bytes, MATCH
+    verdicts/S-1.md:40     095ae8669d29f0e4...  docker container id, first line of `## Output`
+    verdicts/S-2.md:64     c53df33ecab215ed...  docker container id, after `+ docker run -d`
+
+    $ grep -c 'docker run -d' verdicts/C-143.md verdicts/S-1.md   ->  1, 1
+
+**Seven files carry a 64-hex string. Four carry a Check digest. Three carry only Docker's.** So
+`@scribe`'s seven and `@auditor`'s four each counted output the harness emitted as evidence a
+seat produced. The six earlier instances were a pattern too narrow for its sentence, every one of
+them over text a seat had written. **This one is a pattern wide enough to swallow a different
+author**, and a container id inside an `## Output` block is the most innocent thing in the file.
+
+**Corrected, with the set each number counts stated beside it:**
+
+    files in verdicts/ named C-*                      : 147   filename prefix, not an anchor
+    files in verdicts/ named S-*                      :  65   filename prefix, not an anchor
+    verdicts recording a Check anchor, any phrasing   :  65   58 + 6 + S-0, the three disjoint
+    verdicts containing any 64-hex string             :   7   includes docker container ids
+    verdicts containing a Check digest                :   4   C-0, C-1, C-142, S-0
+      of those, stage-1 C-                            :   3   C-0, C-1, C-142
+      of those, declared-vs-computed not prose        :   1   S-0 only
+    verdicts citing committed handoffs/               : 209
+
+`S-0` was dropped from `@auditor`'s union by one space character: it writes the heading
+`Check anchor (§11 / §13)` where the other six write `(§11/§13)`. **The left end of the range is
+the best-anchored file in the tree** -- declared and computed side by side, 1050 bytes, MATCH --
+and it was invisible to every pattern aimed at it.
+
+**REACHED TWICE INDEPENDENTLY, WHICH IS THE ONLY REASON I AM WRITING A NUMBER AT ALL.** `@scribe`
+opened the same ten lines from the other direction and classified them identically -- naming its
+own `seven` as the seventh instance, and catching that its proposed permanent wording called the
+`S-` verdicts stage 1 when they are stage 2. Two seats reading the same ten occurrences and
+agreeing is the provenance standard I hold verdicts to, and it is the standard this entry's own
+figures had to meet before I would commit them. `@scribe` states the generalisation better than I
+did, and it belongs beside the rule rather than under it: **a digest-shaped string is not a digest
+until you have read what was hashed.** Sixty-four hex characters is the output format of
+`sha256`, of `docker run -d`, of `docker build`, and of everything else that will sit quietly in
+an `## Output` block waiting to be counted as evidence.
+
+**WHAT I AM NOT CORRECTING, WHICH IS THE POINT OF THE ENTRY.** Three places in this file and
+`REPORT.md:277,286` carry *"§11 reaches 64 of 222 Checks."* The `222` is already marked corrected
+to `212` above. `S-0` being a 65th anchored verdict makes the `64` look like a `65` -- **and I
+have not enumerated the set that sentence claims.** It counts anchors in `handoffs/`; I
+enumerated `verdicts/`. Writing `65 of 212` here because it looks right would be the eighth
+instance, inside the entry recording the seventh. **The figure stands unchanged and unverified,
+and stage 3 inherits it as an open question and not as a number.**
+
+**No claim's status changes, no verdict is affected, `unknown 11` is untouched, and nothing
+reopens.** Read of committed files only at `6e1c123`, tree clean, nothing run. The `verdicts`
+tree is byte-identical at `6e1c123` and `77d5558` (`059509f20ac8f08cffc68c4162efb0593384f474`),
+so none of this depends on where HEAD settles.
