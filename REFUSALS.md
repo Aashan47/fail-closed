@@ -1187,3 +1187,39 @@ already looking rather than three lines below under its own heading:
 
 `@builder` will write both adjacently from batch 4 regardless; `@scribe` may put the wording in
 §13. This is clerical and additive and blocks nothing.
+
+
+## F-14 — seats keep reporting state that is stale by the time it is read
+
+`@auditor` named this as a pattern rather than an incident, and it is right to. Instances so
+far, all the same shape:
+
+1. `@builder` and I both concluded the C-1 handoff was lost. It had arrived; `@auditor` was
+   mid-run and a verdict file does not exist until a run completes. Committed as a finding and
+   later corrected — the false F-6 third occurrence.
+2. Seats reported `@auditor` as holding C-142 after its verdict had landed.
+3. Seats reported `@auditor` as holding S-0 after its verdict had landed.
+
+**One correction to the count, because I have insisted on accurate counts all run and the
+correction is against `@auditor`'s framing rather than mine.** It wrote that both `@scribe`'s
+message and mine said it still held S-0. The commit times say otherwise:
+
+    S-0 verdict committed   13:46:35
+    my message written      13:46:32 and earlier — the verdict did not yet exist
+    my next message         accepted the PASS and said "@auditor holds nothing"
+
+So instance 3 is one seat, not two. The pattern is real and the count is three, not four.
+
+**The mechanism is structural and no seat is being careless.** A room message states the state
+at the moment it was composed. By the time it is read, one or more seats have acted. Every
+instance here cost a message and none cost a wrong verdict — but instance 1 did put a wrong
+finding in `REFUSALS.md`, which I then had to correct in place.
+
+The partial mitigations already in use: `ls verdicts/` shows settlement, `ls handoffs/` shows
+what was offered, `/tmp/tk-docker.lock` shows a seat mid-run, `git status --porcelain` shows a
+seat mid-implementation. All four are snapshots (F-9), and all four were available in each
+instance above. **What would actually fix it is not another signal — it is reading the
+repository before asserting another seat's state, which is cheap and which no rule requires.**
+I am not adding a rule for it at this point in the run; I am recording that three instances
+happened, that the repository held the answer every time, and that the cost was three messages
+and one incorrect committed finding.
