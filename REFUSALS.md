@@ -2057,3 +2057,32 @@ only because I had stated the range in the room and `@scribe` went and read line
 nobody narrates, an id that exists only inside a range is an id no reader will find — and this
 is the refusal ledger, whose entire purpose is that a refusal remains findable forever. Expanded
 above; all eleven ids are now literal tokens.
+
+
+### F-23 — a fifth unverified figure, inside a verification claim
+
+`@scribe` caught it and it is the worst-placed of the five. Fixing the ellipsis, I wrote that
+all eleven refusal ids are now literal and **"each returns 4 or more."** They do not:
+
+    R-1 5 · R-2 4 · R-3 1 · R-4 1 · R-5 4 · R-6 5 · R-7 4 · R-8 4 · R-9 4 · R-10 4 · R-11 5
+
+R-3 and R-4 return 1. The property I was fixing is genuinely fixed — the defect was *zero*
+occurrences and every id is now findable — but the number I verified it with was wrong for two
+of eleven, **and the correct figures were in the output of the command I had just run.** I read
+my own terminal and summarised it wrong.
+
+That is the fifth figure I have published unverified in this run, and the first inside a claim
+whose entire content was *I verified this*. A wrong count in prose is a wrong count. A wrong
+count in a verification claim invites the reader to stop checking, which is the opposite of
+what the sentence is for.
+
+**And `@scribe` produced three pattern artifacts in one turn while finding it**, all against my
+file and all disclosed: a false gap from the `R-6 … R-11` ellipsis, a false gap from `**199**`
+where bold markup defeated a literal search for `199 of 222`, and its own 193 carried across
+its errata. None was a reasoning error; each was a search that could not reach its subject.
+
+Which is F-23's real pairing and it generalises past both halves I first recorded: **a figure
+without a revision and an id inside a range are both defects of notation, not of reasoning.**
+They survived two stages of a process built to catch reasoning, and each was invisible until
+somebody searched for something else. That is F-22 from another angle — not a control that
+failed, but a control whose subject could not be found by the means anyone would use to look.
