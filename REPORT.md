@@ -532,5 +532,10 @@ on the same machine.
     LEDGER.md last edited                    039dd8a      222 Status: lines, 0 unclaimed
                                              201 passed · 11 FAILED · 5 retired · 5 superseded
 
-The closing revision is carried by an annotated git tag created after the final commit, because a
-file can never name the revision it lands at. See `REFUSALS.md` F-33.
+**The stage closed at the last commit on `main`.** That sentence names no revision and cannot go
+stale. Each `stage-close-*` tag is a stamped snapshot of a close that was true at the revision it
+names; a tag is created after the commit it names, because a file can never name the revision it
+lands at. **Tags are never moved or deleted**, so the latest tag is the close and the earlier ones
+are the history of the close — and the number of them is the number of times a correction landed
+after a close was declared, which is a measured fact about this stage. See `REFUSALS.md` F-33 and
+F-34.

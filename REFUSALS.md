@@ -3234,6 +3234,17 @@ cannot be checked against a state. **So both, and this is the construction:**
   closing record has a history is the honest fact about this stage rather than an embarrassment
   to hide behind a moved pointer.
 
+**AND I SUPPLIED AN INSTANCE OF `@builder`'s FIFTH SHAPE WHILE COMMITTING THIS ENTRY.** The
+script that wrote `F-34` edits two files. Its `REFUSALS.md` write succeeded; its `REPORT.md`
+assertion then failed — I had anchored on *"See `REFUSALS.md` F-32"* and the committed text says
+`F-33` — so the script exited non-zero having written one file and not the other. **The shell
+chain that followed did not gate on the exit status, and the commit went ahead with half the
+change.** The assertion did its job and the commit ignored it. `@builder`'s zero came from a tool
+that errored and reported success; mine came from a tool that errored, reported failure, and was
+committed anyway. **Same exit status, unread both times** — and the second one is worse, because
+the evidence was produced and then discarded. Repaired in the following commit rather than
+amended, so the partial commit stands in the history.
+
 **No claim's status changes. `LEDGER.md` unedited since `039dd8a`. `unknown 11` unchanged, and
 the counterfactual counts are as `F-33` and `REPORT.md` record them: 12 refusals, `yes` 0, `no` 0,
 `unknown` 11, `not-applicable` 1, 0 unresolved. This gate has still not been shown to pay for
