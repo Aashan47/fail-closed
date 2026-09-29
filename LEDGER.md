@@ -177,7 +177,7 @@ LOC=re.compile(r"^\d{4}-\d\d-\d\dT\d\d:\d\d$")
 ### C-0: The service builds and serves from a clean container with no outbound network, by following its RUN.md.
 Check: `docker rm -f tk-s1 >/dev/null 2>&1; docker network rm tk-s1-noout >/dev/null 2>&1; docker builder prune -af >/dev/null 2>&1; test -f /Users/aashanjaved/band-work/result/stage-1/Dockerfile && test -f /Users/aashanjaved/band-work/result/stage-1/RUN.md && docker network create --internal tk-s1-noout && docker build --no-cache -t tk-s1 /Users/aashanjaved/band-work/result/stage-1 && docker run -d --name tk-s1 --network tk-s1-noout -p 18080:8080 -e PORT=8080 tk-s1 && start=$(date +%s) && until curl -fsS http://127.0.0.1:18080/health; do [ $(( $(date +%s) - start )) -lt 60 ] || { echo "NOT HEALTHY WITHIN 60s"; exit 1; }; sleep 1; done && echo "HEALTHY IN $(( $(date +%s) - start ))s"`
 Passes when: exits 0, prints the `/health` body followed by `HEALTHY IN <n>s` with `n` at most 60. The build runs with `--no-cache` after a builder prune, so nothing carries over from an earlier attempt; the container runs on an internal network, so it has no outbound access while serving.
-Status: unclaimed
+Status: superseded by C-142
 
 ### C-1: RUN.md's own command builds and starts the service without manual setup.
 Check: `cd /Users/aashanjaved/band-work/result/stage-1 && docker rm -f tk-s1 >/dev/null 2>&1; docker network create --internal tk-s1-noout >/dev/null 2>&1; awk '/^```/{f=!f;next} f' RUN.md > /tmp/tk-runmd.sh && test -s /tmp/tk-runmd.sh && sh -eux /tmp/tk-runmd.sh && start=$(date +%s) && until curl -fsS http://127.0.0.1:18080/health; do [ $(( $(date +%s) - start )) -lt 60 ] || { echo "NOT HEALTHY"; exit 1; }; sleep 1; done && echo "RUNMD OK"`
@@ -187,7 +187,7 @@ Status: unclaimed
 ### C-2: The container has no outbound network access while serving.
 Check: `docker exec tk-s1 sh -c 'getent hosts example.com || nslookup example.com || wget -q -T3 -O- http://example.com || curl -sS -m3 http://example.com' ; test $? -ne 0 && echo "NO EGRESS"`
 Passes when: prints `NO EGRESS`. Every outbound attempt from inside the running container fails.
-Status: unclaimed
+Status: superseded by C-143
 
 ---
 
@@ -196,12 +196,12 @@ Status: unclaimed
 ### C-3: The service listens on the port given in the PORT environment variable.
 Check: `docker rm -f tk-s1-port >/dev/null 2>&1; docker run -d --name tk-s1-port --network tk-s1-noout -p 18081:9091 -e PORT=9091 tk-s1 >/dev/null && for i in $(seq 1 60); do curl -fsS http://127.0.0.1:18081/health && break; sleep 1; done; r=$?; docker rm -f tk-s1-port >/dev/null 2>&1; exit $r`
 Passes when: exits 0 and prints `{"status": "ok"}` (any equivalent JSON spelling). The service bound the port named in `PORT`, not a hard-coded one.
-Status: unclaimed
+Status: superseded by C-144
 
 ### C-4: The service listens on port 8080 when PORT is not set.
 Check: `docker rm -f tk-s1-dflt >/dev/null 2>&1; docker run -d --name tk-s1-dflt --network tk-s1-noout -p 18082:8080 tk-s1 >/dev/null && for i in $(seq 1 60); do curl -fsS http://127.0.0.1:18082/health && break; sleep 1; done; r=$?; docker rm -f tk-s1-dflt >/dev/null 2>&1; exit $r`
 Passes when: exits 0 and prints the health body. With `PORT` absent the service defaulted to 8080.
-Status: unclaimed
+Status: superseded by C-145
 
 ### C-5: GET /health returns 200 with status ok.
 Check: `python3 -c "$P"'
@@ -1941,12 +1941,12 @@ Status: unclaimed
 ### C-140: The shipped stage-1 checks all pass against the delivered image.
 Check: `cd /Users/aashanjaved/dark-factory-wearedevs && ./.venv/bin/python -m harness run --track tablekeeper --repo /Users/aashanjaved/band-work/result --stage 1 --out /Users/aashanjaved/band-work/checks/s1-shipped-$(date +%s)`
 Passes when: the harness exits 0 and its summary reports zero failures and zero errors for stage 1.
-Status: unclaimed
+Status: superseded by C-147
 
 ### C-141: The graded stage-1 suite passes in full.
 Check: `cd /Users/aashanjaved/dark-factory-wearedevs && ./.venv/bin/python -m harness run --track tablekeeper --repo /Users/aashanjaved/band-work/result --stage 1 --out /Users/aashanjaved/band-work/checks/s1-$(date +%s)`
 Passes when: the harness exits 0 and its summary reports zero failures and zero errors for stage 1. The shipped checks are roughly 83% of this suite, so passing them is necessary and not sufficient; that is why C-1 through C-139 exist.
-Status: unclaimed
+Status: superseded by C-146
 
 ---
 
@@ -2221,6 +2221,24 @@ Status: unclaimed
 | C-4 | C-145 | same |
 | C-140 | C-147 | ran in host mode, where outbound is not blocked |
 | C-141 | C-146 | same |
+
+Supersession was authorised by `@registrar` and recorded in `REFUSALS.md` at
+`66e7967fadcce831e7288564483116e1322cbd0b`. It was granted only because the errata above reproduces a
+defect in each superseded **Check** from a run.
+
+**What supersession does not mean.** A superseded entry is not absolved and is not forgiven. It does
+not need a pass, and it does not hold the gate shut. C-0's FAIL at `90028fd` stands permanently, the
+refusal R-1 recording it is never deleted, and each replacement must earn its own verdict from
+`@auditor` — no replacement inherits anything from the entry it replaces. A request to supersede an
+entry because the work turned out to be hard, rather than because the check is demonstrably wrong,
+is refused. This paragraph exists because quietly retiring inconvenient entries is the mechanism by
+which a factory makes its own failures disappear, and bounding it in advance is cheaper than arguing
+about it later.
+
+Three seats have now produced passing runs of C-142 and C-143 — `@scribe` while writing them and
+`@builder` while investigating. **None of those is evidence.** A verdict is a run by the seat that
+cannot change what it judges, so every entry below stays `unclaimed` until `verdicts/<claim-id>.md`
+is committed by `@auditor`.
 
 **Unaffected: C-1 and C-5 through C-139.** C-1 runs `RUN.md`'s own command, which does its own
 `docker run`; its `docker network create --internal tk-s1-noout` line is vestigial and unused, so the
