@@ -211,6 +211,24 @@ class Restaurant:
             self.tables.append({"id": tid, "label": t.get("label"), "capacity": cap})
         if len({t["id"] for t in self.tables}) != len(self.tables):
             raise invalid("duplicate table id")
+        self.combinable = []
+        pairs = raw.get("combinable", [])
+        if not isinstance(pairs, list):
+            raise bad_request("combinable must be a list")
+        ids = {t["id"] for t in self.tables}
+        for pair in pairs:
+            if not isinstance(pair, list):
+                raise bad_request("a combinable entry must be a list")
+            if len(pair) != 2:
+                raise invalid("a combinable entry must be a pair of exactly two tables")
+            for tid in pair:
+                if not isinstance(tid, str):
+                    raise bad_request("a combinable entry must hold table ids")
+                if tid not in ids:
+                    raise invalid("combinable names a table this restaurant does not have")
+            if pair[0] == pair[1]:
+                raise invalid("a combinable entry must name two distinct tables")
+            self.combinable.append([pair[0], pair[1]])
 
     @staticmethod
     def _pos(raw, field):
@@ -220,6 +238,14 @@ class Restaurant:
         if v < 1:
             raise invalid("%s must be at least 1" % field)
         return v
+
+    def is_combinable(self, table_ids):
+        """A set of two is bookable only if declared. Pairs are unordered."""
+        want = {table_ids[0], table_ids[1]}
+        return any(set(p) == want for p in self.combinable)
+
+    def capacity_of(self, table_ids):
+        return sum(self.table(t)["capacity"] for t in table_ids)
 
     def table(self, table_id):
         for t in self.tables:
@@ -249,6 +275,7 @@ class Restaurant:
                                "closes": e["closes"]} for e in self.opening_hours],
             "tables": [{"id": t["id"], "label": t["label"],
                         "capacity": t["capacity"]} for t in self.tables],
+            "combinable": [list(p) for p in self.combinable],
         }
 
     def dump(self):
@@ -258,11 +285,12 @@ class Restaurant:
                 "cancellation_cutoff_minutes": self.cancellation_cutoff_minutes,
                 "opening_hours": [{"weekday": e["weekday"], "opens": e["opens"],
                                    "closes": e["closes"]} for e in self.opening_hours],
-                "tables": [dict(t) for t in self.tables]}
+                "tables": [dict(t) for t in self.tables],
+                "combinable": [list(p) for p in self.combinable]}
 
 
 class Reservation:
-    __slots__ = ("id", "reference", "user_id", "restaurant_id", "table_id",
+    __slots__ = ("id", "reference", "user_id", "restaurant_id", "table_ids",
                  "starts_at_local", "party_size", "status", "created_at")
 
     def __init__(self, **kw):
@@ -274,11 +302,11 @@ class Reservation:
         start = resolve_local(naive, restaurant.tz)
         end = add_absolute(start, restaurant.reservation_duration_minutes,
                            restaurant.tz)
-        return {
+        view = {
             "reservation_id": self.id,
             "reference": self.reference,
             "restaurant_id": self.restaurant_id,
-            "table_id": self.table_id,
+            "table_ids": list(self.table_ids),
             "party_size": self.party_size,
             "status": self.status,
             "starts_at_local": self.starts_at_local,
@@ -286,6 +314,10 @@ class Reservation:
             "ends_at": end.isoformat(),
             "created_at": self.created_at,
         }
+        # `table_id` is carried only when the set has exactly one member.
+        if len(self.table_ids) == 1:
+            view["table_id"] = self.table_ids[0]
+        return view
 
     def interval(self, restaurant):
         start = resolve_local(parse_local(self.starts_at_local), restaurant.tz)
@@ -379,9 +411,24 @@ class Service:
             restaurant = fresh.restaurants.get(restaurant_id)
             if restaurant is None:
                 raise invalid("reservation names an unknown restaurant")
-            table_id = check_id(raw.get("table_id"), "table_id")
-            if restaurant.table(table_id) is None:
-                raise invalid("reservation names an unknown table")
+            if "table_ids" in raw and "table_id" in raw:
+                raise invalid("a seeded reservation carries table_id or table_ids, not both")
+            if "table_ids" in raw:
+                seeded = raw.get("table_ids")
+                if not isinstance(seeded, list) or not seeded:
+                    raise invalid("table_ids must be a non-empty list")
+                table_ids = [check_id(t, "table_id") for t in seeded]
+                if len(set(table_ids)) != len(table_ids):
+                    raise invalid("a seeded reservation must not repeat a table")
+                if len(table_ids) > 2:
+                    raise invalid("tables may be combined in pairs only")
+                if len(table_ids) == 2 and not restaurant.is_combinable(table_ids):
+                    raise invalid("a seeded combination must be declared in combinable")
+            else:
+                table_ids = [check_id(raw.get("table_id"), "table_id")]
+            for tid in table_ids:
+                if restaurant.table(tid) is None:
+                    raise invalid("reservation names an unknown table")
             party_size = raw.get("party_size")
             if isinstance(party_size, bool) or not isinstance(party_size, int):
                 raise invalid("party_size must be an integer")
@@ -397,7 +444,7 @@ class Service:
             if status not in ("confirmed", "cancelled"):
                 raise invalid("status must be confirmed or cancelled")
             res = Reservation(id=rid, reference=reference, user_id=user_id,
-                              restaurant_id=restaurant_id, table_id=table_id,
+                              restaurant_id=restaurant_id, table_ids=table_ids,
                               starts_at_local=local, party_size=party_size,
                               status=status,
                               created_at=raw.get("created_at")
@@ -586,18 +633,29 @@ class Service:
                         continue
                     start_utc = start.astimezone(timezone.utc)
                     end_utc = start_utc + timedelta(minutes=duration)
-                    free = []
-                    for t in restaurant.tables:
-                        if t["capacity"] < party_size:
+                    def is_free(tid):
+                        return not any(s < end_utc and start_utc < e
+                                       for s, e in taken.get(tid, ()))
+                    # `available_table_ids` is single tables only, unchanged from
+                    # stage 1. `available_options` adds the declared pairs after
+                    # the singles, each group in its own declared order.
+                    free = [t["id"] for t in restaurant.tables
+                            if t["capacity"] >= party_size and is_free(t["id"])]
+                    options = [{"table_ids": [t["id"]], "capacity": t["capacity"]}
+                               for t in restaurant.tables
+                               if t["capacity"] >= party_size and is_free(t["id"])]
+                    for pair in restaurant.combinable:
+                        if restaurant.capacity_of(pair) < party_size:
                             continue
-                        if any(s < end_utc and start_utc < e
-                               for s, e in taken.get(t["id"], ())):
+                        if not all(is_free(tid) for tid in pair):
                             continue
-                        free.append(t["id"])
+                        options.append({"table_ids": list(pair),
+                                        "capacity": restaurant.capacity_of(pair)})
                     slots.append({
                         "starts_at_local": naive.strftime("%Y-%m-%dT%H:%M"),
                         "starts_at": start.isoformat(),
-                        "available_table_ids": free})
+                        "available_table_ids": free,
+                        "available_options": options})
             return {"restaurant_id": restaurant.id,
                     "date": date.strftime("%Y-%m-%d"),
                     "timezone": restaurant.timezone,
@@ -617,29 +675,68 @@ class Service:
                 continue
             if res.id in exclude:
                 continue
-            taken.setdefault(res.table_id, []).append(res.interval(restaurant))
+            span = res.interval(restaurant)
+            for tid in res.table_ids:
+                taken.setdefault(tid, []).append(span)
         return taken
 
     # -- reservations -----------------------------------------------------
 
-    def _validate_fields(self, restaurant_id, table_id, local_text, party_size):
+    @staticmethod
+    def resolve_table_set(body, current=None):
+        """`table_ids`, or `table_id` meaning a set of one. Sending both is invalid."""
+        has_ids = "table_ids" in body
+        has_one = "table_id" in body
+        if has_ids and has_one:
+            raise invalid("send table_id or table_ids, not both")
+        if has_ids:
+            raw = body["table_ids"]
+            if not isinstance(raw, list):
+                raise invalid("table_ids must be a list of table ids")
+            if not raw:
+                raise invalid("table_ids must name at least one table")
+            for tid in raw:
+                if not isinstance(tid, str) or not tid:
+                    raise invalid("table_ids must hold table ids")
+            if len(set(raw)) != len(raw):
+                raise invalid("table_ids must not repeat a table")
+            return list(raw)
+        if has_one:
+            tid = body["table_id"]
+            if not isinstance(tid, str) or not tid:
+                raise bad_request("table_id must be a string")
+            return [tid]
+        if current is not None:
+            return list(current)
+        raise invalid("table_id or table_ids is required")
+
+    def _validate_fields(self, restaurant_id, table_ids, local_text, party_size):
         """Non-occupancy validation, in the order the specification implies."""
         if isinstance(party_size, bool) or not isinstance(party_size, int):
             raise invalid("party_size must be an integer of at least 1")
         if party_size < 1:
             raise invalid("party_size must be at least 1")
         naive = parse_local(local_text)
-        if not isinstance(restaurant_id, str) or not isinstance(table_id, str):
-            raise bad_request("restaurant_id and table_id must be strings")
+        if not isinstance(restaurant_id, str):
+            raise bad_request("restaurant_id must be a string")
         restaurant = self.state.restaurants.get(restaurant_id)
         if restaurant is None:
             raise not_found("no such restaurant")
-        table = restaurant.table(table_id)
-        if table is None:
-            raise not_found("no such table at this restaurant")
-        if party_size > table["capacity"]:
+        for tid in table_ids:
+            if restaurant.table(tid) is None:
+                raise not_found("no such table at this restaurant")
+        # A set is bookable only as a single table or as a declared pair. The
+        # combination rule is decided before capacity, so three tables whose
+        # every pair is declared is still refused rather than measured.
+        if len(table_ids) > 2:
+            raise ApiError(422, "combination_not_allowed",
+                           "tables may be combined in pairs only")
+        if len(table_ids) == 2 and not restaurant.is_combinable(table_ids):
+            raise ApiError(422, "combination_not_allowed",
+                           "that pair of tables is not offered as a combination")
+        if party_size > restaurant.capacity_of(table_ids):
             raise ApiError(422, "party_exceeds_capacity",
-                           "party_size exceeds the table's capacity")
+                           "party_size exceeds the combined capacity")
         entry = restaurant.hours_for(naive.date())
         if entry is None:
             raise ApiError(422, "outside_opening_hours", "the restaurant is closed")
@@ -659,13 +756,15 @@ class Service:
                            "that local time does not exist")
         return restaurant, start
 
-    def _conflicts(self, restaurant, table_id, start, exclude=()):
+    def _conflicts(self, restaurant, table_ids, start, exclude=()):
         start_utc = start.astimezone(timezone.utc)
         end_utc = start_utc + timedelta(
             minutes=restaurant.reservation_duration_minutes)
-        for s, e in self._occupancy(restaurant, exclude).get(table_id, ()):
-            if s < end_utc and start_utc < e:
-                return True
+        taken = self._occupancy(restaurant, exclude)
+        for tid in table_ids:
+            for s, e in taken.get(tid, ()):
+                if s < end_utc and start_utc < e:
+                    return True
         return False
 
     def _new_reference(self):
@@ -676,10 +775,11 @@ class Service:
 
     def create_reservation(self, user_id, body):
         with self.lock:
+            table_ids = self.resolve_table_set(body)
             restaurant, start = self._validate_fields(
-                body.get("restaurant_id"), body.get("table_id"),
+                body.get("restaurant_id"), table_ids,
                 body.get("starts_at_local"), body.get("party_size"))
-            if self._conflicts(restaurant, body["table_id"], start):
+            if self._conflicts(restaurant, table_ids, start):
                 raise ApiError(409, "table_unavailable",
                                "the table is taken for an overlapping interval")
             n = self.state.next_counter()
@@ -689,7 +789,7 @@ class Service:
                 rid = "res_%d" % n
             res = Reservation(
                 id=rid, reference=self._new_reference(), user_id=user_id,
-                restaurant_id=restaurant.id, table_id=body["table_id"],
+                restaurant_id=restaurant.id, table_ids=table_ids,
                 starts_at_local=body["starts_at_local"],
                 party_size=body["party_size"], status="confirmed",
                 created_at=now_utc().isoformat())
@@ -738,12 +838,12 @@ class Service:
                            "the reservation is cancelled")
         if self._cutoff_passed(res, restaurant):
             raise ApiError(409, "cutoff_passed", "past the amendment cutoff")
-        table_id = item.get("table_id", res.table_id)
+        table_ids = self.resolve_table_set(item, current=res.table_ids)
         local_text = item.get("starts_at_local", res.starts_at_local)
         party_size = item.get("party_size", res.party_size)
         new_restaurant, start = self._validate_fields(
-            res.restaurant_id, table_id, local_text, party_size)
-        return {"res": res, "restaurant": new_restaurant, "table_id": table_id,
+            res.restaurant_id, table_ids, local_text, party_size)
+        return {"res": res, "restaurant": new_restaurant, "table_ids": table_ids,
                 "starts_at_local": local_text, "party_size": party_size,
                 "start": start}
 
@@ -751,11 +851,11 @@ class Service:
         with self.lock:
             res = self.owned_reservation(user_id, reference)
             change = self._amend(res, body)
-            if self._conflicts(change["restaurant"], change["table_id"],
+            if self._conflicts(change["restaurant"], change["table_ids"],
                                change["start"], exclude={res.id}):
                 raise ApiError(409, "table_unavailable",
                                "the table is taken for an overlapping interval")
-            res.table_id = change["table_id"]
+            res.table_ids = change["table_ids"]
             res.starts_at_local = change["starts_at_local"]
             res.party_size = change["party_size"]
             return res.view(change["restaurant"])
@@ -791,16 +891,18 @@ class Service:
                 start_utc = c["start"].astimezone(timezone.utc)
                 end_utc = start_utc + timedelta(
                     minutes=c["restaurant"].reservation_duration_minutes)
-                for s, e in occupied.get(c["table_id"], ()):
-                    if s < end_utc and start_utc < e:
-                        raise ApiError(409, "table_unavailable",
-                                       "the batch would double-book a table")
-                occupied.setdefault(c["table_id"], []).append((start_utc, end_utc))
+                for tid in c["table_ids"]:
+                    for s, e in occupied.get(tid, ()):
+                        if s < end_utc and start_utc < e:
+                            raise ApiError(409, "table_unavailable",
+                                           "the batch would double-book a table")
+                for tid in c["table_ids"]:
+                    occupied.setdefault(tid, []).append((start_utc, end_utc))
 
             views = []
             for c in changes:
                 res = c["res"]
-                res.table_id = c["table_id"]
+                res.table_ids = c["table_ids"]
                 res.starts_at_local = c["starts_at_local"]
                 res.party_size = c["party_size"]
                 views.append(res.view(c["restaurant"]))
