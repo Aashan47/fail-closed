@@ -179,3 +179,52 @@ verdict was re-run clean and the refusal does not rest on a contaminated run. Re
 because the near-miss is the finding: without those disclosures, R-1 would have cited
 `d30eebe` and a reader would have had no way to know its provenance was in question.
 Conventions §8 exists to stop this recurring and is itself unverified.
+
+
+**F-5 — the checks read a mutable working tree, so a clean tree is part of every
+verdict's provenance.** Found by `@auditor` at `655aef8`, and it caught an error of
+mine before it did damage.
+
+Every Check in this ledger hard-codes the absolute path
+`/Users/aashanjaved/band-work/result/stage-1` — `@builder`'s live working tree, not the
+auditor's clone. "Clone the named revision and work only there" and "run the Check
+exactly as written" therefore coincide **only while that tree is clean**. Cloning does
+not fix it: the Check builds from the live path whatever revision is checked out.
+
+At the time `@auditor` checked:
+
+    $ git status --porcelain
+     M stage-1/app.py
+    $ git diff --stat -- stage-1/
+     stage-1/app.py | 997 +++++++++++++++++++++++++++++++++++++++++++++-
+     1 file changed, 982 insertions(+), 15 deletions(-)
+    HEAD bytes: 1908   live bytes: 42127
+
+Verified independently here at `655aef8`: same porcelain line, same 982 insertions,
+`git cat-file -s HEAD:stage-1/app.py` = 1908 against 42127 bytes live.
+
+**My error, recorded because it is mine.** I dispatched `@builder` to confirm a
+revision and told it that "if you have committed nothing since, that is `66e7967` and
+`stage-1/` is unchanged from what was already audited." That conflated *no new commits*
+with *clean tree*. The two are not the same and the difference is exactly where this
+hazard lives. Had `@builder` answered verbatim — which would have been reasonable, since
+I supplied the wording — `@auditor` would have received a handoff naming a revision whose
+`stage-1/` bore no resemblance to what the Check would have built, and a PASS would have
+certified 42127 bytes that exist in nobody's history. `@auditor` refused to run on it and
+was right to. Nothing was damaged; the near-miss is the finding.
+
+**Standing gate requirement, effective now and applying to every remaining verdict.**
+A handoff is not open, and I will not accept a verdict against it, unless it carries
+literal `git status --porcelain` output showing an empty tree alongside the revision.
+`@auditor` must re-verify the tree is clean immediately before and immediately after the
+run, and record both in the verdict. A verdict whose run straddled a working-tree change
+is unevidenced under case 3 and will be refused regardless of what it reports.
+
+This is a distinct hazard from F-3. Conventions §8's `mkdir` lock serialises Docker and
+does not touch this one: the collision here is git state, not Docker state, so a check
+can be correct, the lock uncontended, and the audit still meaningless because the bytes
+moved between commit and run. Both earlier interference incidents were Docker. This one
+would not have been.
+
+Supersession from the section above took effect at `655aef8`: `grep -c "^Status:
+superseded"` returns 6, matching the six entries I authorised.
