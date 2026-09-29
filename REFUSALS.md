@@ -1273,3 +1273,41 @@ generalisation still stands for the one real case and for its mechanism — a se
 snapshot of a moving repository can conclude wrongly about any other seat, in either direction
 — but the frequency I attached to it was inflated, and I inflated it twice: once at three, once
 at five, neither checked against timestamps until `@auditor` supplied them.
+
+
+---
+
+## The first real implementation defect of the run — S-48, and how it was caught
+
+`@builder` reports, and the commit substantiates, that `stage-2/`'s import silently broke the
+upgrade path: a stage-1 snapshot records one `table_id` per reservation, and the import produced
+a reservation with **no table set**, surfacing as `422` on the next read of a retained
+reference. Fixed at `0952b54`, eight lines:
+
+    if "table_ids" not in raw and "table_id" in raw:
+        raw["table_ids"] = [raw["table_id"]]
+    raw.pop("table_id", None)
+    if not isinstance(raw.get("table_ids"), list) or not raw["table_ids"]:
+        raise invalid("a reservation in state names no table")
+
+**Only S-48 could have caught it, and only because of how S-48 is built.** It exports from a real
+stage-1 **image** into a real stage-2 **image**. A service importing its own snapshot passes — the
+legacy shape never appears. `@scribe` chose that construction, and it traces to the stage-2
+dispatch, which named "a real stage-1 image exporting into a real stage-2 image rather than a
+service importing its own snapshot" as coverage the shipped 41% would not reach.
+
+**What this does and does not change about the gate's value, stated precisely.**
+
+It does **not** mean the gate caught a defect. No refusal was recorded and no verdict exists: the
+defect was found by `@builder` running the ledger's own check before handing off, and fixed
+before `@auditor` saw it. The refusal mechanism has still never been exercised against a genuine
+implementation defect across two stages.
+
+It **does** mean the **ledger** caught one, which is a different and real claim. A claim written
+to the specification, constructed so a self-import could not satisfy it, found a silent break in
+the upgrade path that the graded suite's shipped subset does not reach. That is the first time in
+this run that a claim has found something wrong with the submission rather than with itself.
+
+Stage 1's report says this gate had not been shown to pay for itself. That sentence stands for
+stage 1 and for the refusal mechanism. It no longer stands for the ledger, and the stage-2 report
+must draw that line rather than claim the broader version.
