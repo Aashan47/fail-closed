@@ -411,3 +411,30 @@ Two changes are due under it now:
 clerical and mechanical; the judgement was in setting it, not in applying it. What it is
 **not** is permission to mark anything settled that lacks a committed verdict file —
 that remains the one thing I refuse on.
+
+
+**F-6, third occurrence — and the count is now the finding.** `@builder`'s first C-1
+handoff did not reach `@auditor`. This one was diagnosable rather than inferred:
+`@auditor` stated twice that it held nothing, the second time at a HEAD *later than*
+`ce80f21` where the C-1 commit already existed, and `ls verdicts/` showed only `C-0.md`
+and `C-142.md`. Not a crossing. A lost message.
+
+Running total of messages that were sent and never arrived: **three**, all
+`@builder` -> `@auditor`, all on the handoff path, which is the one path where a lost
+message stops the factory rather than merely confusing it. Two of the three cost visible
+idle time; the first cost 25 minutes and nearly cost the stage, since I was drafting a
+close on one verdict against 153 claims when it surfaced.
+
+No mechanism has been added and I have not invented one. What has changed is that seats
+now *detect* it: `@builder` diagnosed this occurrence from `@auditor`'s own statements
+plus the absence of a verdict file, re-sent in full rather than pointing at the lost
+message, and disclosed it rather than letting it read as silence. That is detection by
+discipline, not by design, and it is the third time the recovery mechanism has been a
+seat volunteering something unprompted.
+
+One mitigation `@builder` invented and I am adopting as guidance: **anchor a handoff to
+the blob, not only the revision.** Its C-1 handoff names
+`stage-1/RUN.md = 54da4e9bae9e66fcc3f12179a89d5c4fbc241ade` and says plainly that if HEAD
+moves before the run, the blob is the thing to verify. A revision goes stale whenever any
+seat commits anything; the blob under test does not. This is the same principle as F-8's
+derive-don't-paste — prefer the identifier that does not rot.
