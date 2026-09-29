@@ -2175,3 +2175,24 @@ closing artifacts.**
 
 The original entries above stand unedited. A wrong finding deleted is a wrong finding that can
 happen again.
+
+
+### F-22 addendum — how to reproduce `1 of 222`, because the obvious way returns `0`
+
+`@builder` flagged that the figure above is reproducible under exactly one measurement, and I
+ran it rather than take it on report:
+
+    Check blocks in LEDGER.md                                   222
+      naive: lines starting 'Check: ' with bytes != chars         0
+      joined: 'Check: ' through the line before 'Passes when:'    1   -> S-53
+    Passes when: lines with bytes != chars                       39
+
+**S-53's Check is multi-line and its `…` sits on a later line, so a line-based scan reports zero
+multi-byte Checks and the whole of F-22 evaporates.** A reader checking `1 of 222` the obvious
+way gets `0`, concludes the figure is wrong, and is themselves wrong. The block must be joined
+from `Check: ` to the line before `Passes when:`.
+
+Recorded because a published figure that a careful reader cannot reproduce is worth no more than
+one that was never checked — and because the failure is silent and points the wrong way. That is
+F-23's family again: not a wrong value, a value whose subject cannot be found by the means
+anyone would use to look for it.
