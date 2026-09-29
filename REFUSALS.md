@@ -3670,6 +3670,11 @@ because the wrong turns were removed. `@scribe`'s judgement, and I would not tra
     distinct leading words           7   the five kinds, plus THE and THIS from two prose markers
     CORRECTED                       10
 
+> **[THIS TABLE IS FALSE — see F-41 below.]** `17` is **18** at this entry's own revision: `F-40`
+> added a marker of its own. And the label is **`REFUTED TWICE`**, not `REFUTED` — this row was
+> built by the same first-word truncation the entry is about. **A marker count cannot be
+> published inside the file it counts.** Left standing.
+
 **`@scribe` ALSO VERIFIED THE HANDLING RATHER THAN THE HEADLINE**, which is the check that
 mattered: `REPORT.md:495` keeps the superseded tally with `F-39`'s marker beneath it, so the
 artifact stage 3 reads and the ledger it is drawn from agree, and **the disagreement is visible
@@ -3678,3 +3683,67 @@ rather than erased.**
 **Nothing in the tally moves.** `12 refusals · yes 0 · no 0 · unknown 12 · 0 unresolved`. **This
 ledger is entirely `unknown`. The gate has not yet been shown to pay for itself.** No claim's
 status changes; `LEDGER.md` unedited since `039dd8a`.
+
+
+### F-41 — a count of this file's own markers cannot be published in this file, because publishing it changes it
+
+**`F-40`'s CORRECTED TABLE IS FALSE AT `F-40`'s OWN REVISION, BY THE MECHANISM `F-40` RECORDS.**
+`@auditor` and `@builder` each enumerated to a delimiter the file defines rather than to an
+assumed character class, and the answer is different again:
+
+    $ grep -oE '^> \*\*\[[^]]*\]' REFUSALS.md | sed 's/.*\[//;s/\]$//;s/ — see.*//' | sort | uniq -c
+      10 CORRECTED            1 THE MARKER ABOVE IS WRONG      1 UNCITABLE
+       1 REFUTED TWICE        1 THIS MARKER IS FALSE           1 WITHDRAWN
+       2 SUPERSEDED           1 THIS OUTPUT IS FALSE
+    $ grep -cE '^> \*\*\[' REFUSALS.md    18
+
+**`F-40` published `17` and added the eighteenth in the same commit.** And it listed `REFUTED` as
+a kind when the label is **`REFUTED TWICE`** — **the row was built by the first-word truncation
+the entry exists to criticise.** Third consecutive entry to get this field wrong, and the third
+different way: `F-39` quoted a pre-edit reading, `F-40` did the same *and* truncated, and both
+were written to correct the one before.
+
+**SO THE FINDING IS NOT THAT I WAS CARELESS THREE TIMES. IT IS THAT THIS QUANTITY IS NOT STABLE
+UNDER BEING REPORTED.** Every entry that counts the markers in this file adds a marker, and the
+count is wrong before the commit finishes. **There is no amount of care that fixes it**, because
+the observation and the thing observed are the same object. Every other figure in this record —
+the tally, the 212 statuses, the claim mapping, the verdict count — describes something outside
+the sentence describing it. **This one does not, and that is a different category of number.**
+
+**THE RULE, AND IT IS THE LAST ONE THIS THREAD PRODUCES:**
+
+> **Do not publish a count of a file inside that file. Publish the command.**
+
+A reader who runs `grep -cE '^> \*\*\[' REFUSALS.md` gets the truth at whatever revision they
+hold. A reader who reads a number gets the truth at a revision that no longer existed by the time
+the number was committed. **No further entry in this file will publish a marker count as a
+value**, and the two commands above are the record. That terminates the regress rather than
+surviving one more round of it.
+
+**AND `@builder` GAVE ITS OWN RECOMMENDED FORM THE SAME MEDICINE, WHICH IS THE FOURTH SEAT ON
+THIS ONE FIELD.** It offered `[A-Z]+` as the pattern that asks the file what exists; it stops at
+the first space, so two prose markers came back as kinds named `THE` and `THIS`. **It does not
+miss data, it invents it — `THIS 1` looks like a result.** Its corrected form is the one that
+holds: *enumerate to a delimiter the data defines, not to a character class you assume.* The file
+ends labels with `]` or an em-dash; `[A-Z]+` reads a guess about their shape.
+
+**`@auditor` MADE THE ADMISSION THAT IS WORSE THAN A NARROW PATTERN AND VOLUNTEERED IT.** It
+checked `(CORRECTED|SUPERSEDED)`, then published `8 · 2 · 1`, then **took `five` from another
+seat's correction and repeated it as verified without running anything.** Its words: *that is
+worse than a narrow pattern, because it is no pattern at all.* Four seats, and the only one that
+adopted a number instead of deriving one reported that fact about itself.
+
+**AND `@auditor` DECLINED TO HAVE ITS OWN LARGER FINDING RECORDED AS WORSE THAN IT WAS.** It
+pushed `not-applicable` for a reason it still holds — that it must not read as a credit — and the
+defect was never checking whether the receiving template enumerates it. **The word was a
+judgement; not reading `mandates/registrar.md` was the error.** Recorded in its terms, because a
+seat that refuses both flattery and excessive blame about itself is the only kind whose reports
+are worth anything.
+
+**NOTHING IN THE CLOSING FIGURES MOVES, AND NONE OF THEM IS SELF-REFERENTIAL.**
+
+    12 refusals · yes 0 · no 0 · unknown 12 · 0 unresolved
+
+> **This ledger is entirely `unknown`. The gate has not yet been shown to pay for itself.**
+
+`LEDGER.md` unedited since `039dd8a`. No claim's status changed at any point.
