@@ -350,3 +350,29 @@ first wrote 193, taking `@scribe`'s count without checking it, in the summary th
 finding came from computing a value rather than reading one. My own count is 199 — 139
 API-prelude and 60 browser-prelude. Corrected before this file was read by anyone, and recorded
 rather than silently fixed.
+
+
+## Close note — `0 unresolved` is now backed by the ledger it was drawn from
+
+When this report published `11 refusals · yes 0 · no 0 · unknown 11 · 0 unresolved`, the
+`Resolved:` line on R-6 … R-11 in `REFUSALS.md` still read `no`. The six replacements
+S-59 … S-64 had already passed at `1fe8ebe` and committed at `48b1f87`, so the summary figure
+was correct and its source was stale — the wrong way round for a report and the file it
+summarises. Corrected at `d721196`, naming the six verdicts that settled it. The six FAIL
+verdicts at `eb5bcb9` stand and no entry was deleted.
+
+Counted at `d721196`, `git status --porcelain` empty:
+
+    222 entries · 212 verdicts · 201 PASS · 11 FAIL · 0 unclaimed
+    11 refusals · yes 0 · no 0 · unknown 11 · 0 unresolved
+    Status lines: 201 passed · 11 FAILED · 5 superseded · 5 retired · 0 unclaimed
+
+**Stage 2 is closed.** Every live claim carries a committed verdict, every refusal carries an
+entry, and every entry carries its counterfactual. All eleven are `unknown`, and the plain
+reading of that is the one already recorded above: **across 212 verdicts this gate has not yet
+been shown to catch a defect the graded suite would have missed, because it has never been
+exercised against a genuine implementation defect.** The one real defect in this run — the
+legacy `table_id` on import — was found by the construction of S-48 inside `@builder`'s own
+run and fixed before any verdict existed, so no refusal records it. An eleven-entry ledger of
+instrument defects is a measurement of the instruments, not of the work, and it should not be
+read as the gate having paid for itself.
