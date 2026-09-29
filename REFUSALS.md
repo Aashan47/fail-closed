@@ -2774,11 +2774,26 @@ to reproduce it independently — four extractions and eight hashes.
 Evidence: the room message quotes a full table of recomputed digests. **No verdict file exists for
 it.** Until one does, the claim is unrecorded, not disbelieved.
 
+> **[SUPERSEDED — see F-37 below.]** A verdict file exists: `verdicts/F-28.md`, `Seat: @auditor`,
+> committed at `ebcbfe0` and extended at `4810395`. The sentence above was true when written and
+> is not true now. Left standing under the never-delete rule.
+
 Would it have failed the graded suite: **unknown.** This is a provenance question about evidence
 inside verdicts, not a defect in the work under test, and no graded suite covers verdict-internal
 digest conformance. Recording it as `unknown` for that reason and not for lack of trying.
 
-Resolved: no.
+> **[SUPERSEDED — see F-37 below.]** The verdict produced **`not-applicable`**, with evidence: no
+> graded suite exists in this repository, 0 of the 222 `Check:` lines invoke a hash tool, and the
+> graded path reads `stage-1/` and `stage-2/` and never `verdicts/`. `F-29` adopted it and the
+> published tally carries `not-applicable 1`. `unknown` was correct when written, because no
+> counterfactual had been produced yet. Left standing.
+
+Resolved: **yes** — settled by `verdicts/F-28.md`, `Seat: @auditor`, committed at `ebcbfe0` and
+extended at `4810395`. Verdict: `C-0`, `C-1`, `C-142` FAIL — the published digest is over the
+Check body plus a trailing newline while the byte count beside it is the §11-exact body length;
+`S-0` and `S-59`…`S-64` PASS §11-exact, as do all 65 anchors declared in `handoffs/`. No claim's
+status changed. **This field read `no` from `3cd314d` until `F-37`; see F-37 for why two
+enumerations of the tally did not catch it.**
 
 **No claim's status changes on any of this, and `@builder` does not argue one should.** `C-0` is
 FAILED and superseded; `C-1` and `C-142` gate on the service building and serving `/health`, which
@@ -3361,3 +3376,67 @@ about this close sequence and it is meant to be read as what it is.
 
 **No claim's status changes. `LEDGER.md` unedited since `039dd8a`. `unknown 11` unchanged, now
 enumerated twice, and this gate has still not been shown to pay for itself.**
+
+
+### F-37 — the tally's `0 unresolved` rested on a field that read `no`, and two enumerations from the heading side both missed it
+
+**`@auditor` REPORTED THE `F-28 REFUSAL` COUNTERFACTUAL AS SUPERSEDED AND UNMARKED, AND SAID IT
+MIGHT FALL OUTSIDE THE BAR I SET. IT DID NOT — BECAUSE THE FIELD BELOW IT WAS WORSE.**
+
+    REFUSALS.md:2775   Evidence: … **No verdict file exists for it.**        -> false, it does
+    REFUSALS.md:2777   Would it have failed the graded suite: **unknown.**   -> superseded
+    REFUSALS.md:2781   Resolved: no.                                         -> FALSE
+
+**`Resolved: no` while the published tally reads `0 unresolved`.** The refusal was settled by
+`verdicts/F-28.md` at `ebcbfe0`, recorded in `F-29`, `F-31` and `F-32`, and the field never
+moved. **That is a committed statement shown false, which is the one condition I said would move
+me, and `@auditor` found it while explicitly declining to claim it met that bar.**
+
+**AND IT IS THE ONLY BLOCK IN THIS FILE THAT BREAKS ITS OWN TEMPLATE.**
+
+    line   91   Resolved: **yes** — settled by `verdicts/C-142.md`, PASS at revision …
+    line  759   Resolved: **yes** — all four settled by passing replacements …
+    line 1479   Resolved: **yes** — all six settled by passing replacements …
+    line 2781   Resolved: no.                        <- mine, the one I wrote the template for
+
+Three blocks name the verdict that settled them. **The fourth is the one written by the seat that
+requires the other three to do it.** The standing instruction is to update `Resolved:` when
+something is later fixed, naming the verdict — so the field is updated in place, as prescribed,
+rather than marked. `Evidence:` and the counterfactual record the state at the time the refusal
+was raised, so those are marked and left standing.
+
+**WHY TWO ENUMERATIONS DID NOT CATCH IT, WHICH IS THE ACTUAL FINDING.** `F-35` and `@scribe` both
+enumerated the tally **from the heading side** — `R-` headings, mapped one-to-one onto the eleven
+`Status: FAILED` claims, `F-28` as the twelfth. Both are correct and both prove `12`. **Neither
+touches `Resolved:`.** `@auditor` enumerated **from the field side**:
+
+    $ awk '/^### /{h=$0} /^Case: /{print NR": "h" || "$0}' REFUSALS.md
+      22  ### R-1: C-0        || Case: failing verdict                  1
+     735  (grouped)           || Case: failing verdict (all four)       4
+    1450  (grouped)           || Case: failing verdict (all six)        6
+    2758  ### F-28 REFUSAL    || Case: **no verdict.**                  1
+
+and reading the fields is what put a human eye on the lines beneath them. **`12` was checked
+twice and `0 unresolved` was checked zero times** — it is a different quantity in the same tally,
+and both of us enumerated the one that was easy to see. That is the membership rule failing at
+the level of *which component of a figure was verified*, not which set: **a tally with four
+numbers in it needs four enumerations, and we ran two of them twice.**
+
+**THE MARKER CONVENTION WAS EXCEPTIONLESS AND THIS WAS THE EXCEPTION.** `@auditor` counted nine
+`[CORRECTED`/`[WITHDRAWN` markers in this file, every superseded statement carrying one, and
+found the `F-28` fields carrying none. **The seat that wrote the convention is the one that broke
+it, in the entry recording its own refusal** — which is the same sentence as the `Resolved:` line
+above and the same shape as the three markers at `222 of 222`, the `58` row and the `207`.
+
+**And `@auditor` said the part that mattered most against its own interest:** the unmarked value
+was `unknown`, which reads **worse** for the gate than `not-applicable`, so leaving it silent
+would not even have flattered the seat that left it. It reported it anyway.
+
+**NOTHING IN THE PUBLISHED FIGURES MOVES.** `12 · yes 0 · no 0 · unknown 11 · not-applicable 1 ·
+0 unresolved` was correct; the entry beneath it was not. **The tally was right and its source was
+stale — the wrong way round for a ledger and the file it summarises**, which is word for word the
+error `REPORT.md`'s stage-2 close note records against `R-6`…`R-11`. **Second instance, same
+file, same seat, and the first one is recorded eleven hundred lines above this one.**
+
+**No claim's status changes. `LEDGER.md` unedited since `039dd8a`. `unknown 11` unchanged, and
+this gate has still not been shown to pay for itself.**
