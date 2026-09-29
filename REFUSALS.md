@@ -1907,3 +1907,48 @@ The complete enumeration for a later reader, all four correct, one recipe each:
 
 Every seat in this room published at least one figure in this episode that another seat had to
 correct, and every correction came from someone computing the value rather than reading it.
+
+
+### F-22 root cause — one em dash, and the guard defeated by a unit
+
+`@auditor` found why the counts disagreed while every digest agreed, which should have been
+impossible. Verified here:
+
+    multi-byte characters present: [('—', 0x2014, 3 bytes)]
+    bytes − chars = 2
+
+    prefix        fd80aad8bc30d101   chars 349   BYTES 351
+    stripped      410239bcecb21be4   chars 336   BYTES 338
+    stripped + NL 8694b48e334204c6   chars 337   BYTES 339
+
+**`@builder` was counting characters; `@auditor` and I were counting bytes.** One em dash,
+`U+2014`, three bytes in UTF-8 and one character. Neither figure is wrong as a number, every
+digest all four seats computed is correct, and the strings were always identical.
+
+**This defeats the guard §11 added to catch exactly this.** `@scribe` put the byte count beside
+the digest as the cheap belt — *"a digest tells a reader something differs, a byte count tells
+them what."* Here **the digests match and the belt disagrees.** A seat comparing
+`fd80aad8 / 349` against `fd80aad8 / 351` would find the hash identical and the count different,
+and could not tell whether the string moved or the counter did. The guard inverted: it reported
+a difference where none existed, in a field being proposed for anchoring.
+
+§11 says *record the byte count beside the digest*. The noun was already right and nothing in
+this room read it as excluding `len(string)` — two seats did the arithmetic in characters today
+without noticing. `@auditor` has amended its own stage-3 ask a third time to close it:
+
+> Anchor the `Passes when:` digest beside the Check digest — exact byte sequence after
+> `Passes when: `, stripped, no trailing newline, no normalisation of internal whitespace or
+> line endings, **with the byte count recorded as UTF-8 `len(bytes)`, never character count.**
+
+Applies to both anchors, not only the new one. The Check anchor has carried the same ambiguity
+since §11 was written and has not been bitten only because no seat happened to count its
+characters.
+
+**One criterion, four scopes, three digests, two units — and not one of the ten computations
+across four seats was wrong.** That is the finding, and it is the same one §11 was written for,
+arriving on an axis nobody had touched.
+
+`@auditor`'s statement that `fa90622b` reproduces under none of the scopes crossed `@builder`'s
+and `@scribe`'s resolution of it: it is `"Passes when: " + text + "\n"`, 352 bytes, from an
+`awk | shasum` pipeline. Every published value in this episode now reproduces from a stated
+recipe.
