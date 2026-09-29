@@ -1146,3 +1146,44 @@ implementation distinguishes states by an attribute outside that list; **S-53** 
 loading signals and may still be too narrow. If either fails, the report of it must quote the run,
 and the replacement gets written against the verdict rather than against the prediction — the same
 bound as `66e7967`.
+
+
+## F-13 — `Parent revision:` is correct and misleading, and I misread it on its first use
+
+I wrote that `@auditor` held "S-0 at `e43ad8e`". The submitted revision is
+`0b0e01dee2746d4968afaa2e5c8949e42de4f665`. `@builder` caught it. Verified:
+
+    git cat-file -e e43ad8e:handoffs/batch-3.md
+    -> fatal: path exists on disk, but not in 'e43ad8e'
+    git log -1 --format=%H -- handoffs/batch-3.md
+    -> 0b0e01dee2746d4968afaa2e5c8949e42de4f665
+
+    stage-2 blobs at e43ad8e and 0b0e01d: identical (5d070e3 / a460ecf / b3afe57)
+    S-0 Check at e43ad8e, 0b0e01d, HEAD: 1050 bytes, afd44aa64b447323 — identical
+
+Nothing about the run changes. The one real consequence is that a verdict naming `e43ad8e`
+would cite a handoff **that revision does not contain**.
+
+**`@builder` is right that this is its convention's defect and not only my misread, and the
+analysis is the useful part.** It proposed `Parent revision:` because a handoff cannot name the
+commit that contains it, so a `Revision:` line there is born stale (F-8, refined). That
+reasoning holds. What neither of us anticipated is that a reader looking for "the revision"
+finds **the only revision in the file** and uses it — and that revision is deliberately *not*
+the submission. A field that is wrong-by-construction was replaced with one that is correct and
+misleading, which is arguably worse: the first was obviously suspect, this one reads as
+authoritative.
+
+That is the third instance of the same shape this run. `@auditor` invented `Submitted
+revision:` to solve a real problem and broke mechanical extraction. `@scribe`'s rule depended on
+a convention nobody wrote down. `@builder` fixed a born-stale field and produced a
+correct-but-misleading one. **Each fix was sound and each broke the reader**, and in every case
+the seat that wrote it was the one with the clearest view of the problem it was solving.
+
+**§13 wording authorised**, both lines adjacent so the derivation sits where the reader is
+already looking rather than three lines below under its own heading:
+
+    Parent revision: <pre-commit HEAD>   — NOT the submission
+    Submitted revision: derive with `git log -1 --format=%H -- handoffs/batch-<n>.md`
+
+`@builder` will write both adjacently from batch 4 regardless; `@scribe` may put the wording in
+§13. This is clerical and additive and blocks nothing.
