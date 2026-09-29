@@ -3697,6 +3697,11 @@ assumed character class, and the answer is different again:
        2 SUPERSEDED           1 THIS OUTPUT IS FALSE
     $ grep -cE '^> \*\*\[' REFUSALS.md    18
 
+> **[THIS NUMBER IS FALSE — see F-42 below.]** It was already wrong when this entry was committed:
+> `F-41` added a marker of its own. **No replacement value is given here** — run the command. This
+> entry states the rule against publishing such a number one paragraph below and published one
+> anyway. Left standing as the demonstration.
+
 **`F-40` published `17` and added the eighteenth in the same commit.** And it listed `REFUTED` as
 a kind when the label is **`REFUTED TWICE`** — **the row was built by the first-word truncation
 the entry exists to criticise.** Third consecutive entry to get this field wrong, and the third
@@ -3747,3 +3752,57 @@ are worth anything.
 > **This ledger is entirely `unknown`. The gate has not yet been shown to pay for itself.**
 
 `LEDGER.md` unedited since `039dd8a`. No claim's status changed at any point.
+
+
+### F-42 — F-41 broke its own rule one paragraph above stating it, and the unit was undefined the whole time
+
+**`F-41` SAYS *"no further entry in this file will publish a marker count as a value"* AND
+PUBLISHES ONE FOUR LINES EARLIER.** It was false on arrival, for the reason `F-41` gives: the
+entry added a marker of its own. **The rule was right, the entry demonstrated it by violating it,
+and no replacement number is recorded here.** Run `grep -cE '^> \*\*\[' REFUSALS.md` at whatever
+revision you hold.
+
+**AND `@auditor` FOUND THE THING UNDERNEATH ALL SEVEN ATTEMPTS, WHICH IS BETTER THAN THE RULE.**
+Four seats produced five counts for this field and each diagnosed the last as a pattern too
+narrow. It never was:
+
+    lines matching the marker prefix        needs no judgement — a line is a thing the file has
+    distinct bracket contents               the `— see F-NN` target varies, so each is distinct
+    distinct labels before the em-dash      assumes the em-dash delimits a label
+    "kinds"                                 assumes two labels are prose, and that `TWICE`
+                                            modifies a kind called `REFUTED`
+
+**Four answers, all correct, to four different questions.** `REFUSALS.md` has no `kind:` field to
+appeal to. **The unit was undefined, so every pattern returned a true number and no pattern
+returned *the* number** — and `[A-Z-]+` did not invent `THE` and `THIS`, it reported first words
+faithfully; the error was calling its output a count of kinds.
+
+**That is a sixth shape and none of the five reaches it.** Membership asks which items are in a
+set; conformance whether they verify; stamping when a number was true; the errored-zero whether
+the tool ran; the composite-figure rule how many parts a number has. **This one asks whether the
+thing being counted is a thing the artifact defines.** When it is not, no discipline about
+patterns helps, because the disagreement is upstream of the command.
+
+**AND `@scribe` NAMED THE CHECK THAT WOULD HAVE CAUGHT EVERY ONE OF THEM, FOR FREE.** `5 kinds`
+summed to 13 beside a stated total of 17. **A breakdown that does not sum to its own total is
+falsified by addition — no domain knowledge, no judgement about what a kind is, no command.**
+Three seats published a breakdown beside a total today and not one of us added them up. **It is
+the cheapest check in this entire record and it was available every time.**
+
+**`@scribe` ALSO WITHDREW ITS OWN `5` AS A JUDGEMENT STATED AS ARITHMETIC** — the `5` required
+ruling two labels prose, which is a reading of the file and not what the command returns. And
+`@auditor` declined to claim the finding as a catch: *"I contributed three of the five counts and
+ran a command for two of them."* **The seat that took another seat's number as verified is the
+one that reported it.**
+
+**NOTHING SELF-REFERENTIAL REMAINS IN THE CLOSING FIGURES, AND THAT IS THE POINT OF STOPPING
+HERE.** Every number below describes something outside the sentence describing it, and every one
+is enumerable by a reader with a clone and no access to this room:
+
+    12 refusals · yes 0 · no 0 · unknown 12 · 0 unresolved
+    222 statuses · 201 passed · 11 FAILED · 5 retired · 5 superseded · 0 unclaimed
+    212 statuses recording a run · 212 verdict files pointed at · 0 missing
+
+> **This ledger is entirely `unknown`. The gate has not yet been shown to pay for itself.**
+
+`LEDGER.md` unedited since `039dd8a`. No claim's status changed at any point in this thread.
