@@ -2296,6 +2296,12 @@ characters live — are byte-identical too.
     batch-2  0      batch-5   6
     batch-3  0      declared 64 · compared 64 · matched 64 · mismatched 0
 
+> **[CORRECTED — see F-29 below.]** The tally above records `batch-3  0`; it carries **1**,
+> `S-0`'s, at `handoffs/batch-3.md:19` under a heading quoting §11 by name. So the anchored set
+> is **65 of 222**, not 64, and **157** Checks carry no anchor, not 158. The clause *"batches
+> 1–3 predate it"* is false of batch-3, which quotes §11's canonical form and declares a digest
+> in it. Left standing under the never-delete rule, marked here so it cannot be quoted alone.
+
 §11 arrived mid-run, so batches 1–3 predate it. **158 Checks in this ledger carry no anchor at
 all.** I asked for 222 without checking that 222 existed, and a `0 mismatches` on 64 reported
 against a request for 222 would have read as complete coverage to anyone who did not count.
@@ -2772,3 +2778,113 @@ Resolved: no.
 **No claim's status changes on any of this, and `@builder` does not argue one should.** `C-0` is
 FAILED and superseded; `C-1` and `C-142` gate on the service building and serving `/health`, which
 their `## Output` blocks record. `unknown 11` is untouched.
+
+
+### F-29 — the refusal resolves, the three prose digests do not reproduce, and `64 of 222` is 65
+
+**`F-28 REFUSAL` IS RESOLVED. SETTLED BY THREE INDEPENDENT RECOMPUTATIONS, DIGIT FOR DIGIT.**
+`@builder` reported it about its own run and asked not to be certified on it. `@scribe` and
+`@auditor` each extracted from `LEDGER.md` with their own scripts and got the same table:
+
+        published            printed   §11-exact             body + one newline
+    C-0     e9cea254…f1e47cda     684 B    271cc210… ( 684 B)    e9cea254… ( 685 B)  <- published
+    C-1     4dfcc3b5…81c10806     436 B    784b5a53… ( 436 B)    4dfcc3b5… ( 437 B)  <- published
+    C-142   42e34a46…9a26b64cc    778 B    1466f209… ( 778 B)    42e34a46… ( 779 B)  <- published
+    S-0     afd44aa6…c327e5c855  1050 B    afd44aa6… (1050 B) <- published, REPRODUCES
+
+**In all four the printed byte count is the §11-exact body length, so in three of them the count
+and the digest on the same line describe byte sequences one byte apart, and the count is the one
+that is right.** The mechanism is in the open at `verdicts/C-0.md:16-19`: `extracted bytes: 684`,
+then `shasum -a 256 C-0-check.sh` — **a file**, and writing the body to a file appended the
+newline `shasum` then hashed. Invariant at `d9501ee`, `ce80f21`, `5cc1c31`, `da45651`, `0b0e01d`,
+`18d69be` and `ad0de05`, over every revision where each claim exists.
+
+**I ASKED FOR SOMETHING THE NAMESPACE COULD NOT HOLD, AND THAT IS MY ERROR AND NOT
+`@auditor`'s.** My dispatch said to write it to `verdicts/` as a verdict file rather than only to
+the room, on my standing rule that a committed file survives a crash and a paraphrase does not.
+But this is a finding about evidence, not a claim in the ledger, so there is no claim id for
+`verdicts/<claim-id>.md` to take. `@auditor` committed nothing and said so plainly. **I am
+accepting three independent extractions agreeing to the digit rather than pretending my
+instruction was met**, and recording that the instruction was wrong so it is not reissued.
+
+**AND THE SET SPLITS BY METHOD, NOT BY DIGEST WIDTH. 7 OF 10 REPRODUCE.** `@auditor`'s six
+16-hex truncations were recomputed by `@builder` and `@scribe` against the full values committed
+at `handoffs/batch-5.md:16-21`:
+
+    declared-vs-computed, digest compared against a value declared in handoffs/
+        S-0, S-59, S-60, S-61, S-62, S-63, S-64        7 of 7   §11-exact
+    digest asserted in prose inside the verdict, nothing to compare against
+        C-0, C-1, C-142                                0 of 3   over body + one newline
+
+**Stated with its provenance rather than lumped:** the three failures rest on three
+recomputations including `@auditor`'s. `S-0` likewise. **The six rest on `@builder`'s and
+`@scribe`'s, plus `@auditor`'s own contemporaneous `computed identical. MATCH` inside
+`verdicts/S-59`…`S-64` at the time of the run** — not on a fresh reproduction by `@auditor`. That
+is enough and it is not the same thing, so it is written as what it is.
+
+**Comparing two values forces both to be computed the same way. Asserting one does not.** That is
+the entire difference between the two columns, and digest width turned out to be irrelevant: the
+truncations verify and the full `sha256`s do not.
+
+**`§11 REACHES 65 OF 222`, NOT 64 — ENUMERATED HERE, IN BOTH DIRECTIONS.** `@scribe` found it;
+I did not take it on report. Every 64-hex string in `handoffs/`, opened:
+
+    batch-1  0    no `sha256` string at all, in any form
+    batch-2  0    no `sha256` string at all, in any form
+    batch-3  1    S-0, line 19, under "## Check anchor (Conventions section 11 and section 13)"
+    batch-4 58    S-1 .. S-58, lines 34-91, under "## Check anchors (sections 11 and 13)"
+    batch-5  6    S-59 .. S-64, lines 16-21, under "## Check anchors (sections 11 and 13)"
+                  ---
+                  65 occurrences, 65 distinct, 0 duplicates, ids S-0 .. S-64 consecutive
+
+**Superset direction:** every one of the 65 sits inside a Check-anchor block with a byte count
+beside it; none is a revision digest or a blob id. **Subset direction:** `batch-1` and `batch-2`
+contain no `sha256` string in any form, truncated or otherwise, so nothing is anchored there in a
+shape the pattern cannot see. `@auditor` warned that `[0-9a-f]{16}` over `handoffs/` returns
+`8 · 8 · 14 · 240 · 32` and sweeps in revision digests — correct, which is why the count above is
+over the 64-hex form and closed in both directions rather than over that one.
+
+**So `158 Checks carry no anchor` is 157, and the reason given for the zero is false of
+batch-3** — it quotes §11's canonical form by name and declares a digest in it, so it does not
+predate §11. Three places in this file and `REPORT.md:277,286` are marked in place.
+
+**`S-0` HAS NOW FALLEN OUT OF THREE INDEPENDENT COUNTS FOR THREE UNRELATED REASONS.** Once for a
+space in `Check anchor (§11 / §13)`. Once from a batch tally that wrote `0` for a batch holding
+one. Once from my own `[0-9a-f]{64}` row. It is the stage-2 gate, the best-anchored verdict in
+the tree, and the only one of the four full digests that reproduces. **A file that falls out of
+unrelated enumerations three times is worth more than any of the three off-by-ones it caused.**
+
+**AND ONE MORE AGAINST `F-27`, WHICH IS THE SHARPEST OF THE LOT.** `F-27` labelled `C-143:31` and
+`S-1:40` container ids and offered `grep -c 'docker run -d' -> 1, 1` beneath as support.
+**That occurrence is `>/dev/null` in both Checks.** The emitter is the unredirected
+`docker network create --internal`, and the ordering proves it — network id on the first line of
+`## Output`, then `DEPRECATED: The legacy builder…` from `docker build`'s stderr, which is the
+Check's own emission order. `C-1:63` and `S-2:64` follow an `sh -eux`-traced `+ docker run -d`
+with no redirect and are container ids. **In the entry whose whole finding is *read what produced
+the string*, I cited a command whose output was discarded.** `F-28` corrected the labels; this
+corrects the evidence I gave for them, which is the part that was actually wrong.
+
+**THE LESSON IN ITS FINAL FORM, AND IT IS TWO STEPS, NOT ONE.**
+
+    membership   enumerate the set your sentence claims, then show the pattern is
+                 neither a subset nor a superset of it                      -- @auditor
+    then         a set can be exactly right and every member still unverified:
+                 it is not an anchor until you have recomputed it           -- @builder
+
+`@scribe` withdrew its digest-shaped-string clause as a special case of the first, and it is.
+**`C-0`, `C-1` and `C-142` are members of every correct set any seat drew, including the right
+one, and three seats read, named, counted, classified and quoted their digests across ten
+messages before anybody hashed 436 bytes.** The corollary this run earned: *a byte count printed
+beside a digest is a second claim, and the two can disagree while both look right.*
+
+**WHAT THIS DOES AND DOES NOT CHANGE.** No claim's status moves. `C-0` is `FAILED` at `90028fd`
+and superseded by `C-142`; `C-1` passed at `ce80f21`; `C-142` at `da45651`; `S-0` at `0b0e01d`.
+A Check digest is provenance for which command text ran, not the gate, and nothing here says a
+wrong command executed. **The defect is that three anchors are not self-consistent, so a third
+party recomputing them gets a mismatch on work that was sound.** It is a defect in the factory's
+own evidence, in `@auditor`'s files, found by this gate and by no graded suite — but the
+counterfactual stays `unknown`, because no graded suite covers verdict-internal digest
+conformance and `unknown` here is the honest answer rather than a flattering one.
+
+**`unknown 11` IS UNCHANGED AND I WOULD NOT SOFTEN IT.** This is a defect in evidence, not in the
+work under test. It does not convert a single one of those eleven.
