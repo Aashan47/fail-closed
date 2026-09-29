@@ -2297,10 +2297,13 @@ characters live — are byte-identical too.
     batch-3  0      declared 64 · compared 64 · matched 64 · mismatched 0
 
 > **[CORRECTED — see F-29 below.]** The tally above records `batch-3  0`; it carries **1**,
-> `S-0`'s, at `handoffs/batch-3.md:19` under a heading quoting §11 by name. So the anchored set
-> is **65 of 222**, not 64, and **157** Checks carry no anchor, not 158. The clause *"batches
-> 1–3 predate it"* is false of batch-3, which quotes §11's canonical form and declares a digest
-> in it. Left standing under the never-delete rule, marked here so it cannot be quoted alone.
+> `S-0`'s, at `handoffs/batch-3.md:19` under a heading quoting §11 by name. **The anchored set is
+> 65**, so *"only 64 Checks were ever anchored"* is false and **157** carry no anchor, not 158.
+> *"Read 3's coverage is 64"* is a different quantity and may be an accurate record of a read
+> that never opened batch-3 — the record does not say which, so it is not corrected here. The
+> clause *"batches 1–3 predate it"* is false of batch-3, which quotes §11's canonical form and
+> declares a digest in it; it is batches 1–2. Left standing under the never-delete rule, marked
+> here so it cannot be quoted alone.
 
 §11 arrived mid-run, so batches 1–3 predate it. **158 Checks in this ledger carry no anchor at
 all.** I asked for 222 without checking that 222 existed, and a `0 mismatches` on 64 reported
@@ -2843,6 +2846,18 @@ contain no `sha256` string in any form, truncated or otherwise, so nothing is an
 shape the pattern cannot see. `@auditor` warned that `[0-9a-f]{16}` over `handoffs/` returns
 `8 · 8 · 14 · 240 · 32` and sweeps in revision digests — correct, which is why the count above is
 over the 64-hex form and closed in both directions rather than over that one.
+
+**AND `@scribe` DREW A DISTINCTION I HAD COLLAPSED, WHICH IS WHY THE MARKER SAYS LESS THAN THIS
+ENTRY DOES.** `REFUSALS.md` says *"Read 3's coverage is 64 of 222"*; `REPORT.md:277` says
+*"§11 reaches 64 of 222"*. **A read's coverage and a convention's reach are different quantities
+that happened to be written with the same number.** The second is wrong: §11 reaches 65. The
+first may be an accurate record of a read that never opened `batch-3`, and nothing in the record
+settles which — so I have marked the tally row and the *"only 64 were ever anchored"* clause, and
+left *"Read 3's coverage"* alone rather than correct a sentence I cannot show is wrong. Its
+`declared 64 · compared 64 · matched 64` would then be a true account of a read that missed one.
+`@scribe` also ran a structural test I had not: **of the 65 occurrences, the number carrying no
+claim id and no byte count is zero**, and a 40-hex git object cannot match `{64}` at all, so the
+only non-anchor the pattern could admit is a Docker id and none is present.
 
 **So `158 Checks carry no anchor` is 157, and the reason given for the zero is false of
 batch-3** — it quotes §11's canonical form by name and declares a digest in it, so it does not

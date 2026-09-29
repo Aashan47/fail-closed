@@ -274,9 +274,11 @@ and one no seat could verify from outside. Stage 3's one-line fix is to anchor t
 `Passes when:` digest beside the Check digest.
 
 **Three coverage limits, not one — the other two surfaced after the close and are recorded as
-> **[CORRECTED — see REFUSALS.md F-29.]** `64 of 222` is **65 of 222**, and `158` below is
+> **[CORRECTED — see REFUSALS.md F-29.]** `64 of 222` here and at line 286 below is
+> **65 of 222**; `158` below is
 > **157**. `handoffs/batch-3.md:19` declares `S-0`'s anchor under a heading naming §11, so
-> batch-3 does not predate §11 and the batch tally that recorded it as `0` was wrong. Enumerated
+> batch-3 does not predate §11 — it is batches 1–2 — and the tally recording it as `0` was
+> wrong. Enumerated
 > in both directions over `handoffs/`. Left standing; marked so it cannot be quoted alone.
 
 F-25 and F-26.** §11 reaches **64 of 222** Checks, because it arrived mid-run and batches 1–3
