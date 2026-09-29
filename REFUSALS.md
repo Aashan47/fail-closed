@@ -2831,6 +2831,12 @@ recomputations including `@auditor`'s. `S-0` likewise. **The six rest on `@build
 `verdicts/S-59`…`S-64` at the time of the run** — not on a fresh reproduction by `@auditor`. That
 is enough and it is not the same thing, so it is written as what it is.
 
+> **[CORRECTED — see F-32 below.]** The six **do** rest on a fresh reproduction by `@auditor`.
+> `verdicts/F-28.md:77-85`, Section B, committed at `ebcbfe0`, carries a computed `body+\n`
+> column for all six — a run, not a citation of the contemporaneous `MATCH`. **Three fresh
+> reproductions, not two plus a note.** I made a point of not lumping them and then assigned one
+> to the wrong seat. Left standing under the never-delete rule.
+
 **Comparing two values forces both to be computed the same way. Asserting one does not.** That is
 the entire difference between the two columns, and digest width turned out to be irrelevant: the
 truncations verify and the full `sha256`s do not.
@@ -3038,3 +3044,77 @@ for this finding.
 
 **No claim's status changes. `LEDGER.md` is unedited, last touched at `039dd8a`, 222 `Status:`
 lines — 201 passed, 11 FAILED, 5 retired, 5 superseded. `unknown 11` is unchanged.**
+
+
+### F-32 — I insisted on naming which seat and then named the wrong one; and the `verdicts/` question is reachability, not nomenclature
+
+**1 — `F-29` GOT THE PROVENANCE OF THE SIX WRONG, IN THE SENTENCE WHOSE POINT WAS PROVENANCE.**
+I wrote that `S-59`…`S-64` rest on `@builder`'s and `@scribe`'s recomputation *plus `@auditor`'s
+contemporaneous `MATCH` at the time of the run*, and said explicitly that this was **not** a fresh
+reproduction by `@auditor`. It was:
+
+    verdicts/F-28.md:77-85   B. SIX ANCHORS PUBLISHING A 16-HEX TRUNCATION
+    S-59  5cd493d4… 998   §11-exact 5cd493d4… 998   body+newline fb1e22b4…   REPRODUCES
+    ... six rows, each with a computed body-plus-newline digest
+
+**A `body + newline` column cannot be transcribed from a `MATCH` line — it has to be computed.**
+Section B is `@auditor`'s own run, committed at `ebcbfe0`, marked in the file as additional
+because it was not dispatched. So it is **three fresh reproductions**, and `@auditor` is right
+that the distinction I insisted on lands one seat over from where I put it. **I refused to lump
+the provenance and then mis-assigned it, which is worse than lumping**, because a reader trusts a
+row that names seats more than one that does not.
+
+**2 — THE `verdicts/F-28.md` QUESTION IS REACHABILITY AND NOT THE NAME, AND `@scribe` IS RIGHT
+THAT THE DISTINCTION MATTERS.** Verified here:
+
+    $ grep -c '^Status:.*verdicts/' LEDGER.md                          212
+    $ grep -oE 'verdicts/[CS]-[0-9]+\.md' LEDGER.md | sort -u | wc -l  212
+    $ ls verdicts/*.md | wc -l                                         213
+    $ git grep -l 'verdicts/F-28' -- .                     REFUSALS.md  REPORT.md
+
+**212 `Status:` lines carry a pointer, 212 distinct files are pointed at, one-to-one.** The other
+10 of 222 statuses are the 5 `retired` and 5 `superseded`, which record no run and point at
+nothing. `verdicts/F-28.md` is the 213th file and no `Status:` line reaches it, because `F-28` is
+a `REFUSALS.md` entry id and the ledger has no entry to carry a pointer. **The file is not
+misnamed; it is unreferenced from one of the record's three entry points.** It is reachable from
+`REFUSALS.md` and `REPORT.md`.
+
+**AND `@scribe` REFUSED THE OBVIOUS REPAIR, CORRECTLY.** The obvious fix is to mint a `LEDGER.md`
+entry so a pointer exists. `@scribe` will not, and the reason is the strongest thing said about
+the ledger today: **a `LEDGER.md` entry is a claim written before work starts, defining what
+would settle it. Minting one afterwards to give an existing file a home is writing a claim nobody
+checked against a result that already exists.** Backfilling the ledger to match the tree is the
+failure the ledger exists to prevent. **A claim invented to justify a file is not a claim.** So
+`F-28.md` stays outside the ledger's graph and `REPORT.md` carries one line saying so, which is
+the part that was mine.
+
+**Nothing is moved and nothing is deleted.** It is `@auditor`'s committed file, written under an
+instruction that named no alternative path, committed linearly with nothing amended beneath it.
+The never-delete rule covers it.
+
+**3 — `@builder` DISCLAIMS AN ATTRIBUTION I GAVE IT, AND `@scribe` CHECKED AND SAYS IT STANDS.**
+`@builder` reports that the reach-versus-coverage distinction was `@scribe`'s and that if `F-30`
+records it as `@builder`'s it is misattributed by one seat. `F-30` reads *"`@scribe` separated a
+read's coverage from a convention's reach. `@builder` took it one step further: on the reach
+reading, '§11 reaches N Checks' is a conformance claim, not a presence claim."* `@scribe` checked
+that sentence against its own messages and says it is accurate — the separation is `@scribe`'s,
+the conformance reading is `@builder`'s, and it is the second that turned my markers from a
+coverage correction into a statement about what is unestablished. **The sentence first appears in
+`@builder`'s message.** The attribution stands unchanged, and `@builder`'s disclaimer is recorded
+here rather than acted on, because a seat declining credit is not evidence that the credit is
+wrong.
+
+**4 — THE COUNTERFACTUAL, WITH THE EVIDENCE `@auditor` QUOTED FOR IT.**
+
+    $ find . -maxdepth 3 -iname '*test*' -o -iname '*suite*' -o -iname '*grade*'   (no output)
+    $ grep -cE '^Check:.*(sha256|shasum|md5)' LEDGER.md    0
+    $ grep -cE '^Check:' LEDGER.md                       222
+
+No graded suite exists in this repository to run, zero of the 222 Checks invoke a hash tool, and
+the graded path reads `stage-1/` and `stage-2/` and never `verdicts/`. **So this refusal caught
+something the supplied checks cannot test for** — and `@auditor` records `not-applicable` rather
+than `PASS`, because no suite ran. That is the right call and I am not upgrading it into a
+flattering number. It is the provenance case my convention files as `unknown`, with the evidence
+attached instead of the word alone.
+
+**No claim's status changes. `unknown 11` unchanged.**

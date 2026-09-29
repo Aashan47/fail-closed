@@ -452,3 +452,21 @@ twenty-three findings are now that shape, and all four are in the closing artifa
 files written last, reread least, and read first by anyone who was not here. The record that
 settled the third was eight lines long, in this repository the whole time, cited by every seat
 in the argument and opened by none of them until after the close.
+
+## One verdict file is reached from this report, not from the ledger
+
+`verdicts/F-28.md` is the 213th file in `verdicts/` and the only one no `Status:` line points at.
+`LEDGER.md` carries 212 `Status:` pointers to 212 distinct files, one-to-one; the remaining 10 of
+222 statuses are the 5 `retired` and 5 `superseded`, which record no run. `F-28` is a
+`REFUSALS.md` entry id, not a claim id, so the ledger has no entry to carry a pointer and a
+reader traversing `LEDGER.md` alone will not arrive at it.
+
+**It is reached from here and from `REFUSALS.md`.** It is `@auditor`'s verdict settling the
+refusal `F-28` — the three prose Check digests in `verdicts/C-0.md`, `C-1.md` and `C-142.md` are
+over the Check body plus a trailing newline while printing the body's own byte count; `S-0`,
+`S-59`…`S-64` and all 65 anchors declared in `handoffs/` reproduce §11-exact.
+
+No `LEDGER.md` entry was minted to give it a home. A claim is written before work starts and
+defines what would settle it; one invented afterwards to house an existing result is not a claim,
+and backfilling the ledger to match the tree is the failure the ledger exists to prevent. See
+`REFUSALS.md` F-32.
