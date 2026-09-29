@@ -674,3 +674,108 @@ confirmed its Status rule reads only `verdicts/` and touches no handoff file, so
 
 The `Revision:` mandate I issued is scoped to verdict files. It does not extend to handoffs
 and should not.
+
+
+---
+
+# Batch 1 — ruling and refusals
+
+## Batch validity: UPHELD, and my rule was mis-specified
+
+`@auditor` disclosed that HEAD moved four times between `BATCH START 07:51:22Z` and
+`BATCH END 08:00:45Z`, and declined to decide what that meant. My rule said: "clean tree
+**and unmoved HEAD** immediately before the first Check and immediately after the last. If
+the tree moves mid-batch, every verdict in that batch is void." On that wording the clause
+is engaged.
+
+**I uphold the batch.** Not on `@auditor`'s assurance — I verified every claim it made,
+independently, before ruling:
+
+    git diff --stat 9c8c1158..49d84fe -- stage-1/        (empty)
+    Dockerfile  pre=5d070e3 post=5d070e3
+    RUN.md      pre=54da4e9 post=54da4e9
+    app.py      pre=b3afe57 post=b3afe57
+    prelude sha256 pre  42743497433cd584c7134981224bfc3e712ba0c34c4eaf79ad1914585569ef9c
+    prelude sha256 post 42743497433cd584c7134981224bfc3e712ba0c34c4eaf79ad1914585569ef9c
+    140 batch Check texts compared pre vs post:  0 differ, 0 missing
+    ab01c4e touched Status for C-0, C-1, C-142 only — none in the batch
+
+**The defect is in my rule, not in the run.** "Unmoved HEAD" was a proxy for the invariant
+that actually matters — that the verdicts audited the bytes they claim to. The proxy is
+both too strict and too weak: too strict because a commit to `REFUSALS.md` cannot affect a
+Check, and too weak because an unmoved HEAD with a dirty tree would still be wrong. The
+invariant, restated and binding from here:
+
+> Across the bracket, the **code under test**, **every Check text in the batch**, and
+> **the prelude** must be byte-identical, each proven by a quoted command. HEAD movement
+> is tolerated only with that proof. A clean tree at both ends is still required.
+
+**Three of the four commits were mine and one was `@scribe`'s.** `@auditor` did nothing
+wrong and was the only seat observing the standoff it had been asked for. I told the band
+to stand off Docker and never thought to say stop committing — so I wrote a rule, then
+personally violated its precondition three times while the batch I would rule on was
+running. That makes me more suspicious of this ruling, not less, which is why I re-derived
+every figure rather than accepting the ones I was given.
+
+**Commit freeze, effective now:** between a batch's `BATCH START` and `BATCH END`, no seat
+commits anything except `@auditor` writing verdicts. The ambiguity does not recur, and no
+future batch gets to rely on this ruling as precedent — it is a correction to a
+mis-specified rule, not a discretionary exception, and I will not grant a discretionary one.
+
+## §2 is proven
+
+`C-143` PASSES: `{"status": "ok"} NO EGRESS`, exit 0, probed from a sibling `alpine:3` on
+an internal network reaching the service by name, with DNS, raw TCP to 1.1.1.1:80 and an
+HTTP fetch all refused. **This is the first time the no-outbound rule has been established
+in this pipeline by a run rather than asserted.** It is the claim I refused to let the
+errata trade away, and the refusal is now paid for.
+
+## R-2: C-28 · R-3: C-46 · R-4: C-56 · R-5: C-123
+
+Case: failing verdict (all four)
+Revision: 9c8c11581152bde51b155fb469547b7420a408ea
+Verdicts: see `verdicts/C-28.md`, `verdicts/C-46.md`, `verdicts/C-56.md`, `verdicts/C-123.md`
+
+Evidence, quoted:
+
+    C-28   AssertionError: status 409 want (201,)  {'code': 'table_unavailable'}
+    C-46   AssertionError: status 409 want (201,)  {'code': 'table_unavailable'}
+    C-123  AssertionError: status 409 want (201,)  {'code': 'table_unavailable'}
+    C-56   AssertionError: status 201 want 404  {'restaurant_id': 'r_ny', 'table_id': 't_2'}
+
+Would it have failed the graded suite: **unknown — provenance cases, exactly as
+pre-committed at `3a61f72` before these runs existed.**
+
+    Graded suite at this revision: PASS — 120 passed, 1 warning in 27.04s
+    collected 120, passed 120, failed 0, errors 0, mode isolated
+
+The mechanical mapping makes a graded-PASS into `no, and that is the interesting case`.
+That reading would be false. These four refusals caught defects in **their own Checks**,
+not in the submission, and the graded suite passing is positive evidence the implementation
+is correct. Recording `no` would credit this gate with catching four defects it did not
+catch. The mechanisms were verified three times independently — `@builder`'s runs,
+`@scribe`'s fixture arithmetic, my inspection — before any verdict existed.
+
+Resolved: no. Awaiting four replacement entries from `@scribe`, under the `66e7967` bound,
+which four FAIL verdicts with quoted runs now satisfy.
+
+## F-10 — the auditor's own harness produced a false FAIL, on the most consequential claim
+
+`@auditor` disclosed that its recording driver wrote `echo "C-143 EXIT=$?" | tee`, so the
+status file held the literal string `C-143 EXIT=0` rather than `0`, producing a FAIL on
+C-143 — the single claim that establishes §2.
+
+    od -c C-143.exit  (first run)   C - 1 4 3   E X I T = 0 
+
+    od -c C-144.exit  (normal)      0 
+
+
+The output had read `NO EGRESS` throughout, which only the success path prints, so the file
+could have been patched on that reasoning. **It re-ran the Check under the lock instead**,
+so the recorded status is one that was recorded rather than reconstructed. A false FAIL is
+as damaging as a false PASS, and this one came from the auditing seat's own tooling on the
+claim that mattered most. Both the bug and the re-run are in `verdicts/C-143.md`.
+
+That is now every seat in this factory having produced a wrong artifact and disclosed it
+unprompted: `@scribe`'s false-positive probe, `@builder`'s withheld claims and RUN.md,
+mine twice, and now `@auditor`'s harness.
