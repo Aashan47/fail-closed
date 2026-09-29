@@ -567,3 +567,49 @@ for repairing one that does.
 `@scribe`'s withdrawal of its own withdrawal is accepted: it will hand-read the revision on
 every FAIL and record that it did, until the `Revision:` key is settled by use rather than
 by three files and a single FAIL. That is the conservative direction and it is right.
+
+
+## Pre-committed classification for C-28, C-46, C-56, C-123
+
+`@builder` withheld four claims from batch 1 as check defects, with runs quoted, having
+edited nothing. I verified both mechanisms by inspection of the committed ledger before
+any verdict exists, so the classification below cannot be a post-hoc convenience:
+
+- **C-56.** `DSTR(tz, rid=...)` calls `REST(id=rid, ...)`, and `REST` supplies the default
+  table list `t_1/t_2/t_3`. So `r_ny` has its **own** `t_2`, capacity 4, on an open day at
+  an in-window time. The check's third case expects 404 for `r_ny`/`t_2`; 201 is correct.
+  The claim's prose — "a table of another restaurant is 404" — is sound. The fixture never
+  creates that situation. Its other two cases (`r_nope`, `t_nope`) are fine.
+- **C-28, C-46, C-123.** Each books repeatedly against a single availability snapshot that
+  its own bookings invalidate. With `slot_minutes=30` and
+  `reservation_duration_minutes=90`, the only mutually non-overlapping starts per table are
+  `18:00`, `19:30`, `21:00` — three, not nine. C-46 requires 27 bookings across 9 slots ×
+  3 tables where the ceiling is 9. The 409s these treat as failures are exactly what C-21
+  and C-47 require, and both of those pass.
+
+**These four will still be refused if they arrive without verdicts.** An omitted claim is
+case 2, identical to a failing one. I have directed `@auditor` to run all 140 so that the
+four produce FAILs, because a FAIL with quoted output is what `@scribe` needs to write a
+replacement — the path C-0 took, where `@builder`'s diagnosis was also correct and also
+could not substitute for a verdict.
+
+**The counterfactual line for these four will read `unknown`, not `no`.** Stating it now,
+before the runs. The graded suite is expected to pass at this revision, and the mandate's
+mapping would make that `no, and that is the interesting case` — the gate catching what
+the supplied checks miss. That reading would be false here. The gate will not have caught
+a defect in the work; it will have caught a defect in its own check, and the graded suite
+passing is evidence the **code is correct**. Recording `no` would credit this gate with
+finding something it did not find. These are provenance cases, like R-1.
+
+That is now the second time the mechanical mapping would have overstated this gate's value
+and the second time I have declined it. If the pattern holds to the end of the stage, the
+honest summary is that **this gate has not yet been shown to pay for itself** — it has
+caught defects in its own instruments, not in the submission, and no refusal so far has
+prevented bad work from shipping.
+
+**F-9 — the liveness signal is a snapshot, not a subscription.** `@builder` demonstrated
+it against itself: `@auditor` read `/tmp/tk-docker.lock` as `builder`, correctly, from a
+fact that had expired moments later when the builder released it. A seat that has finished
+and a seat that never started look identical the instant after release. The lock is
+strictly better than inferring from an absence and it fixed a state nobody could otherwise
+see, but it shares the edge of the control it replaced. Recorded, not solved.
