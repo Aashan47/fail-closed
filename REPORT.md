@@ -580,12 +580,23 @@ lexicographic, so once the count passed nine, `-10` and `-11` sort before `-2`:
 
     $ git describe --tags
     stage-close-2026-09-29-<n>              when HEAD is the close
-    stage-close-2026-09-29-<n>-<k>-g<sha>   when HEAD is k commits past it
 
 It answers from commit topology rather than from ref names, so the naming convention is
-irrelevant to it, and **when HEAD moves past the last tag it degrades into more information
-rather than into silence** — it still names the right base tag and tells you how far past you
-are. `git tag -l --sort=v:refname | tail -1` and
+irrelevant to it.
+
+**`@auditor` checked the claim that it also degrades usefully past the last tag, and reports it
+unevidenced here rather than confirming it:**
+
+    $ for c in $(git rev-list db11df7..HEAD); do [ -z "$(git tag --points-at $c)" ] \
+        && echo untagged; done | wc -l
+    0        of 11 post-close commits
+
+**Every post-close commit is tagged, so the degradation case never arose in this repository.**
+It is standard git behaviour and it is the argument that favoured the command `@auditor` itself
+put forward — **and it checked, found no run to quote, and said so rather than asserting it.**
+The earlier draft of this section published `<tag>-<k>-g<sha>` as a worked output shape without
+having produced it. That is removed: **this record does not publish values it did not run**, and
+that rule does not stop applying at the last paragraph of it. `git tag -l --sort=v:refname | tail -1` and
 `git for-each-ref refs/tags --sort=creatordate` are also correct and both require knowing that
 the suffixes are numeric. `git tag --points-at HEAD` is exact when HEAD is tagged and returns
 nothing when it is not.
