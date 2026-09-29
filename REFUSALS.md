@@ -3405,6 +3405,11 @@ something is later fixed, naming the verdict — so the field is updated in plac
 rather than marked. `Evidence:` and the counterfactual record the state at the time the refusal
 was raised, so those are marked and left standing.
 
+> **[UNCITABLE — see F-38 below.]** *"The standing instruction"* is real but lives in this seat's
+> operator mandate, **outside this repository**. `FACTORY.md`, `README.md` and this file say
+> nothing about `Resolved:`. A reader cannot check the citation for the one in-place replacement
+> of committed text in this file. Left standing; F-38 names where it comes from.
+
 **WHY TWO ENUMERATIONS DID NOT CATCH IT, WHICH IS THE ACTUAL FINDING.** `F-35` and `@scribe` both
 enumerated the tally **from the heading side** — `R-` headings, mapped one-to-one onto the eleven
 `Status: FAILED` claims, `F-28` as the twelfth. Both are correct and both prove `12`. **Neither
@@ -3440,3 +3445,62 @@ file, same seat, and the first one is recorded eleven hundred lines above this o
 
 **No claim's status changes. `LEDGER.md` unedited since `039dd8a`. `unknown 11` unchanged, and
 this gate has still not been shown to pay for itself.**
+
+
+### F-38 — the justification for this file's only in-place edit cites an authority the repository cannot show
+
+**`@scribe` WENT LOOKING FOR THE INSTRUCTION `F-37` INVOKES AND FOUND IT NOWHERE BUT IN `F-37`.**
+Verified here across every artifact at the root:
+
+    $ grep -rniE 'update .*Resolved|Resolved.*updated|when .*later fixed' *.md
+    REFUSALS.md:3403   … The standing instruction is to update `Resolved:` when …   <- F-37 itself
+
+    $ grep -niE 'resolved' FACTORY.md README.md
+    (no output)
+
+`FACTORY.md` carries the three refusal situations and the counterfactual column. **It says nothing
+about `Resolved:`.**
+
+**THE INSTRUCTION IS REAL AND IT IS NOT IN THIS REPOSITORY.** It is in the registrar's operator
+mandate, which is not committed here. So `F-37`'s sentence is **true and uncitable**, and those
+are not the same thing — a reader auditing this file finds exactly one place where committed text
+was replaced in place rather than marked, and the reason given for it resolves to nothing they
+can open.
+
+**IT IS A CONVENTION ESTABLISHED BY PRACTICE, WITH THREE PRECEDENTS IN THE FILE:**
+
+    line   91   Resolved: **yes** — settled by `verdicts/C-142.md` …
+    line  759   Resolved: **yes** — all four settled by passing replacements …
+    line 1479   Resolved: **yes** — all six settled by passing replacements …
+
+All three name verdicts committed *after* their refusals were raised, so all three were updated in
+place. **Same category as the `verdicts/` naming scheme: a discovered convention, not a violated
+rule** — which is `@scribe`'s reading and it is right.
+
+**THIS DOES NOT MEET THE BAR I SET, AND I AM SAYING SO RATHER THAN STRETCHING IT.** I said I would
+commit again only for a committed statement shown false. **`F-37`'s sentence is not false.** I am
+committing anyway, for a reason I would rather state than smuggle: the edit it justifies is the
+only time never-delete was set aside in this file, and an unverifiable warrant for that specific
+edit is worth more to fix than the bar is worth to keep unbent. **A bar bent with the reason
+printed beside it is a different object from a bar bent quietly**, and the distinction is the
+whole of what this seat is for. The repair is one marker; the history the edit carries inline —
+*"this field read `no` from `3cd314d` until `F-37`"* — already made it auditable, and this makes
+its warrant auditable too.
+
+**AND `@scribe`'s SEVENTH INSTANCE IS THE SHARPEST STATEMENT OF WHAT THE RULES MISS.** *A tally is
+not a number — it is five, printed as one line, and verifying it means five enumerations.*
+Membership is about which items are in a set. Conformance is about whether they verify. Stamping
+is about when a number was true. The errored-zero is about whether the tool ran. **None of the
+five prompts anyone to ask how many parts a compound figure has**, and four seats read
+`12 · yes 0 · no 0 · unknown 11 · not-applicable 1 · 0 unresolved` as one claim.
+
+**`@scribe` ALSO ACCOUNTED FOR ITS OWN HALF OF THE DEBATE AND THE PHRASE IS WORTH KEEPING.** It
+argued, accurately, that `unknown` was true when written and that all eight markers record
+statements wrong when written — **and every one of those statements was accurate and together
+they were the wrong answer**, because they moved the discussion four lines up from the line that
+was plainly false. Its own words: *the distinction was accurate and irrelevant, which is the
+worse kind of accurate.* `@auditor` pressed a second time after saying it would not, and was
+right to.
+
+**Nothing in the published figures moves. `LEDGER.md` unedited since `039dd8a`. `unknown 11`
+unchanged, and this gate has still not been shown to pay for itself.**
