@@ -470,3 +470,67 @@ No `LEDGER.md` entry was minted to give it a home. A claim is written before wor
 defines what would settle it; one invented afterwards to house an existing result is not a claim,
 and backfilling the ledger to match the tree is the failure the ledger exists to prevent. See
 `REFUSALS.md` F-32.
+
+## Post-close addendum — the twelfth refusal, and what the counterfactual column now says
+
+**`F-28 REFUSAL`, case `no verdict`.** `@builder` reported that three of the four full-`sha256`
+Check anchors published in `verdicts/` do not reproduce under §11 — from its own run — and asked
+not to be certified on it. I refused to record it and did not run it myself. Dispatched to
+`@auditor`; settled by `verdicts/F-28.md` at `ebcbfe0`, extended at `4810395`.
+
+    C-0, C-1, C-142   FAIL    digest over the Check body plus a trailing newline, while the
+                              byte count printed beside it is the §11-exact body length
+    S-0, S-59 .. S-64 PASS    §11-exact
+    all 65 anchors declared in handoffs/   65 of 65 §11-exact, 0 anomalies
+
+    declared-vs-computed  65 of 65 conform      prose-asserted  0 of 3 conform
+
+**Counterfactual: `not-applicable`, with the evidence rather than the word alone.** No graded
+suite exists in this repository to run; 0 of the 222 `Check:` lines invoke a hash tool; the
+graded path reads `stage-1/` and `stage-2/` and never `verdicts/`. **Resolved: yes**, by
+`verdicts/F-28.md`.
+
+**Counts across all stages:**
+
+    12 refusals · yes 0 · no 0 · unknown 11 · not-applicable 1 · 0 unresolved
+
+**Every counterfactual in this ledger is `unknown` or `not-applicable`. This gate has still not
+been shown to pay for itself.** Not one refusal has been shown to have caught a defect in the
+submission that a graded run would have missed. The `F-28` defect is in the factory's own
+evidence — three digests in `@auditor`'s verdict files — and not in the work under test.
+`@auditor` put it in its own words and it is quoted rather than paraphrased: *"this gate has
+still never been shown to catch a defect in the submission that a graded run would have missed."*
+
+**The single real implementation defect this run — the legacy `table_id` on import — was caught
+by how `@builder` constructed `S-48`, inside its own run, before any verdict existed. No refusal
+records it.** That was true when this report first said it and it is still true.
+
+### Elapsed and spend, for the post-close correction thread
+
+Commits `ad0de05` (16:28:33 +0500) through the close, 2026-09-29. The thread ran from `@builder`'s
+first report of the filename-prefix split to the tagged close, and produced entries `F-27`
+through `F-33`, one refusal raised and settled, and one verdict file.
+
+`band usage rooms`, room `ead443ec-6e6b-4475-a93e-0f67ff6427c7` — 4 sessions, 492,588,235 tokens,
+**$309.35**:
+
+    aashanjaved.cs/scribe      $91.38
+    aashanjaved.cs/builder     $88.07
+    aashanjaved.cs/registrar   $66.85
+    aashanjaved.cs/auditor     $63.06
+
+**An estimate at list prices, not a bill — the command says so in its own first line.** Where the
+seats run on a subscription rather than metered billing, this is the work's notional cost and not
+money that changed hands. The room view is quoted because `band usage agents` does not attribute
+per seat and lumps everything into one `(unattributed)` bucket that also contains unrelated work
+on the same machine.
+
+### Closing condition
+
+    statuses recording a run (passed | FAILED)   212      verdicts/<id>.md missing: 0
+    verdicts/ files naming no ledger claim         1      verdicts/F-28.md
+    LEDGER.md last edited                    039dd8a      222 Status: lines, 0 unclaimed
+                                             201 passed · 11 FAILED · 5 retired · 5 superseded
+
+The closing revision is carried by an annotated git tag created after the final commit, because a
+file can never name the revision it lands at. See `REFUSALS.md` F-33.

@@ -3118,3 +3118,45 @@ flattering number. It is the provenance case my convention files as `unknown`, w
 attached instead of the word alone.
 
 **No claim's status changes. `unknown 11` unchanged.**
+
+
+### F-33 — three seats now disagree about one attribution, and I am not moving it on the count
+
+**`@builder` disclaims the reach-versus-conformance attribution. `@auditor` agrees with
+`@builder`. `@scribe` checked the messages and says it stands.** That is two seats against one,
+and **I am leaving it where the documentary evidence puts it, because a majority is not
+evidence.** The separation of *a read's coverage* from *a convention's reach* is `@scribe`'s. The
+sentence *"on the reach reading, §11 reaches N Checks is a conformance claim, not a presence
+claim"* first appears in `@builder`'s message and nowhere earlier, and it is that sentence, not
+the separation, that turned my markers from a coverage correction into a statement about what is
+unestablished. `@scribe` — whose distinction is the one being extended, and so the seat with the
+most standing to claim it — read its own messages before answering and says the same.
+
+**Recorded as a live disagreement rather than resolved into silence.** If `@builder` is right
+that it was relaying, the relay is where the sentence enters the record, and a seat declining
+credit is not evidence that the credit is wrong. Two seats saying so is not evidence either. **I
+have written down what each seat said and what the messages show, which is the most a gate can do
+with a provenance question it cannot settle by running a command.**
+
+**AND `@scribe` FOUND THE LIMIT OF THE POSITION RULE, WHICH IS REAL.** *Re-verify at the revision
+you are reporting* is unachievable for any sentence **inside** the commit it describes: the
+content is fixed before the hash exists, so `F-31` at `d6e32f0` could never have named `d6e32f0`.
+Closing in the room after the commit exists is the only construction that works — **and it puts
+the closing revision somewhere the repository cannot see.** `git tag -l` was empty. So the run's
+one uncommitted fact was where it ended.
+
+**An annotated tag carries it, changes no file, and is created after the commit it names — which
+is the only object in git that can do all three.** It is created at the final revision after this
+entry is committed. That closes the position rule rather than merely stating it.
+
+**AND `@scribe` RAN A CLOSING CHECK NOBODY ASKED FOR, WHICH I REPRODUCED:**
+
+    statuses recording a run (passed | FAILED)      212
+      of those, verdicts/<id>.md missing              0
+    verdicts/ files naming no ledger claim            1   verdicts/F-28.md, the known one
+
+**Nothing dangles in either direction but the one counterexample already recorded.** A ledger is
+not intact because its statuses are filled in; it is intact when every status recording a run has
+the evidence it points at. That condition is met.
+
+**No claim's status changes. `unknown 11` unchanged.**
