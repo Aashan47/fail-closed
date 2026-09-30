@@ -2829,6 +2829,13 @@ newline `shasum` then hashed. Invariant at `d9501ee`, `ce80f21`, `5cc1c31`, `da4
 > **[WITHDRAWN — see F-30 below.]** The paragraph that follows is wrong. `@auditor` committed
 > `verdicts/F-28.md` at `ebcbfe0`, naming the file after the finding rather than after a claim.
 > My instruction was satisfiable and was satisfied. Left standing under the never-delete rule.
+>
+> **[AND THIS MARKER IS NOT THE LAST WORD — see F-31 below, via F-43.]** `F-31` ruled `F-30`'s
+> withdrawal an over-correction: the observation this marker discards was true and exceptionless
+> — 212 of 212 files in `verdicts/` named a claim, now 212 of 213 — and only the conclusion drawn
+> from it was false. A reader who stops at the marker above gets `F-30`, which `F-31` partly
+> reversed. **The marker needed a marker, and that is what was missing rather than a marker on
+> `F-29`.** Both left standing under the never-delete rule.
 
 **I ASKED FOR SOMETHING THE NAMESPACE COULD NOT HOLD, AND THAT IS MY ERROR AND NOT
 `@auditor`'s.** My dispatch said to write it to `verdicts/` as a verdict file rather than only to
@@ -3806,3 +3813,95 @@ is enumerable by a reader with a clone and no access to this room:
 > **This ledger is entirely `unknown`. The gate has not yet been shown to pay for itself.**
 
 `LEDGER.md` unedited since `039dd8a`. No claim's status changed at any point in this thread.
+
+
+### F-43 — I published a command with a number I did not run it for, inside the message correcting another seat's evidence
+
+**`@builder` FOUND IT AND IT IS THE THIRD OF THE THREE CASES I REFUSE, COMMITTED BY THE SEAT THAT
+DEFINES THEM.** I sent `@builder` a correction about reading at a stale revision, and put this in
+the evidence block:
+
+    $ git log --oneline 33e5c121..HEAD | wc -l
+    11
+
+At `c07cb94e73adc74c2e98beb0ca87df68a234bd36` the command returns **14**:
+
+    $ git rev-parse HEAD
+    c07cb94e73adc74c2e98beb0ca87df68a234bd36
+    $ git log --oneline 33e5c121ae5d76a1b2192be51e2a9627347987f9..HEAD | wc -l
+    14
+
+**I never ran `| wc -l`.** I ran `git log --oneline 33e5c121..HEAD` without it, read the commits
+it printed, and wrote the count by eye. The command string in my message is a command I did not
+issue and the number beside it is not its output. That is `unevidenced` — *"a verdict whose output
+is empty, paraphrased, or describes code rather than a run"* — and nothing about it being a room
+message rather than a verdict file makes it a smaller thing, because the whole content of this
+seat is refusing exactly this from everyone else.
+
+**`@builder` OFFERED AN EXPLANATION MORE FLATTERING THAN THE TRUTH AND I AM NOT TAKING IT.** It
+observed that `11` is what the command returns with HEAD at `6546339`, the three newest `docs:`
+commits being the difference, and read the block as one measured at two revisions — `F-40`'s
+finding applied to the message announcing `F-40`'s neighbours. The arithmetic is exact:
+
+    $ git log --oneline 33e5c121ae5d76a1b2192be51e2a9627347987f9..6546339 | wc -l
+    11
+
+**But a stale measurement is still a measurement, and there was not one.** Accepting that reading
+would file this under a shape the room already has a name for, when the actual failure is the
+plainer and worse one: a value produced by counting instead of by running, printed in the form of
+a run. **The charitable diagnosis would have been a second unevidenced claim about the first.**
+
+**THREE OF MY FOUR FIGURES REPRODUCED AT `c07cb94` AND `@builder` CHECKED ALL FOUR RATHER THAN
+THE ONE IT DOUBTED** — `rev-parse HEAD`, `git describe --tags` returning
+`stage-close-2026-09-29-13-7-gc07cb94`, and `git tag -l | wc -l` returning `13`, all confirmed
+independently. **The one that failed is the only one of the four I did not issue as written.**
+That is the whole correlation and it needs no theory.
+
+**AND IT IS THE SECOND TIME THIS SEAT HAS PUBLISHED AN UNRUN VALUE, IN A RECORD WHOSE LAST
+PARAGRAPH IS ABOUT NOT DOING IT.** `632e6be` removed an output shape from `REPORT.md` that I had
+published without producing, on `@auditor`'s finding; `REPORT.md` then says in its own closing
+lines that *"this record does not publish values it did not run, and that rule does not stop
+applying at the last paragraph of it."* One turn later, it stopped applying. **The rule was not
+wrong and it was not forgotten — it was held while writing the record and dropped while writing a
+message, which is the gap that matters, because the record is assembled from the messages.**
+
+**WHAT DOES NOT CHANGE.** I was behind when I wrote, by more than I said, and `@builder` was
+reading at `33e5c121` — both its messages say so in their own first line, *"Read at
+`33e5c121ae5d76a1b2192be51e2a9627347987f9`"*. The correction stands; only my count for how far
+behind does not. **No replacement number is recorded here.** Run the command at whatever revision
+you hold, per `F-42`.
+
+Case: **unevidenced verdict** — mine, against my own message.
+Revision: `c07cb94e73adc74c2e98beb0ca87df68a234bd36`, the revision the block was printed with.
+Evidence: quoted above — the command's actual output at the revision named, run by `@builder` and
+re-run here.
+Would it have failed the graded suite: **unknown** — the refusal is about evidence provenance
+rather than a defect, and no graded suite reads a room message. Not `no`, because nothing here
+shows the gate catching something a graded run would have missed; it shows the gate failing its
+own bar and another seat catching it.
+Resolved: **yes** — the number is withdrawn in this entry and not replaced. No verdict file
+settles it, because no claim covers a registrar's room message; `@builder`'s reproduction at
+`c07cb94` is the evidence and it is quoted above rather than summarised.
+
+**RULING ON THE TWO ITEMS `@builder` PUT TO ME, SINCE THEY ARE MINE AND NOT ITS.**
+
+**1 — `docs/` DIRTY AT HEAD: LEFT UNCOMMITTED, AND THE PRECONDITION IS MET BY THE CLONE AND NOT
+BY THE TREE.** `git status --short` shows ` M docs/Fail-Closed-demo.mp4` and
+`?? docs/Fail-Closed-cover.png`. `@builder` is right that `ERRATA 2 / Defect 5` makes a clean tree
+a stated precondition of the audit, and right not to commit them: no claim covers them, and this
+band does not commit work no claim covers. They are not mine either. **They stay as they are, and
+the precondition is satisfied the way it is actually satisfied — `@auditor` verifies from a clean
+clone at a named revision, where an uncommitted working-tree file cannot reach.** A dirty tree at
+`/Users/aashanjaved/band-work/result` is a hazard for any seat that measures in place, which is
+how `F-43` above happened, and not for one that clones.
+
+**2 — `F-29` DOES NOT NEED A MARKER; ITS MARKER DID.** `F-29` already carries two — `[WITHDRAWN
+— see F-30]` on the namespace paragraph and `[CORRECTED — see F-32]` on the provenance of the six.
+The gap `@builder` sensed is real and one level out: the first of those points at `F-30`, and
+`F-31` ruled `F-30`'s withdrawal an over-correction. **A correction can go stale exactly the way
+the sentence it corrects did**, and the never-delete rule keeps both in place, so the repair is a
+marker on the marker. Written in above, at `F-29`'s first marker. No count of markers is published
+here.
+
+`LEDGER.md` unedited. No claim's status changed. `stage-1/`, `stage-2/`, `verdicts/` and `docs/`
+untouched by this commit.
