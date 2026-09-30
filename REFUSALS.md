@@ -3802,6 +3802,13 @@ ruling two labels prose, which is a reading of the file and not what the command
 ran a command for two of them."* **The seat that took another seat's number as verified is the
 one that reported it.**
 
+> **[SHOWN FALSE — see F-44 below.]** *"Nothing self-referential remains in the closing
+> figures"* is wrong about the first line of the three. **This file records its own refusals, so
+> a refusal count is self-referential by construction** — and `F-43` proved it by being one and
+> moving the number to `13`. The other two lines describe `LEDGER.md` and `verdicts/` and are
+> outside the sentence as claimed. The claim of having escaped `F-41`'s shape is the thing that
+> did not survive; `F-41`'s shape did. Left standing under the never-delete rule.
+
 **NOTHING SELF-REFERENTIAL REMAINS IN THE CLOSING FIGURES, AND THAT IS THE POINT OF STOPPING
 HERE.** Every number below describes something outside the sentence describing it, and every one
 is enumerable by a reader with a clone and no access to this room:
@@ -3905,3 +3912,91 @@ here.
 
 `LEDGER.md` unedited. No claim's status changed. `stage-1/`, `stage-2/`, `verdicts/` and `docs/`
 untouched by this commit.
+
+
+### F-44 — the unit of the refusal tally, defined; and `F-42`'s claim to have escaped self-reference was the one thing in its closing block that was self-referential
+
+**`@builder` GOT FOUR NUMBERS FOR THE REFUSAL COUNT AND PUBLISHED NONE OF THEM. That is the
+first time in this file a seat has met an underdefined unit and reported the hazard instead of
+adding a fifth answer**, and it is what `F-42` was for. The hazard is real and it is in my file,
+so the definition is mine to write.
+
+**THE TRAP, CONFIRMED HERE.** A naive grep of this file counts its own schema documentation as
+data. Of the eight lines mentioning the field, three are not fields:
+
+    :14     prose — "The `Would it have failed the graded suite` line is copied from…"
+    :3408   a citation — "REFUSALS.md:2777   Would it have failed…  -> superseded"
+    :3553   `mandates/registrar.md:83   Would it have failed the graded suite: yes | no | unknown`
+
+**`:3553` is the worst of the three and it is the one `@builder` hit: it is the enumeration that
+defines the field, quoted inside `F-39`, and a pattern asking for the field's values matches the
+line that lists them.** So `grep -oE 'Would it have failed the graded suite: *[a-z]+'` returns
+exactly one value, `yes`, from documentation — the only bare lowercase value in the file, because
+every real one is bold-wrapped. **A file that documents its own schema will answer a question
+about its data with its schema, and the answer looks like data.** That is a seventh shape and it
+is not the composite-figure rule and not the undefined-unit rule: it is **the artifact containing
+a description of itself, in the same syntax as itself.**
+
+**THE UNIT, RULED. A refusal is not a field line and not an `R-` number. It is a refusal named in
+the heading of a block carrying the mandate's five fields.** Two enumerations are needed because
+one block may cover several, which is `F-40`'s composite-figure rule applied to this figure:
+
+    $ grep -cE '^Would it have failed the graded suite:' REFUSALS.md        5   blocks
+    $ grep -cE '^Resolved:' REFUSALS.md                                     5   blocks, matching
+
+    :21    ### R-1: C-0                                                     1
+    :733   ## R-2: C-28 · R-3: C-46 · R-4: C-56 · R-5: C-123                4
+    :1435  ## R-6, R-7, R-8, R-9, R-10, R-11 — S-41, S-47, S-49, S-50,
+           S-51, S-58                                                       6
+    :2756  ### F-28 REFUSAL                                                 1
+    :3818  ### F-43                                                         1
+                                                                          ---
+                                                                           13
+
+**Column-zero anchoring is what excludes all three decoys**, since every one of them is either
+indented or begins with other words. Both breakdowns sum: five blocks, five `Resolved:` lines,
+and 1+4+6+1+1 = 13.
+
+**THE TALLY AT THIS REVISION:**
+
+    13 refusals · yes 0 · no 0 · unknown 13 · 0 unresolved
+
+**`F-43` IS THE THIRTEENTH AND IT CARRIES NO `R-` NUMBER, WHICH I AM NOT REPAIRING BY
+RENUMBERING.** `F-28 REFUSAL` and `F-43` both carry the five-field block under an `F-` heading.
+Renumbering them into the `R-` sequence would rewrite two committed headings other entries cite
+by name, and the never-delete rule exists so that citations keep resolving. **The `R-` namespace
+is therefore not the unit and never was; the block is.** Any future refusal of mine gets an `R-`
+number so the two namespaces stop diverging further, and the two that exist stay as they are.
+
+**AND THE PART THAT IS AGAINST THIS SEAT. `F-42` closed with *"nothing self-referential remains
+in the closing figures"* and the first of its three lines was self-referential the whole time.**
+This file records its own refusals, so a refusal count is a count of the file's own contents in
+the file — exactly `F-41`'s shape, which `F-42` was written to have got past. `F-43` moved it to
+`13` by being one. The other two lines do describe `LEDGER.md` and `verdicts/`, and those hold.
+**So the escape was partial and the sentence claiming it was total.** Marked in place at `F-42`.
+
+**The three earlier printings of `12 refusals · unknown 12` at `F-39`, `F-40` and `F-41` are left
+unmarked deliberately, and that is the `F-37` distinction rather than an exemption**: each was
+true at the revision of the entry printing it, and none claimed to be final. `F-42`'s claimed to
+have stopped moving. **A figure that goes stale is superseded; a claim that a figure cannot go
+stale is shown false.** Only the second needs a marker.
+
+**THIS ENTRY CARRIES NO REFUSAL BLOCK — NO `Case:`, NO COUNTERFACTUAL, NO `Resolved:` — SO `13`
+IS STABLE ACROSS ITS OWN COMMIT.** That is deliberate and it is how `F-41`'s trap is avoided
+rather than re-sprung: the number could only be published in this file by an entry that does not
+itself change it. **A reader who does not want to trust that runs the two commands above.**
+
+**`@builder`'s ADDITION CHECK RAN AND BOTH BREAKDOWNS SUM**, at `77eea5c`:
+`201 + 11 + 5 + 5 = 222` against a stated 222, and `201 + 11 = 212` against 213 verdict files
+less `verdicts/F-28.md`. It also established by `git diff --stat c07cb94 77eea5c` that only
+`REFUSALS.md` changed and only by insertion, so `LEDGER.md` and `verdicts/` are byte-identical
+and its census carries forward: **222 statuses, 0 unclaimed, 213 verdict files, ten absent
+exactly where none is owed.** That is the cheapest check in this record and it is the one the
+seat holding no claim chose to run.
+
+> **This ledger is entirely `unknown`, at 13 of 13. The gate has still not been shown to pay for
+> itself.** Every refusal in it is a defect in this factory's own evidence or in a Check this
+> factory wrote. Not one is a defect in the submission that a graded run would have missed.
+
+`LEDGER.md` unedited since `039dd8a`. No claim's status changed. `stage-1/`, `stage-2/`,
+`verdicts/` and `docs/` untouched by this commit.
