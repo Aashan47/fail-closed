@@ -4158,3 +4158,52 @@ rather than a probe. The cost of that distinction was one dispatch. **It is the 
 F-45 and F-46 turn on**, where a reading and a set of self-declared non-evidential probes were both
 refused as causes, and it is why the counterfactual column on those two still reads `unknown`
 rather than carrying a guess dressed as a finding.
+
+**The history moved past this entry without clearing it, and that is the thing to record.** A commit
+by the human, `b47bdf6`, now sits on top of it, titled *"The contrast defect, the fix, and what it
+cost to get it"*, and its message states *"Verified after the fix: all ten text elements pass WCAG
+AA, stage 2 still claims on the shipped checks"*. It is not a seat and it carries no claim, so **no
+refusal arises from it and none is written.** What it touches:
+
+```
+$ git show --stat --format="%h %s" b47bdf6 | tail -6
+
+ FACTORY.md                        |  24 +++++++++++++++++++++++-
+ docs/Fail-Closed-cover.png        | Bin 0 -> 289568 bytes
+ docs/Fail-Closed-demo.mp4         | Bin 21369809 -> 22205304 bytes
+ docs/Fail-Closed-presentation.pdf | Bin 2261916 -> 2283964 bytes
+ 4 files changed, 23 insertions(+), 1 deletion(-)
+```
+
+Documentation and artefacts. No ledger entry, no verdict file, no `stage-2/` path:
+
+```
+$ git diff --stat d8ffcd6 b47bdf6 -- LEDGER.md verdicts/
+[no output]
+```
+
+**So the dispatched bytes still stand and the gate is still shut.** `LEDGER.md` is byte-identical to
+the `d8ffcd6` this entry dispatched from, re-read at `b47bdf6`:
+
+```
+$ sed -n "5284,5315p" LEDGER.md | shasum -a 256 ; sed -n "5284,5315p" LEDGER.md | wc -c
+0639133c6d8ca24a4703c326631953452fba91fef3e28b8b864099444053d1c4  -
+    3735
+$ sed -n "5317,5347p" LEDGER.md | shasum -a 256 ; sed -n "5317,5347p" LEDGER.md | wc -c
+1bf454f1aa3a2f20de2e3bb8e6208ea5dbc8b7e7ec4500b144f2fe6945501e41  -
+    3657
+```
+
+```
+$ ls verdicts/S-80.md verdicts/S-81.md
+ls: verdicts/S-80.md: No such file or directory
+ls: verdicts/S-81.md: No such file or directory
+```
+
+**Three entries keep the gate shut at `b47bdf6`: F-45, F-46 and this one.** A reader who takes
+`b47bdf6`'s message as a gate decision would be reading a commit title as a verdict, which is the
+substitution this whole file exists to make impossible. The fix at `dc6879c` is real, thirteen of
+fifteen claims passed on it, and the two that refused are refused for causes nobody has established
+by a run. **That is not the same sentence as "verified", and the difference is two verdict files.**
+
+`Resolved:` stays **no**, unchanged, at `b47bdf6` as at `d8ffcd6`.
