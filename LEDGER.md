@@ -4964,3 +4964,384 @@ Status: unclaimed
 | Intermediate viewport widths, and touch target sizes | S-76 measures 375 and S-67 measures 1280. Nothing measures between them, and no entry in this file measures a target size. |
 | Whether the service enters the disabled state during a request | S-75 enters it directly and says so. S-53 requires a loading state exists; nothing ties the two together. |
 | Text sharing a box with an icon or image | Unchanged from §17. A visible glyph anywhere in a box can carry the ratio for invisible text beside it. |
+
+---
+
+# ERRATA 7 — two of my own Checks could not establish their own prose
+
+S-69 and S-76 have FAIL verdicts at `fe543c4`, both against `dc6879c`, and **both are defects in the
+Check rather than in the service — but that sentence is a reading, not a verdict, and this section
+exists because nobody has run anything that establishes it.** Three seats agree on the cause. Three
+seats agreeing on a reading is still a reading: `@scribe`'s diagnosis was explicitly unrun,
+`@builder`'s probes are not evidence by its own mandate, and `@auditor` has stated twice that its
+verdict files are not a second vote — `PX_SKIPS` prints no tag, so the identity of the zero-box
+element appears nowhere in anything that ran, and its `NO-PIXELS` note was an observation about two
+printed strings rather than a reachability claim.
+
+So the two entries below do not assert the cause. **They settle it by run.** Supersession authorised
+by `@registrar`, bounded to these two. **S-69 and S-76 stand, with their FAIL verdicts intact.**
+Nothing is retired and nothing is deleted; the FAILs are the record.
+
+## Defect 11 — S-69's third condition cannot be satisfied by any correct implementation
+
+`LEDGER.md:4636` reads:
+
+```
+boxless=[s for s in sk if s["why"]=="zero-box" and (s["interactive"] or s["hasText"]) and (s["text"] or "")]
+```
+
+The `or s["hasText"]` clause admits **any** text-bearing element with a zero box. The entry's prose
+says *"no named control is boxless"*; the code asserts something broader. S-69's first two conditions
+printed empty at `fe543c4` and are not in question — only the third refused. **A Check no correct
+implementation can satisfy is not strict, it is broken**, and S-80 is written to establish whether
+that is what this is, rather than to assume it.
+
+## Defect 12 — the exclusion list §17 calls a door cannot be inspected
+
+§17 says *"a reader must check what was skipped; a passing line alone does not tell them"*. The
+enumerator collects the tag at `:4321` and carries it into every skipped record at `:4339`, and then
+`PX_SKIPS` at `:4421` drops it:
+
+```
+return [[s.get("surface"),s.get("testid"),s.get("text"),s["why"],s["interactive"]] for s in sk]
+```
+
+An element excluded with `testid: null` is therefore unidentifiable in the output of all seventeen
+Checks. **The prose claims a reader can audit the exclusions and the code withholds the one field
+that would let them.** This is why `@auditor` could not confirm the element's identity from its own
+record and why a reader cloning this repository cannot either.
+
+## Defect 13 — an out-of-raster box is silently mismeasured, and `NO-PIXELS` is unreachable
+
+`:4354-4355` clamp the sample rectangle into the image:
+
+```
+x0=Math.max(0,Math.min(W-1,Math.round(x0))); y0=Math.max(0,Math.min(H-1,Math.round(y0)));
+w=Math.max(1,Math.min(W-x0,Math.round(w)));  h=Math.max(1,Math.min(H-y0,Math.round(h)));
+```
+
+A box entirely outside the raster is reduced to a one-pixel column at the edge rather than reported
+as outside. `hist()` therefore always returns at least one entry, `bg` at `:4397` is never `None`,
+and `if bg is None: v="NO-PIXELS"` at `:4408` cannot fire. §17's prose at `:4282` documents a verdict
+the code cannot emit. **This is a claim about source, auditable by opening the file, and it is still
+not a run** — `@auditor`'s census of all fifteen logs (`NO-PIXELS 0 · NO-INK 159 · LOW-CONTRAST 2 ·
+FLAT-AGAINST-PAGE 90`) is consistent with it and does not demonstrate it, as that seat said itself.
+
+**S-76's deeper fault is not the false failure.** It refuses off-scrollport content instead of
+measuring it, so nobody ever learns the contrast of the grid's scrolled-out columns at 375px. A
+false failure is visible; a silent coverage hole is not. **Excluding them would have been the wrong
+repair** — that insight is `@builder`'s and S-81 is built on it.
+
+## §20 The scroll-aware and identity helpers (`$PX3`)
+
+**§17 and §19 are not touched.** Seventeen Checks load `$PX` and five load `$PX2`; changing either
+would move the ground under Checks whose text is fixed, which is the F-11 shape §13 exists to make
+visible. `$PX3` is a third additive block.
+
+**Read every prelude from `LEDGER.md` at the Check-text revision**, which is the revision containing
+this section — not from a clone of the audited revision, where `#PX3` does not exist. That is §19's
+defect repeating, and the convention that fixes it properly is held for the next stage.
+
+```sh
+export PX3="$(awk '/^#PX3-BEGIN$/{f=1;next} /^#PX3-END$/{f=0} f' "$TK_LEDGER")"
+export WPX3="$W
+$PX
+$PX3"
+```
+
+where `TK_LEDGER` is the path to a checkout at the Check-text revision, and `TK_REPO` remains the
+clone of the audited revision that the service is built and served from. Confirm:
+
+```sh
+$PWPY -c "$WPX3"'
+print("WPX3 OK",BASE,PX_AA,len(PX_SURF),len(PX3_ZB),len(PX3_CONT))'
+```
+
+**What `PX3_ZB` does.** It finds every element that is text-bearing with a zero box and not hidden by
+CSS — the exact population S-69's third condition refused on — and reports **tag, parent tag, parent
+testid, computed display and visibility** alongside what `PX_SKIPS` already printed. Then it probes
+whether the zero box is intrinsic, two ways: it applies a forcing inline style
+(`display:block;width:240px;height:48px;min-width;min-height`) and re-measures, and it appends a
+**fresh element of the same tag into the same parent** with the same forcing style and measures that.
+If neither gets a box, no stylesheet change could give the original one.
+
+**The limit on that, stated because it is the honest boundary.** It establishes that **no change to
+the service's CSS** can give the element a box. It does **not** establish that no change to the
+*markup* could — replacing a native `<select>` with a custom listbox would, which is a redesign aimed
+at an assertion rather than at a requirement. The entry reports the fact and does not pretend the
+fact settles the design question.
+
+**What `PX_SCROLLSCAN` does.** For each scrollable container on a surface it takes the container's
+full inventory of text-bearing and interactive elements, steps `scrollLeft` and `scrollTop` across
+the whole range in 80%-of-scrollport increments, and at each position measures every inventory
+element whose visible intersection with the scrollport is at least 8×8 — **measuring the painted
+intersection rather than the declared box, so the clamp of Defect 13 is never reached.** Per element
+it keeps the **best** result across all positions, because the question is whether content is legible
+*when scrolled to*, and one position where it reads clearly answers that. An element whose best
+result is below threshold at every position is illegible; an element that measures `OK` at some
+position was merely off-scrollport.
+
+```python
+#PX3-BEGIN
+PX3_INTER="button,a[href],input,select,textarea,summary,[role=button],[role=link],[role=tab],[onclick]"
+PX3_ZB="""()=>{
+  const INTER="button,a[href],input,select,textarea,summary,[role=button],[role=link],[role=tab],[onclick]";
+  const own=(e)=>{let s="";for (const n of e.childNodes) if (n.nodeType===3) s+=n.nodeValue;
+                  return s.replace(/\\s+/g," ").trim()};
+  const found=[];
+  for (const e of document.querySelectorAll("body *")) {
+    const t=e.tagName;
+    if (t==="SCRIPT"||t==="STYLE"||t==="NOSCRIPT"||t==="TEMPLATE") continue;
+    if (e.namespaceURI && e.namespaceURI.indexOf("svg")>=0) continue;
+    const ot=own(e);
+    if (!ot) continue;
+    const cs=getComputedStyle(e), r=e.getBoundingClientRect();
+    if (cs.display==="none") continue;
+    if (cs.visibility!=="visible") continue;
+    if (e.getAttribute("aria-hidden")==="true") continue;
+    if (e.closest("[hidden],[aria-hidden=true]")) continue;
+    if (r.width>=1 && r.height>=1) continue;
+    const p=e.parentElement;
+    const prev=e.getAttribute("style");
+    e.setAttribute("style",(prev||"")+";display:block;width:240px;height:48px;min-width:240px;min-height:48px;padding:8px");
+    const r2=e.getBoundingClientRect();
+    if (prev===null) { e.removeAttribute("style"); } else { e.setAttribute("style",prev); }
+    const r3=e.getBoundingClientRect();
+    found.push({tag:t.toLowerCase(), testid:e.getAttribute("data-testid")||null,
+      text:ot.slice(0,48), interactive:e.matches(INTER),
+      parentTag:p?p.tagName.toLowerCase():null,
+      parentTestid:p?(p.getAttribute("data-testid")||null):null,
+      display:cs.display, visibility:cs.visibility,
+      boxAtRest:[Math.round(r.width),Math.round(r.height)],
+      boxForced:[Math.round(r2.width),Math.round(r2.height)],
+      boxRestored:[Math.round(r3.width),Math.round(r3.height)],
+      cssCannotGiveBox:(r2.width<1 && r2.height<1)});
+  }
+  const fresh=[]; const seen={};
+  for (const o of found) {
+    const key=o.tag+"|"+(o.parentTestid||o.parentTag||"");
+    if (seen[key]) continue; seen[key]=1;
+    let parent=null;
+    if (o.parentTestid) parent=document.querySelector("[data-testid="+JSON.stringify(o.parentTestid)+"]");
+    if (!parent && o.parentTag) parent=document.querySelector(o.parentTag);
+    if (!parent) { fresh.push({key:key, made:false}); continue; }
+    const n=document.createElement(o.tag);
+    n.textContent="PX3 fresh probe";
+    n.setAttribute("style","display:block;width:240px;height:48px;min-width:240px;min-height:48px");
+    parent.appendChild(n);
+    const rr=n.getBoundingClientRect();
+    fresh.push({key:key, made:true, tag:o.tag, parentTestid:o.parentTestid, parentTag:o.parentTag,
+      box:[Math.round(rr.width),Math.round(rr.height)],
+      freshAlsoZero:(rr.width<1 && rr.height<1)});
+    n.remove();
+  }
+  return {found:found, fresh:fresh};
+}"""
+PX3_CONT="""()=>{
+  const out=[];
+  for (const e of document.querySelectorAll("body *")) {
+    const cs=getComputedStyle(e);
+    const hx=(e.scrollWidth-e.clientWidth>1)&&(cs.overflowX==="auto"||cs.overflowX==="scroll");
+    const hy=(e.scrollHeight-e.clientHeight>1)&&(cs.overflowY==="auto"||cs.overflowY==="scroll");
+    if (!hx && !hy) continue;
+    const k="c"+out.length;
+    e.setAttribute("data-px3",k);
+    out.push({key:k, tag:e.tagName.toLowerCase(), testid:e.getAttribute("data-testid")||null,
+      scrollWidth:e.scrollWidth, clientWidth:e.clientWidth,
+      scrollHeight:e.scrollHeight, clientHeight:e.clientHeight, horiz:hx, vert:hy});
+  }
+  return out;
+}"""
+PX3_ELS="""(k)=>{
+  const c=document.querySelector("[data-px3="+JSON.stringify(k)+"]");
+  if (!c) return [];
+  const INTER="button,a[href],input,select,textarea,summary,[role=button],[role=link],[role=tab],[onclick]";
+  const own=(e)=>{let s="";for (const n of e.childNodes) if (n.nodeType===3) s+=n.nodeValue;
+                  return s.replace(/\\s+/g," ").trim()};
+  const out=[]; let i=0;
+  for (const e of c.querySelectorAll("*")) {
+    const t=e.tagName;
+    if (t==="SCRIPT"||t==="STYLE"||t==="NOSCRIPT"||t==="TEMPLATE") continue;
+    if (e.namespaceURI && e.namespaceURI.indexOf("svg")>=0) continue;
+    const ot=own(e), inter=e.matches(INTER);
+    if (!ot && !inter) continue;
+    const cs=getComputedStyle(e), r=e.getBoundingClientRect();
+    if (cs.display==="none"||cs.visibility!=="visible") continue;
+    if (e.getAttribute("aria-hidden")==="true") continue;
+    if (r.width<1||r.height<1) continue;
+    if (!e.hasAttribute("data-px3e")) e.setAttribute("data-px3e",k+"-e"+(i++));
+    out.push({key:e.getAttribute("data-px3e"), tag:t.toLowerCase(),
+      testid:e.getAttribute("data-testid")||null,
+      text:(ot||e.getAttribute("aria-label")||e.value||e.placeholder||"").replace(/\\s+/g," ").trim().slice(0,48),
+      interactive:inter, hasText:!!ot,
+      fontSize:parseFloat(cs.fontSize)||0, fontWeight:parseInt(cs.fontWeight)||400});
+  }
+  return out;
+}"""
+PX3_SET="""(a)=>{
+  const c=document.querySelector("[data-px3="+JSON.stringify(a.k)+"]");
+  c.scrollLeft=a.left; c.scrollTop=a.top;
+  return [Math.round(c.scrollLeft),Math.round(c.scrollTop)];
+}"""
+PX3_VIS="""(k)=>{
+  const c=document.querySelector("[data-px3="+JSON.stringify(k)+"]");
+  if (!c) return [];
+  const cr=c.getBoundingClientRect(); const out=[];
+  for (const e of c.querySelectorAll("[data-px3e]")) {
+    const r=e.getBoundingClientRect();
+    const ix=Math.max(cr.left,Math.max(0,r.left)), ax=Math.min(cr.right,Math.min(window.innerWidth,r.right));
+    const iy=Math.max(cr.top,Math.max(0,r.top)),  ay=Math.min(cr.bottom,Math.min(window.innerHeight,r.bottom));
+    if (ax-ix<8 || ay-iy<8) continue;
+    out.push({key:e.getAttribute("data-px3e"),
+      x:ix+window.scrollX, y:iy+window.scrollY, w:ax-ix, h:ay-iy,
+      full:[Math.round(r.width),Math.round(r.height)],
+      whole:(r.left>=cr.left-0.5 && r.right<=cr.right+0.5 && r.left>=0 && r.right<=window.innerWidth)});
+  }
+  return out;
+}"""
+def PX3_ROW(el,s,surface,at):
+    ih=s["inner"]["hist"]; bg=ih[0][0] if ih else None
+    distinct=len([1 for k,c in ih if c>=PX_MINPX])
+    mc,ink=PX_MAX(ih,bg) if bg is not None else (1.0,None)
+    rh=s["ring"]["hist"]; sur=rh[0][0] if rh else None
+    sal,_=PX_MAX(s["full"]["hist"],sur) if sur is not None else (1.0,None)
+    big=el["fontSize"]>=24 or (el["fontSize"]>=18.66 and el["fontWeight"]>=700)
+    if el["hasText"]:
+        need=PX_LARGE if big else PX_AA; got=round(mc,2); kind="text"
+    else:
+        need=PX_UI; got=round(sal,2); kind="control"
+    v="OK"
+    if bg is None: v="NO-PIXELS"
+    elif el["hasText"] and distinct<2: v="NO-INK"
+    elif got<need: v=("LOW-CONTRAST" if el["hasText"] else "FLAT-AGAINST-PAGE")
+    return {"surface":surface,"at":at,"key":el["key"],"testid":el["testid"],"tag":el["tag"],
+            "text":el["text"],"kind":kind,"verdict":v,"measured":got,"need":need,
+            "distinct":distinct,"ink":None if ink is None else PX_CSS(ink),
+            "bg":None if bg is None else PX_CSS(bg),"surround":None if sur is None else PX_CSS(sur)}
+def PX_SCROLLSCAN(pg,surface=""):
+    pg.wait_for_timeout(250)
+    cons=pg.evaluate(PX3_CONT)
+    rows=[]; inv={}
+    for c in cons:
+        els=pg.evaluate(PX3_ELS,c["key"])
+        emap={e["key"]:e for e in els}
+        for e in els:
+            inv[e["key"]]=dict(e,surface=surface,container=c["testid"] or c["tag"])
+        sw=max(0,c["scrollWidth"]-c["clientWidth"]); sh=max(0,c["scrollHeight"]-c["clientHeight"])
+        stx=max(1,int(c["clientWidth"]*0.8)); sty=max(1,int(c["clientHeight"]*0.8))
+        lefts=list(range(0,sw+stx,stx)) if c["horiz"] and sw>0 else [0]
+        tops=list(range(0,sh+sty,sty)) if c["vert"] and sh>0 else [0]
+        for t in tops:
+            for l in lefts:
+                pos=pg.evaluate(PX3_SET,{"k":c["key"],"left":l,"top":t})
+                pg.wait_for_timeout(120)
+                vis=pg.evaluate(PX3_VIS,c["key"])
+                if not vis: continue
+                boxes=[{"x":v["x"],"y":v["y"],"w":v["w"],"h":v["h"]} for v in vis]
+                b64=base64.b64encode(pg.screenshot(full_page=True)).decode()
+                px=pg.evaluate(PX_READ,{"b64":b64,"boxes":boxes,"inset":PX_INSET,"ring":PX_RING})
+                at="%s scrollLeft=%d scrollTop=%d"%(c["testid"] or c["tag"],pos[0],pos[1])
+                for v,sx in zip(vis,px):
+                    e=emap.get(v["key"])
+                    if e: rows.append(PX3_ROW(e,sx,surface,at))
+    return cons,rows,inv
+def PX3_BEST(rows):
+    best={}
+    for r in rows:
+        k=r["key"]
+        if k not in best: best[k]=r; continue
+        b=best[k]
+        if (b["verdict"]!="OK" and r["verdict"]=="OK") or (b["verdict"]==r["verdict"] and r["measured"]>b["measured"]):
+            best[k]=r
+    return best
+def PX_NAV(pg,ref,fn):
+    out={}
+    for p in ["/","/login","/signup","/lookup"]:
+        pg.goto(BASE+p,wait_until="load"); out[p+" signed out"]=fn(p+" signed out")
+    SEARCH_UI(pg,"r_anker",F,4); out["/ signed out, results"]=fn("/ signed out, results")
+    c=CELL(pg,"t_2","19:00")
+    if c: c.click(); pg.wait_for_timeout(800)
+    if SEE(pg,"booking-submit"): CLICK(pg,"booking-submit"); pg.wait_for_timeout(1400)
+    out["signed out, slot clicked"]=fn("signed out, slot clicked")
+    pg.goto(BASE+"/login",wait_until="load")
+    FILL(pg,"login-email",ADA["email"]); FILL(pg,"login-password","wrong password")
+    CLICK(pg,"login-submit"); pg.wait_for_timeout(900); out["/login, bad credentials"]=fn("/login, bad credentials")
+    pg.goto(BASE+"/lookup",wait_until="load")
+    FILL(pg,"lookup-reference-input","NO-SUCH-REFERENCE"); CLICK(pg,"lookup-submit")
+    pg.wait_for_timeout(1000); out["/lookup, unknown reference"]=fn("/lookup, unknown reference")
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,4); out["/ signed in, results"]=fn("/ signed in, results")
+    CLICK(pg,"slot-t_2-19:00"); pg.wait_for_timeout(800); out["booking form, signed in"]=fn("booking form, signed in")
+    CLICK(pg,"booking-submit"); pg.wait_for_timeout(1600); out["confirmation, signed in"]=fn("confirmation, signed in")
+    pg.goto(BASE+"/lookup",wait_until="load")
+    FILL(pg,"lookup-reference-input",ref); CLICK(pg,"lookup-submit")
+    pg.wait_for_timeout(1000); out["/lookup, reservation shown"]=fn("/lookup, reservation shown")
+    return out
+#PX3-END
+```
+
+## Superseding entries — authorised by `@registrar`, bounded to two
+
+### S-80: Every zero-box text-bearing element is identified by tag, and whether its zero box is intrinsic is settled by run.
+Check: `$PWPY -c "$WPX3"'
+ta,_=SETUP()
+pre=OK(BOOK(ta,F+"T20:00","s80-seed",table_id="t_3",ps=4),201)
+def f(pg):
+    return PX_NAV(pg,pre["reference"],lambda n:pg.evaluate(PX3_ZB))
+per=UI(f,route=None)
+allf=[]; allfresh=[]
+for n in sorted(per):
+    for o in per[n]["found"]: allf.append(dict(o,surface=n))
+    for o in per[n]["fresh"]: allfresh.append(dict(o,surface=n))
+print("SURFACES VISITED:",len(per))
+print("ZERO-BOX TEXT-BEARING ELEMENTS, WITH TAG:",json.dumps(allf,indent=1,sort_keys=True))
+print("FRESH-SIBLING PROBES:",json.dumps(allfresh,indent=1,sort_keys=True))
+assert len(per)==len(PX_SURF),"visited %d surfaces, not the %d PX_SURF names: %r"%(len(per),len(PX_SURF),sorted(per))
+tags=sorted(set([o["tag"] for o in allf]))
+print("DISTINCT TAGS:",json.dumps(tags))
+print("PER TAG:",json.dumps({t:len([o for o in allf if o["tag"]==t]) for t in tags},sort_keys=True))
+assert allf,"no zero-box text-bearing element was found on any of the %d surfaces, so S-69 third condition had nothing to refuse on and this entry cannot settle it"%len(per)
+for o in allf:
+    assert o["tag"],"an element was reported with no tag, which is the gap this entry exists to close: %r"%o
+notint=[o for o in allf if not o["cssCannotGiveBox"]]
+print("ZERO AT REST BUT GIVEN A BOX BY A FORCING STYLE:",json.dumps(notint,indent=1,sort_keys=True))
+fz=[o for o in allfresh if o.get("made") and not o.get("freshAlsoZero")]
+print("FRESH SIBLING THAT DID GET A BOX:",json.dumps(fz,indent=1,sort_keys=True))
+print("VERDICT ON INTRINSIC-NESS: cssCannotGiveBox on all=%s ; freshAlsoZero on all made=%s"%(
+  not notint, not fz))
+assert not notint,"%d zero-box elements DID take a box from a forcing inline style, so their zero box is not intrinsic and S-69 third condition was refusing something the service controls: %s"%(len(notint),json.dumps(notint,indent=1,sort_keys=True))
+assert not fz,"a fresh sibling of the same tag in the same parent DID get a box, so the zero box is not intrinsic to the element kind: %s"%json.dumps(fz,indent=1,sort_keys=True)
+print("PASS",len(allf),"zero-box text-bearing elements identified by tag across",len(per),"surfaces; tags",tags,"; no forcing style and no fresh sibling of the same kind could obtain a box, so no stylesheet change in stage-2/ can give these elements one")'`
+Passes when: exits 0 and ends `PASS <n> zero-box text-bearing elements identified by tag across 12 surfaces; tags [...]; no forcing style and no fresh sibling of the same kind could obtain a box, …`, having printed every such element with its **tag, parent tag, parent testid, display, visibility and three box measurements**, and the fresh-sibling probes. **This supersedes S-69's third condition only.** S-69's first two conditions printed empty at `fe543c4`, are not in question, and are not re-claimed here. **What a failing run means:** if `cssCannotGiveBox` is false for any element, its zero box is something `stage-2/`'s CSS controls, S-69's refusal was pointing at a real defect, and this entry fails — that is the outcome that would send it back to `@builder`. If every element resists both the forcing style and the fresh-sibling probe, the zero box is intrinsic to the element kind as the browser renders it. **What it does not establish:** that no *markup* change could give the element a box. Replacing a native control with a custom widget would, and that is a redesign aimed at an assertion rather than at a requirement — this entry reports the measurement and does not pretend it settles that design question. It also does not re-measure contrast; nothing here is a pixel claim.
+Status: unclaimed
+
+### S-81: Off-scrollport content at 375 pixels is measured by scrolling to it, not excluded, and meets the declared threshold.
+Check: `$PWPY -c "$WPX3"'
+ta,_=SETUP()
+pre=OK(BOOK(ta,F+"T20:00","s81-seed",table_id="t_3",ps=4),201)
+def f(pg):
+    acc={"cons":[],"rows":[],"inv":{}}
+    def one(n):
+        c,r,i=PX_SCROLLSCAN(pg,n)
+        acc["cons"].extend([dict(x,surface=n) for x in c]); acc["rows"].extend(r); acc["inv"].update(i)
+        return len(i)
+    cen=PX_NAV(pg,pre["reference"],one)
+    return acc,cen
+acc,cen=UI(f,w=375,h=812,route=None)
+cons=acc["cons"]; rows=acc["rows"]; inv=acc["inv"]
+best=PX3_BEST(rows)
+never=sorted([k for k in inv if k not in best])
+bad=[best[k] for k in sorted(best) if best[k]["verdict"]!="OK"]
+print("VIEWPORT 375x812")
+print("INVENTORY PER SURFACE:",json.dumps(cen,indent=1,sort_keys=True))
+print("SCROLLABLE CONTAINERS:",json.dumps(cons,indent=1,sort_keys=True))
+print("MEASUREMENTS TAKEN:",len(rows),"DISTINCT ELEMENTS MEASURED:",len(best),"IN INVENTORY:",len(inv))
+print("NEVER MEASURED AT ANY SCROLL POSITION:",json.dumps([inv[k] for k in never],indent=1,sort_keys=True))
+print("BEST RESULT BELOW THRESHOLD:",json.dumps(bad,indent=1,sort_keys=True))
+assert len(cen)==len(PX_SURF),"visited %d surfaces, not the %d PX_SURF names: %r"%(len(cen),len(PX_SURF),sorted(cen))
+assert cons,"no scrollable container was found on any surface at 375 pixels, so the content S-76 refused on does not exist here and this entry cannot settle it"
+assert inv,"no element inventory was built inside any scrollable container"
+assert not never,"%d elements inside a scrollable container were never measured at any scroll position, which is the silent coverage hole this entry exists to close: %s"%(len(never),json.dumps([inv[k] for k in never],indent=1,sort_keys=True))
+assert not bad,"%d of %d elements inside scrollable containers are below the declared threshold at their best scroll position, so they are illegible rather than merely off-scrollport:\n%s"%(len(bad),len(best),json.dumps(bad,indent=1,sort_keys=True))
+print("PASS",len(best),"elements inside",len(cons),"scrollable containers measured by scrolling to them at 375x812,",len(rows),"measurements,0 never measured, none below threshold at its best position")'`
+Passes when: exits 0 and ends `PASS <n> elements inside <m> scrollable containers measured by scrolling to them at 375x812, …`, having printed the per-surface inventory, every scrollable container with its scroll and client dimensions, the count of measurements, and empty lists for both never-measured and below-threshold. **This supersedes S-76 entirely.** It answers the question S-76 could not: content is measured on its **painted intersection with the scrollport** at every 80%-step across the container's scroll range, so the clamp of Defect 13 is never reached and `distinct: 1` can no longer arise from sampling a one-pixel column off the edge of the raster. Per element the **best** result across positions is what is asserted, because the requirement is that content be legible when a diner scrolls to it. **Two distinct failures are therefore separable in the output:** an element whose best result is below threshold at every position is illegible and a real defect; an element that never appears in any scrollport is a coverage hole, and it fails too rather than passing quietly. **What it does not establish:** anything about elements outside a scrollable container — S-67 covers the resting raster at 1280 and this entry does not re-claim it — nor hover, focus or disabled appearance, nor whether scrolling is discoverable, which is judgement and stays with the human.
+Status: unclaimed
