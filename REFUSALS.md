@@ -4000,3 +4000,78 @@ seat holding no claim chose to run.
 
 `LEDGER.md` unedited since `039dd8a`. No claim's status changed. `stage-1/`, `stage-2/`,
 `verdicts/` and `docs/` untouched by this commit.
+
+
+---
+
+### F-45 — S-69 refused `dc6879c`, and the cause of the refusal is not established
+
+Case: **failing verdict** — `verdicts/S-69.md`, exit 1, committed at
+`fe543c4b60d0b229c2f89a7a64b205135d218e76`.
+Revision: `dc6879cdcb1094b0e75ecad2d5125741c6df31fe`.
+
+Evidence: the run refused on the third of the entry's three conditions. The two conditions aimed at
+the reported defect class both printed empty:
+
+```
+ELEMENTS WHOSE BOX HOLDS ONE COLOUR: []
+CONTROLS FLAT AGAINST THE PAGE: []
+AssertionError: a named interactive or text-bearing element was excluded for having no box: [
+ [ "/ signed out", null, "Zum Anker", "zero-box", false ], ...
+```
+
+The same element on six surfaces: `text` `"Zum Anker"`, `testid` `null`, `why` `"zero-box"`,
+`interactive` `false`. `PX_SKIPS` prints no tag, so **the element's identity is in nothing that ran.**
+
+Would it have failed the graded suite: **unknown.** The graded suite PASSED at this revision —
+`stage 1: pass`, `stage 2: pass`, `harness exit 0`, isolated mode, same clone, quoted in
+`verdicts/S-69.md`. That measured result is not the same as the `no` reading. **`no` would mean the
+gate caught a defect the supplied checks do not test for, and that claim is only available if the
+refused condition is a defect in the submission.** `@scribe` reads it as its own Check asserting
+more than its prose claims — the prose says "no named control is boxless" and an `<option>` is
+neither named nor a control — and states plainly that it ran no reproduction. `@builder` reads it as
+an `<option>` whose zero box is intrinsic, and measured a freshly appended one at `[0,0]`, but its
+own runs are not evidence by its mandate and mine. `@auditor` has twice declined to be read as
+supporting either, correctly: it has no output for a cause. **So the cause is unestablished and the
+counterfactual cannot be answered without guessing, which is the one thing this field must not be.**
+Two entries are authorised at `c2f04885` to settle it by run.
+
+Resolved: **no.**
+
+---
+
+### F-46 — S-76 refused `dc6879c` on 248 elements, and the cause of the refusal is not established
+
+Case: **failing verdict** — `verdicts/S-76.md`, exit 1, committed at
+`fe543c4b60d0b229c2f89a7a64b205135d218e76`.
+Revision: `dc6879cdcb1094b0e75ecad2d5125741c6df31fe`.
+
+Evidence:
+
+```
+AssertionError: 248 of 832 measured elements are below the declared threshold at 375 CSS pixels
+entirely right of x=375: 248   straddling x=375: 0   entirely within x<375: 0
+```
+
+One record, representative of all 248 — a `th` reading `"Window + Corner"`, box beginning at
+x=404, `distinct: 1`, `ink: null`, `bg` and `surround` both `rgb(255, 251, 245)`, the page colour,
+`verdict` `NO-INK`. 158 `NO-INK` and 90 `FLAT-AGAINST-PAGE` across the five surfaces carrying
+horizontally overflowing content; the other seven contributed none. `@auditor` adds, from grepping
+all fifteen run logs, `NO-PIXELS 0 · NO-INK 159 · LOW-CONTRAST 2 · FLAT-AGAINST-PAGE 90`, and limits
+that figure itself: these Checks print failing and probe records rather than every measured element,
+so zero occurrences is consistent with the reading and does not demonstrate it.
+
+Would it have failed the graded suite: **unknown**, on the same grounds as F-45 and for the same
+reason. The graded suite PASSED at this revision, same clone, same run quoted in both files. But the
+partition — 248 right of x=375, 0 straddling, 0 within — is a geometric class and not a contrast
+distribution, and a refusal whose cause may lie in this factory's own instrument rather than in the
+submission cannot be recorded as a defect the grader missed. `@scribe` reads §17's clamp at
+`LEDGER.md:4354` as making the `NO-PIXELS` branch at `:4408` unreachable, so an out-of-raster box is
+mismeasured rather than excluded — a reading of its own code, with no reproduction run. `@builder`
+reads the 248 as off-scrollport inside `.gridwrap{overflow-x:auto}` and reports 8.25:1 as the worst
+case after scrolling to them, which is its own probe and not evidence. **Neither is settled.** The
+authorised replacement must measure that content by stepping the scrollport rather than excluding
+it: refusing 248 elements and measuring none of them would leave a silent coverage hole where a
+visible false failure is today.
+
+Resolved: **no.**
