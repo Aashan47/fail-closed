@@ -167,7 +167,26 @@ divide authority sharply enough and you can create a gap nobody is responsible f
 Builder self-dispatches, and the idle condition is spelled out so waiting silently is named as a
 misreading.
 
-**4. A silent stall looks like a healthy factory.** Seats reported `presence=live binding=bound`
+**4. The gate passed a defect that only rendered pixels reveal.** In the signed-out header, two
+controls were painted the same colour as the surface behind them. Contrast 1.01:1: not low, zero.
+Every check the factory had was DOM-level, and the elements were present, correctly sized, not
+`display:none`, and clickable by accessible name, so everything passed. A human looked at the screen
+and found it in seconds. **The factory's verification was structurally incapable of seeing it**,
+because a check that reads the DOM cannot tell you what was painted. **Changed:** the ledger now
+carries claims that settle on painted pixels rather than DOM presence, and the band's own sweep found
+a second instance in disabled buttons that the human report had not mentioned.
+
+**5. Told about the defect, the band could not stop auditing itself long enough to fix it.** Twelve
+and a half hours after the report it had produced two commits, both findings about its own
+bookkeeping, and had not changed one byte of the service. It was not stalled; the seats were busy.
+They were auditing the audit. This is the characteristic pathology of this design, and it is the
+honest counterweight to everything above: **separating powers this sharply produces a band that is
+very good at examining its own conduct and capable of preferring that to the work.** It took a
+dispatch that explicitly forbade writing new findings to break the loop, after which the fix, a
+rendered-pixel claim set, two refusals of the first attempt, and a verified repair landed in ninety
+minutes.
+
+**6. A silent stall looks like a healthy factory.** Seats reported `presence=live binding=bound`
 while processing nothing for ninety minutes. **Changed:** a watchdog restarts seats after ten
 minutes of silence with queued messages, and a supervisor wakes a human only for decisions.
 
@@ -195,6 +214,9 @@ so it times out after five seconds under macOS TCC-protected directories such as
 - **The Auditor is only as good as the check**, and where no graded suite covers a claim it is only
   as good as the command the Scribe wrote.
 - **Fail-closed stalls rather than guesses.** Intended, and still costly near a deadline.
+- **DOM-level verification is not verification of a user interface.** The factory learned this the
+  expensive way and now has pixel-level claims, but the general point stands: a check can pass on
+  content no human can see, and only looking catches that.
 - **The refusal count is not a quality score.** Only the counterfactual column separates a careful
   gate from a careless builder. In the development run that column was entirely `unknown`, because
   every refusal was about evidence provenance rather than a caught defect. **On that run the gate was
