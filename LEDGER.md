@@ -5345,3 +5345,60 @@ assert not bad,"%d of %d elements inside scrollable containers are below the dec
 print("PASS",len(best),"elements inside",len(cons),"scrollable containers measured by scrolling to them at 375x812,",len(rows),"measurements,0 never measured, none below threshold at its best position")'`
 Passes when: exits 0 and ends `PASS <n> elements inside <m> scrollable containers measured by scrolling to them at 375x812, …`, having printed the per-surface inventory, every scrollable container with its scroll and client dimensions, the count of measurements, and empty lists for both never-measured and below-threshold. **This supersedes S-76 entirely.** It answers the question S-76 could not: content is measured on its **painted intersection with the scrollport** at every 80%-step across the container's scroll range, so the clamp of Defect 13 is never reached and `distinct: 1` can no longer arise from sampling a one-pixel column off the edge of the raster. Per element the **best** result across positions is what is asserted, because the requirement is that content be legible when a diner scrolls to it. **Two distinct failures are therefore separable in the output:** an element whose best result is below threshold at every position is illegible and a real defect; an element that never appears in any scrollport is a coverage hole, and it fails too rather than passing quietly. **What it does not establish:** anything about elements outside a scrollable container — S-67 covers the resting raster at 1280 and this entry does not re-claim it — nor hover, focus or disabled appearance, nor whether scrolling is discoverable, which is judgement and stays with the human.
 Status: unclaimed
+
+## Authorisation of record — ERRATA 7
+
+`@registrar` authorised supersession on this ERRATA, **bounded to two entries**, and required the
+Check text be handed to `@registrar` rather than to `@auditor`, on the precedent of ERRATA 4. The two
+entries it specified are the two above:
+
+| Authorised | Entry | What it must settle |
+|---|---|---|
+| ONE | S-80 | The identity of the zero-box element, printing its **tag**, by run rather than by inference — and whether its zero box is intrinsic, i.e. whether any change to `stage-2/` could give it one. |
+| TWO | S-81 | Whether the 248 refused records at 375 pixels are off-scrollport or illegible — **by measuring them**, stepping the scrollport through its range, rather than by excluding them. |
+
+S-80 and S-81 were written and committed at `1007a09` before that authorisation arrived; the messages
+crossed. They are recorded here as authorised, not as written under authority they did not yet have.
+
+**The cause of both refusals is UNESTABLISHED, and these two entries exist because of that.** Three
+seats read the same two outputs and agreed, and agreement by reading is not a result:
+
+- My own diagnosis — the `<option>` for S-69, the off-scrollport grid for S-76 — is **unrun**. I said
+  so when I sent it and it is restated here so no reader takes the entries above as resting on it.
+- `@builder`'s diagnosis is a run, and `@builder` declared in the same message that it is not
+  evidence: a fresh `<option>` measuring `[0,0]`, `gridwrap` `scrollWidth` 655 against `clientWidth`
+  349, no horizontal page scroll, 8.25:1 worst case after `scrollLeft = scrollWidth`. Every one of
+  those is a probe this ledger names nowhere.
+- `@auditor` stated twice, against its own interest, that `verdicts/S-69.md` and `verdicts/S-76.md`
+  are **not a second vote** in either reading. `PX_SKIPS` prints `[surface, testid, text,
+  interactive]` and no tag, so the tag of the zero-box element appears in nothing that ran; its
+  `NO-PIXELS` note was an observation about two printed strings, not a reachability claim. Its
+  measured addition across all fifteen run logs — `NO-PIXELS 0`, `NO-INK 159`, `LOW-CONTRAST 2`,
+  `FLAT-AGAINST-PAGE 90` — it limited itself: these Checks print failing and probe records rather
+  than every measured element, so zero occurrences is **consistent with** the reading and does not
+  demonstrate it.
+
+**A credit I gave wrongly, corrected.** I wrote that `@auditor` found the `NO-PIXELS` asymmetry.
+It printed what the records carried and noted that §17's prose names a verdict they did not. The step
+from that to the clamp at `:4354` is Defect 13's and mine, and the correction is `@auditor`'s.
+
+**S-69 and S-76 STAND.** Their FAIL verdicts at `fe543c4` against `dc6879c` are intact and are the
+record. S-80 supersedes S-69's third condition only; S-81 supersedes S-76 entirely. Nothing is
+retired and nothing is deleted.
+
+**NO FIX, by instruction.** `@registrar` instructed `@builder` not to change `stage-2/app.py`:
+replacing the native `select` with a custom listbox, or reflowing the grid so it never overflows at
+375, are redesigns aimed at an assertion rather than at a requirement, and the second puts suites 1
+and 2 at risk across thirteen `slot-` references. `@builder` confirmed `git diff --stat dc6879c HEAD
+-- stage-2/app.py` prints nothing. `dc6879c` remains the revision of record. If either entry above
+establishes a real defect in it, the dispatch goes to `@builder` under the **original** claim
+identifier.
+
+**Coverage overlap, flagged by `@builder` and left in the design.** The elements S-81 reaches by
+scrolling at 375 are grid cells and column headers, which S-67 already measures at 1280 where they
+sit inside the scrollport. Agreement between the two is expected and disagreement would be
+informative; that is a reason to keep both, not to narrow either. S-81's prose already bounds itself
+to elements inside a scrollable container and does not re-claim S-67's resting raster at 1280.
+
+**Nothing about the reported defect is in question.** S-66 passed at 9.62:1 on both controls, S-67
+and S-68 passed the sweep at 832 elements over twelve surfaces, and S-75 passed at 100 buttons.
