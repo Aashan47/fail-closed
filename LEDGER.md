@@ -4192,3 +4192,555 @@ Status: passed at 1fe8ebe — see verdicts/S-64.md
 
 Settled: the `66e7967` bound was met and the supersession was authorised at `62127f9`; S-59…S-64
 passed at `1fe8ebe`, see `verdicts/`. The heading above recorded the state at the time of writing.
+
+---
+
+# ERRATA 5 — every check in this ledger can pass on content no eye can see
+
+A human looking at the running service reported, at `c07cb94`: signed out, the header shows the brand
+and two navigation links and nothing else; there is no visible way to sign in or create an account;
+clicking a slot then shows an error telling the visitor to sign in, with no visible route to do so.
+
+The elements are in the DOM. They have text, non-zero bounding boxes, no `display:none` and no
+`visibility:hidden`, and a click by accessible name succeeds on them. **Every assertion this ledger
+owns passes on them.** That includes S-57, which is this file's contrast claim: it reads
+`getComputedStyle(e).color` and walks ancestors for a background, so it measures *declared* colour,
+never *painted* colour. `color: transparent` resolves to `rgba(0, 0, 0, 0)`, from which this file's
+own `LUM` takes the first three integers — `0, 0, 0` — and scores black-on-white at 21:1. An
+`opacity: 0` ancestor is not in `color` or `backgroundColor` at all, so it is invisible to every
+entry here. S-56 reads `aria-label` and `outlineStyle`; S-63 reads `data-state`; S-28 reads an HTTP
+status. **Not one of the sixty-five claims written before this section can tell painted from
+declared**, which is why the defect reached a human rather than a run.
+
+The three defects that follow are in this ledger, not in the service.
+
+## Defect 8 — the contrast claim measures declared colour, not painted colour
+
+S-57 and S-56 compute from `getComputedStyle`. A control is invisible-but-conformant under at least
+four mechanisms they cannot see: `color: transparent`; any `opacity: 0` on the element or an
+ancestor; a foreground equal to a background that the ancestor walk does not reach (a gradient, an
+image, a `background` shorthand on a sibling layer); and occlusion by a later-painted element.
+Affects **S-56, S-57**. Neither is withdrawn — they still forbid what they always forbade — and
+neither is edited. The new entries measure a different thing.
+
+## Defect 9 — the claims are a sample, and the sample was chosen before the defect was known
+
+S-57 names five elements on two screens and says so honestly. A sample cannot answer "is the same
+class of defect anywhere else", which is the question a defect report of this shape forces. Affects
+the coverage of **§UI quality** as a whole.
+
+## Defect 10 — "sufficient contrast" was carried into this ledger as a word, not a number
+
+The spec says, at `tablekeeper/spec/stage-2.md:61`, "text and controls need sufficient contrast", and
+at `:53-54`, "Primary actions must be easy to identify". S-57 silently chose 4.5:1 without declaring
+that it had chosen; "Primary actions are easy to identify" was instead routed to **Declared
+human-judged**, where no command can fail. One of those two is a hidden decision and the other is no
+decision. §18 below declares the numbers in the open.
+
+## §17 The rendered-raster instrument (`$PX`)
+
+Every entry in this section measures **pixels that were actually painted**, read back out of a
+compositor screenshot. Nothing in it consults `getComputedStyle` for colour.
+
+Load it alongside `$W` from §15. It is appended to `$W`, not a replacement, and §15 is unchanged:
+
+```sh
+export PWPY=/Users/aashanjaved/dark-factory-wearedevs/.venv/bin/python
+export TK_REPO="${TK_REPO:-/Users/aashanjaved/band-work/result}"
+export W="$(awk '/^#PW-BEGIN$/{f=1;next} /^#PW-END$/{f=0} f' "$TK_REPO/LEDGER.md")"
+export PX="$(awk '/^#PX-BEGIN$/{f=1;next} /^#PX-END$/{f=0} f' "$TK_REPO/LEDGER.md")"
+export WPX="$W
+$PX"
+```
+
+Confirm all three loaded before running any entry below:
+
+```sh
+$PWPY -c "$WPX"'
+print("WPX OK",BASE,PX_AA,PX_UI,len(PX_ENUM),len(PX_READ),len(PX_SURF))'
+```
+
+**How it reads painted pixels without a Python image library.** The harness interpreter has no
+Pillow and no numpy — only Playwright. So the raster is taken with `page.screenshot(full_page=True)`,
+handed back into the page as a `data:` URL, drawn to a detached `<canvas>` that is never appended to
+the document, and read with `getImageData`. The decoder is Chromium's own. A `data:` URL does not
+taint a canvas, so the pixels are readable. The screenshot is taken **before** the canvas exists, so
+the instrument cannot alter what it measures.
+
+**What each element yields.** For every measured element the instrument reports, from the raster:
+the dominant colour inside its box inset by 2 CSS pixels (`bg`), the number of distinct colours in
+that inset box (`distinct`), the highest contrast ratio between any colour covering at least 2 pixels
+of that box and `bg` (`ratio_text`, with the colour that achieved it as `ink`), the dominant colour
+of a 6-pixel ring immediately outside the box (`surround`), and the highest contrast ratio between
+any colour in the full box and `surround` (`salience`). The 2-pixel inset exists so a border is not
+read as the element's own ink; antialiased glyph edges sit *between* foreground and background, so
+taking the maximum is the generous reading, never the harsh one.
+
+**Verdicts.** `OK`; `NO-INK` — the inset box holds one colour, so nothing was painted inside it;
+`LOW-CONTRAST` — a text-bearing element whose `ratio_text` is under its threshold;
+`FLAT-AGAINST-PAGE` — an interactive element with no text of its own whose whole box is under 3:1
+against the page immediately around it; `NO-PIXELS` — the box fell outside the raster.
+
+**What it excludes, and this is the honest part.** An element is reported in a separate `skipped`
+list, not measured, when it is `display:none`, not `visibility:visible`, `aria-hidden=true`, inside a
+`[hidden]` ancestor, has a box under one pixel, or has another element at its centre point that is
+neither its ancestor nor its descendant (`occluded-by-*`). Without the occlusion exclusion an open
+modal fails every element behind it and no interface can pass. **The exclusion is a door**: a control
+covered by a transparent overlay is skipped, not failed. That is why S-66, S-68 and S-70 require
+named controls to appear in the *measured* set, and why every entry prints the skip list in full. A
+reader must check what was skipped; a passing line alone does not tell them.
+
+**What it does not establish.** It does not read text on a background it shares with an icon or an
+image inside the same box — a visible border or glyph anywhere in the box can carry the ratio for
+invisible text in that same box, which is why text-bearing leaf elements, not their containers, are
+what the entries measure. It says nothing about hover, focus or disabled variants, nothing about
+animation mid-flight, and nothing about whether a legible interface is a good one. It measures at
+`devicePixelRatio` 1 and a 1280×900 viewport, which is what `UI()` from §15 creates.
+
+```python
+#PX-BEGIN
+import base64
+PX_AA=4.5
+PX_LARGE=3.0
+PX_UI=3.0
+PX_INSET=2
+PX_MINPX=2
+PX_RING=6
+PX_ENUM="""() => {
+  const INTER="button,a[href],input,select,textarea,summary,[role=button],[role=link],[role=tab],[onclick]";
+  const own=(e)=>{let s="";for (const n of e.childNodes) if (n.nodeType===3) s+=n.nodeValue;
+                  return s.replace(/\\s+/g," ").trim()};
+  const els=[], skipped=[];
+  for (const e of document.querySelectorAll("body *")) {
+    const t=e.tagName;
+    if (t==="SCRIPT"||t==="STYLE"||t==="NOSCRIPT"||t==="TEMPLATE") continue;
+    if (e.namespaceURI && e.namespaceURI.indexOf("svg")>=0) continue;
+    const ot=own(e), inter=e.matches(INTER);
+    if (!ot && !inter) continue;
+    const cs=getComputedStyle(e), r=e.getBoundingClientRect(), oe=e.closest("[data-testid]");
+    const rec={tag:t.toLowerCase(), testid:e.getAttribute("data-testid")||null,
+      owner:oe?oe.getAttribute("data-testid"):null,
+      text:(ot||e.getAttribute("aria-label")||e.value||e.placeholder||"").replace(/\\s+/g," ").trim().slice(0,48),
+      href:e.getAttribute("href")||null, interactive:inter, hasText:!!ot,
+      x:r.x+window.scrollX, y:r.y+window.scrollY, w:r.width, h:r.height,
+      fontSize:parseFloat(cs.fontSize)||0, fontWeight:parseInt(cs.fontWeight)||400};
+    let why=null;
+    if (cs.display==="none") why="display-none";
+    else if (cs.visibility!=="visible") why="visibility-"+cs.visibility;
+    else if (e.getAttribute("aria-hidden")==="true") why="aria-hidden";
+    else if (e.closest("[hidden],[aria-hidden=true]")) why="hidden-ancestor";
+    else if (r.width<1||r.height<1) why="zero-box";
+    if (!why && r.bottom>0 && r.top<window.innerHeight && r.right>0 && r.left<window.innerWidth) {
+      const cx=Math.min(window.innerWidth-1,Math.max(0,r.left+r.width/2));
+      const cy=Math.min(window.innerHeight-1,Math.max(0,r.top+r.height/2));
+      const top=document.elementFromPoint(cx,cy);
+      if (top && top!==e && !e.contains(top) && !top.contains(e)) why="occluded-by-"+top.tagName.toLowerCase();
+    }
+    if (why) { skipped.push(Object.assign({why:why},rec)); continue; }
+    els.push(rec);
+  }
+  return {els:els, skipped:skipped};
+}"""
+PX_READ="""async (a) => {
+  const img=new Image();
+  img.src="data:image/png;base64,"+a.b64;
+  await img.decode();
+  const c=document.createElement("canvas");
+  c.width=img.naturalWidth; c.height=img.naturalHeight;
+  const g=c.getContext("2d",{willReadFrequently:true});
+  g.drawImage(img,0,0);
+  const dpr=window.devicePixelRatio||1, W=img.naturalWidth, H=img.naturalHeight;
+  const hist=(x0,y0,w,h,skip)=>{
+    x0=Math.max(0,Math.min(W-1,Math.round(x0))); y0=Math.max(0,Math.min(H-1,Math.round(y0)));
+    w=Math.max(1,Math.min(W-x0,Math.round(w))); h=Math.max(1,Math.min(H-y0,Math.round(h)));
+    const d=g.getImageData(x0,y0,w,h).data, m=new Map(); let n=0;
+    for (let yy=0; yy<h; yy++) for (let xx=0; xx<w; xx++) {
+      if (skip) {
+        const ax=x0+xx, ay=y0+yy;
+        if (ax>=skip[0] && ax<skip[0]+skip[2] && ay>=skip[1] && ay<skip[1]+skip[3]) continue;
+      }
+      const i=((yy*w)+xx)*4, k=(d[i]<<16)|(d[i+1]<<8)|d[i+2];
+      m.set(k,(m.get(k)||0)+1); n++;
+    }
+    return {n:n, hist:[...m.entries()].sort((p,q)=>q[1]-p[1]).slice(0,96)};
+  };
+  const out=[];
+  for (const b of a.boxes) {
+    const ins=Math.max(0,Math.min(a.inset,Math.floor((b.w-1)/2),Math.floor((b.h-1)/2)));
+    const bx=b.x*dpr, by=b.y*dpr, bw=b.w*dpr, bh=b.h*dpr, iv=ins*dpr, rg=a.ring*dpr;
+    out.push({inset:ins,
+      inner:hist(bx+iv,by+iv,bw-2*iv,bh-2*iv,null),
+      full:hist(bx,by,bw,bh,null),
+      ring:hist(bx-rg,by-rg,bw+2*rg,bh+2*rg,
+                [Math.max(0,Math.round(bx)),Math.max(0,Math.round(by)),Math.round(bw),Math.round(bh)])});
+  }
+  return out;
+}"""
+def PX_CSS(k):
+    return "rgb(%d, %d, %d)"%((k>>16)&255,(k>>8)&255,k&255)
+def PX_MAX(h,ref):
+    best=1.0; bk=None
+    for k,c in h:
+        if c<PX_MINPX: continue
+        rr=RATIO(PX_CSS(k),PX_CSS(ref))
+        if rr>best: best=rr; bk=k
+    return best,bk
+def PX_SCAN(pg,surface=""):
+    pg.wait_for_timeout(250)
+    e=pg.evaluate(PX_ENUM); els=e["els"]
+    sk=[dict(s,surface=surface) for s in e["skipped"]]
+    if not els: return [],sk
+    b64=base64.b64encode(pg.screenshot(full_page=True)).decode()
+    px=pg.evaluate(PX_READ,{"b64":b64,"boxes":els,"inset":PX_INSET,"ring":PX_RING})
+    rows=[]
+    for el,s in zip(els,px):
+        ih=s["inner"]["hist"]; bg=ih[0][0] if ih else None
+        distinct=len([1 for k,c in ih if c>=PX_MINPX])
+        mc,ink=PX_MAX(ih,bg) if bg is not None else (1.0,None)
+        rh=s["ring"]["hist"]; sur=rh[0][0] if rh else None
+        sal,_=PX_MAX(s["full"]["hist"],sur) if sur is not None else (1.0,None)
+        big=el["fontSize"]>=24 or (el["fontSize"]>=18.66 and el["fontWeight"]>=700)
+        if el["hasText"]:
+            need=PX_LARGE if big else PX_AA; got=round(mc,2); kind="text"
+        else:
+            need=PX_UI; got=round(sal,2); kind="control"
+        v="OK"
+        if bg is None: v="NO-PIXELS"
+        elif el["hasText"] and distinct<2: v="NO-INK"
+        elif got<need: v=("LOW-CONTRAST" if el["hasText"] else "FLAT-AGAINST-PAGE")
+        rows.append({"surface":surface,"testid":el["testid"],"owner":el["owner"],"tag":el["tag"],
+            "text":el["text"],"href":el["href"],"kind":kind,"interactive":el["interactive"],
+            "verdict":v,"measured":got,"need":need,"ratio_text":round(mc,2),"salience":round(sal,2),
+            "distinct":distinct,"ink":None if ink is None else PX_CSS(ink),
+            "bg":None if bg is None else PX_CSS(bg),"surround":None if sur is None else PX_CSS(sur),
+            "inset":s["inset"],"box":[round(el["x"]),round(el["y"]),round(el["w"]),round(el["h"])]})
+    return rows,sk
+def PX_FAILS(rows):
+    return [{k:r[k] for k in ("surface","testid","tag","text","kind","verdict","measured","need","ratio_text","salience","ink","bg","surround","distinct","box")} for r in rows if r["verdict"]!="OK"]
+def PX_SKIPS(sk):
+    return [[s.get("surface"),s.get("testid"),s.get("text"),s["why"],s["interactive"]] for s in sk]
+def PX_FIND(rows,pat):
+    return [r for r in rows if re.search(pat,(r["text"] or "")+" "+(r["href"] or ""),re.I)]
+def PX_ROUTE(rows,pat,href):
+    out=[]
+    for r in rows:
+        if not r["interactive"]: continue
+        if re.search(pat,r["text"] or "",re.I) or re.search(href,r["href"] or "",re.I): out.append(r)
+    return out
+def PX_COVER(rows,surface,tid):
+    for r in rows:
+        if r["surface"]==surface and (r["testid"]==tid or r["owner"]==tid): return True
+    return False
+PX_SIGNIN="sign ?in|log ?in|sign-in|log-in"
+PX_SIGNUP="sign ?up|creat.*account|register|join"
+PX_SURF=["/ signed out","/login signed out","/signup signed out","/lookup signed out",
+  "/ signed out, results","signed out, slot clicked","/login, bad credentials",
+  "/lookup, unknown reference","/ signed in, results","booking form, signed in",
+  "confirmation, signed in","/lookup, reservation shown"]
+PX_REQUIRED={
+ "/ signed out":["restaurant-select","date-input","party-size-input","search-button"],
+ "/login signed out":["login-email","login-password","login-submit"],
+ "/signup signed out":["signup-email","signup-password","signup-display-name","signup-submit"],
+ "/lookup signed out":["lookup-reference-input","lookup-submit"],
+ "/ signed out, results":["availability-grid","search-button"],
+ "/login, bad credentials":["auth-error"],
+ "/lookup, unknown reference":["reservation-error"],
+ "/ signed in, results":["current-user","logout-button","availability-grid"],
+ "booking form, signed in":["booking-form","booking-party-size","booking-summary","booking-submit"],
+ "confirmation, signed in":["confirmation-reference","confirmation-details"],
+ "/lookup, reservation shown":["reservation-detail","reservation-status","reservation-cancel-button"]}
+def PX_TOUR(pg,ref):
+    rows=[]; sk=[]; cen={}
+    def g(n):
+        r,s=PX_SCAN(pg,n); rows.extend(r); sk.extend(s); cen[n]=len(r)
+    for p in ["/","/login","/signup","/lookup"]:
+        pg.goto(BASE+p,wait_until="load"); g(p+" signed out")
+    SEARCH_UI(pg,"r_anker",F,4); g("/ signed out, results")
+    c=CELL(pg,"t_2","19:00")
+    if c: c.click(); pg.wait_for_timeout(800)
+    if SEE(pg,"booking-submit"): CLICK(pg,"booking-submit"); pg.wait_for_timeout(1400)
+    g("signed out, slot clicked")
+    pg.goto(BASE+"/login",wait_until="load")
+    FILL(pg,"login-email",ADA["email"]); FILL(pg,"login-password","wrong password")
+    CLICK(pg,"login-submit"); pg.wait_for_timeout(900); g("/login, bad credentials")
+    pg.goto(BASE+"/lookup",wait_until="load")
+    FILL(pg,"lookup-reference-input","NO-SUCH-REFERENCE"); CLICK(pg,"lookup-submit")
+    pg.wait_for_timeout(1000); g("/lookup, unknown reference")
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,4); g("/ signed in, results")
+    CLICK(pg,"slot-t_2-19:00"); pg.wait_for_timeout(800); g("booking form, signed in")
+    CLICK(pg,"booking-submit"); pg.wait_for_timeout(1600); g("confirmation, signed in")
+    pg.goto(BASE+"/lookup",wait_until="load")
+    FILL(pg,"lookup-reference-input",ref); CLICK(pg,"lookup-submit")
+    pg.wait_for_timeout(1000); g("/lookup, reservation shown")
+    return rows,sk,cen
+#PX-END
+```
+
+## §18 The contrast thresholds, declared
+
+The spec gives no figure. It says "text and controls need sufficient contrast" and "Primary actions
+must be easy to identify". **`@scribe` picked the numbers below; the spec did not supply them**, and
+this paragraph exists so no later reader mistakes them for quotation.
+
+| Measured on | Threshold | Where the number comes from |
+|---|---|---|
+| Text under 24px, and under 18.66px bold | **4.5:1** | WCAG 2.1 AA, SC 1.4.3 (normal text) |
+| Text 24px and over, or 18.66px and over at weight ≥ 700 | **3.0:1** | WCAG 2.1 AA, SC 1.4.3's own large-text allowance |
+| An interactive element with no text of its own, against the page around it | **3.0:1** | WCAG 2.1 AA, SC 1.4.11 (non-text contrast) |
+| A primary action's whole box, against the page around it | **3.0:1** | WCAG 2.1 AA, SC 1.4.11, applied to the one property §16 had routed to human judgement |
+
+**On what basis.** WCAG 2.1 AA is the only widely published numeric definition of "sufficient"; this
+file already used 4.5:1 in S-57 without saying it had chosen; and a declared number a run can fail is
+worth more than a faithful quotation of "sufficient", which settles nothing. If `@registrar` prefers
+a different figure, it is one line in this table and a new entry — not an edit to any entry below.
+
+**These entries are not declared human-judged.** A human already judged this interface; that is how
+the defect arrived. The §16 "Declared human-judged" table lists "Primary actions are easy to
+identify" and that row stands unedited — S-71 does not replace it. S-71 settles a **floor** under it:
+a primary action that is not painted distinguishably from the page cannot be easy to identify. Whether
+a legible primary action is also *salient* remains the human's. A floor that can fail is not a
+substitute for judgement and is not offered as one.
+
+## Replacement and new entries — rendered appearance (§UI quality, §Product and visual direction)
+
+### S-65: The rendered-raster instrument rejects a control that is invisible in pixels but passes every DOM-level assertion.
+Check: `$PWPY -c "$WPX"'
+SETUP()
+INJ="""()=>{
+  const mk=(id,css,label)=>{const b=document.createElement("button");
+    b.setAttribute("data-testid",id); b.textContent=label;
+    b.style.cssText="display:inline-block;margin:4px;padding:6px 10px;font-size:14px;border:none;background:#ffffff;"+css;
+    document.body.appendChild(b); return b};
+  mk("px-probe-transparent","color:transparent","Probe sign in");
+  mk("px-probe-opacity","opacity:0;color:#111111","Probe create account");
+  mk("px-probe-samecolour","color:#ffffff","Probe ghost");
+  mk("px-probe-visible","color:#111111","Probe visible");
+  return true}"""
+NAMES=[("px-probe-transparent","Probe sign in"),("px-probe-opacity","Probe create account"),
+       ("px-probe-samecolour","Probe ghost"),("px-probe-visible","Probe visible")]
+INVIS=["px-probe-transparent","px-probe-opacity","px-probe-samecolour"]
+def f(pg):
+    pg.goto(BASE+"/",wait_until="load")
+    pg.evaluate(INJ)
+    dom={}
+    for t,_n in NAMES:
+        dom[t]=pg.evaluate("""(t)=>{const e=document.querySelector("[data-testid="+JSON.stringify(t)+"]");
+            const r=e.getBoundingClientRect(),c=getComputedStyle(e);
+            return {box:[Math.round(r.width),Math.round(r.height)],display:c.display,
+                    visibility:c.visibility,text:e.textContent.trim()}}""",t)
+    clicks={}
+    for t,n in NAMES:
+        try:
+            pg.get_by_role("button",name=n).first.click(timeout=4000); clicks[t]="clicked"
+        except Exception as ex:
+            clicks[t]="failed: "+type(ex).__name__
+    rows,sk=PX_SCAN(pg,"/ signed out + injected probes")
+    px={r["testid"]:[r["verdict"],r["measured"],r["need"],r["distinct"],r["ink"],r["bg"]]
+        for r in rows if (r["testid"] or "").startswith("px-probe")}
+    skp=[s for s in PX_SKIPS(sk) if (s[1] or "").startswith("px-probe")]
+    return dom,clicks,px,skp
+dom,clicks,px,skp=UI(f,route=None)
+print("DOM-LEVEL PREDICATES:",json.dumps(dom,sort_keys=True))
+print("CLICK BY ACCESSIBLE NAME:",json.dumps(clicks,sort_keys=True))
+print("RENDERED-PIXEL VERDICTS:",json.dumps(px,sort_keys=True))
+print("PROBES EXCLUDED FROM MEASUREMENT:",json.dumps(skp,sort_keys=True))
+assert not skp,"a probe was excluded instead of measured, so this run proves nothing: %r"%skp
+for t,_n in NAMES:
+    d=dom[t]
+    assert d["box"][0]>0 and d["box"][1]>0,"%s has an empty box, so it is not the defect class under test: %r"%(t,d)
+    assert d["display"]!="none","%s is display:none, so it is not the defect class under test: %r"%(t,d)
+    assert d["visibility"]=="visible","%s is not visibility:visible, so it is not the defect class under test: %r"%(t,d)
+    assert d["text"],"%s carries no text, so it is not the defect class under test: %r"%(t,d)
+    assert clicks[t]=="clicked","a click by accessible name did not succeed on %s: %r"%(t,clicks[t])
+for t in INVIS:
+    assert t in px,"%s was never measured: %r"%(t,sorted(px))
+    assert px[t][0]!="OK","the instrument passed %s, which no eye can see: %r"%(t,px[t])
+assert px["px-probe-visible"][0]=="OK","the instrument rejected a plainly legible control, so it is too harsh to settle anything: %r"%px["px-probe-visible"]
+print("PASS instrument rejects 3 of 3 pixel-invisible probes and accepts 1 of 1 legible probe, while non-zero box, display, visibility, text content and click-by-accessible-name all succeed on all four")'`
+Passes when: prints the four DOM records, the four click outcomes, the four pixel verdicts, an empty exclusion list, and finally `PASS instrument rejects 3 of 3 …`. **This entry is about the instrument, not the service.** It is first because every entry after it is worthless if the instrument cannot fail: it injects three controls that are invisible in pixels by three different mechanisms — `color: transparent`, `opacity: 0`, foreground equal to background — and requires the raster to reject all three *while* every DOM-level predicate the human named passes on them, and requires it to accept a fourth that differs only in being legible. A run of this that prints `PASS` is the evidence that S-66 to S-71 mean something. **What it does not establish:** that the three mechanisms are the only ones, or that the instrument catches a fourth nobody has thought of.
+Status: unclaimed
+
+### S-66: Signed out, the home page paints a legible route to sign in and a legible route to create an account.
+Check: `$PWPY -c "$WPX"'
+SETUP()
+def f(pg):
+    pg.goto(BASE+"/",wait_until="load")
+    rows,sk=PX_SCAN(pg,"/ signed out")
+    return rows,PX_SKIPS(sk)
+rows,sk=UI(f,route=None)
+si=PX_ROUTE(rows,PX_SIGNIN,"^/?login")
+su=PX_ROUTE(rows,PX_SIGNUP,"^/?signup")
+def shew(rs):
+    return [[r["testid"],r["tag"],r["text"],r["href"],r["verdict"],r["measured"],r["need"],r["ink"],r["bg"],r["box"]] for r in rs]
+print("MEASURED ON / SIGNED OUT:",len(rows))
+print("EXCLUDED FROM MEASUREMENT:",json.dumps(sk,sort_keys=True))
+print("SIGN-IN ROUTES:",json.dumps(shew(si),sort_keys=True))
+print("CREATE-ACCOUNT ROUTES:",json.dumps(shew(su),sort_keys=True))
+assert rows,"nothing was measured on / while signed out, so this run settles nothing"
+assert si,"no interactive sign-in route was measured on / while signed out; excluded: %s"%json.dumps(sk,sort_keys=True)
+assert su,"no interactive create-account route was measured on / while signed out; excluded: %s"%json.dumps(sk,sort_keys=True)
+assert [r for r in si if r["verdict"]=="OK"],"a sign-in route exists on / but none of them is legible in rendered pixels: %s"%json.dumps(PX_FAILS(si),sort_keys=True)
+assert [r for r in su if r["verdict"]=="OK"],"a create-account route exists on / but none of them is legible in rendered pixels: %s"%json.dumps(PX_FAILS(su),sort_keys=True)
+print("PASS signed out, / paints at least one legible sign-in route and one legible create-account route")'`
+Passes when: exits 0 and prints `PASS signed out, / paints at least one legible …`, with the candidate tables above it. This is the reported defect, stated as a claim. A route counts only if it is **interactive**, **measured** (not in the exclusion list), and **`OK` on painted pixels** at the §18 threshold; presence, a non-zero box, `display`, `visibility` and a successful click by accessible name are each insufficient on their own and in combination — S-65 is the proof of that. A route is recognised by its own text matching `sign in`/`log in` or `sign up`/`create account`/`register`, or by an `href` resolving to `/login` or `/signup`, so a button opening a modal counts and a link whose label is an icon alone does not. **What it does not establish:** that the route is placed where a visitor will look, or that one route is enough.
+Status: unclaimed
+
+### S-67: Every text-bearing and interactive element measured across twelve named surfaces meets the declared rendered-pixel threshold.
+Check: `$PWPY -c "$WPX"'
+ta,_=SETUP()
+pre=OK(BOOK(ta,F+"T20:00","s67-seed",table_id="t_3",ps=4),201)
+rows,sk,cen=UI(lambda pg:PX_TOUR(pg,pre["reference"]),route=None)
+bad=PX_FAILS(rows)
+print("CENSUS PER SURFACE:",json.dumps(cen,indent=1,sort_keys=True))
+print("EXCLUDED FROM MEASUREMENT:",json.dumps(PX_SKIPS(sk),indent=1,sort_keys=True))
+print("TOTAL MEASURED:",len(rows),"ACROSS SURFACES:",len(cen))
+assert len(cen)==len(PX_SURF),"the tour reached %d surfaces, not the %d it names: %r"%(len(cen),len(PX_SURF),sorted(cen))
+assert not bad,"%d of %d measured elements are below the declared rendered-pixel threshold:\n%s"%(len(bad),len(rows),json.dumps(bad,indent=1,sort_keys=True))
+print("PASS",len(rows),"elements measured on",len(cen),"surfaces, none below threshold")'`
+Passes when: exits 0, prints a per-surface census and a full exclusion list, and ends `PASS <n> elements measured on 12 surfaces, none below threshold`. The twelve surfaces are fixed in `PX_SURF`: `/`, `/login`, `/signup` and `/lookup` **signed out**; `/` signed out with results; **signed out after clicking an available slot**; `/login` after a refused login; `/lookup` after an unknown reference; `/` signed in with results; the booking form; the confirmation; and `/lookup` showing a real reservation. Signed-out surfaces are four of the twelve because the reported defect is only visible signed out. **Every text-bearing and every interactive element on each surface is measured, not a named sample** — that is the difference between this and S-57. A failing run quotes each element with its ratio, its ink and background colours as painted, and its box. **What it does not establish:** that twelve surfaces are every surface. Enumerating all reachable states is the genuinely hard part and this entry does not claim to have done it — the list is declared, not complete; the 375px viewport is not in it, nor are hover, focus and disabled variants, nor `no-slots`, `booking-error` or `booking-uncertain`. Those are named here as known gaps rather than implied to be covered.
+Status: unclaimed
+
+### S-68: The sweep's census is non-empty on every surface and includes every control the spec names there.
+Check: `$PWPY -c "$WPX"'
+ta,_=SETUP()
+pre=OK(BOOK(ta,F+"T20:00","s68-seed",table_id="t_3",ps=4),201)
+rows,sk,cen=UI(lambda pg:PX_TOUR(pg,pre["reference"]),route=None)
+print("CENSUS PER SURFACE:",json.dumps(cen,indent=1,sort_keys=True))
+print("EXCLUDED FROM MEASUREMENT:",json.dumps(PX_SKIPS(sk),indent=1,sort_keys=True))
+thin=sorted([s for s in cen if cen[s]<6])
+missing=[]
+for s in sorted(PX_REQUIRED):
+    for t in PX_REQUIRED[s]:
+        if not PX_COVER(rows,s,t): missing.append([s,t])
+si=PX_ROUTE([r for r in rows if r["surface"]=="/ signed out"],PX_SIGNIN,"^/?login")
+su=PX_ROUTE([r for r in rows if r["surface"]=="/ signed out"],PX_SIGNUP,"^/?signup")
+print("SURFACES UNDER 6 MEASURED ELEMENTS:",json.dumps(thin,sort_keys=True))
+print("SPEC CONTROLS NOT MEASURED ON THEIR SURFACE:",json.dumps(missing,sort_keys=True))
+print("TOTAL MEASURED:",len(rows))
+assert len(cen)==len(PX_SURF),"the tour reached %d surfaces, not the %d it names: %r"%(len(cen),len(PX_SURF),sorted(cen))
+assert not thin,"a surface measured fewer than 6 elements, so a pass there would be close to vacuous: %r"%[[s,cen[s]] for s in thin]
+assert not missing,"controls the spec names were never measured on their surface: %s"%json.dumps(missing,sort_keys=True)
+assert si and su,"the signed-out home census contains no sign-in route or no create-account route: signin=%d signup=%d"%(len(si),len(su))
+assert len(rows)>=60,"only %d elements were measured in total, below the declared floor of 60"%len(rows)
+print("PASS census non-vacuous:",len(rows),"elements,",len(cen),"surfaces, all",sum(len(PX_REQUIRED[s]) for s in PX_REQUIRED),"named spec controls measured")'`
+Passes when: exits 0 and ends `PASS census non-vacuous: …`, having printed the per-surface census, the exclusion list, and empty lists for thin surfaces and missing controls. **This entry exists because S-67 passes vacuously if the enumeration finds nothing** — that is C-2's defect shape, and an empty sweep prints the same `PASS` as a complete one. It therefore fixes three floors, all declared by `@scribe` rather than taken from the spec: at least 6 measured elements per surface, at least 60 in total, and every `data-testid` the spec names for a surface measured **either on that element or on a descendant of it** (so a container whose text lives in a child still counts). The sign-in and create-account routes must also be in the signed-out home census, which closes the door left open by the occlusion exclusion in §17: a control hidden under an overlay is excluded from measurement, and exclusion fails this entry rather than passing S-67 quietly. **What it does not establish:** that 6, 60 and the named list are the right floors, or that an interface measuring 61 elements has been meaningfully covered.
+Status: unclaimed
+
+### S-69: No measured element paints nothing, and no named control is excluded for having no box.
+Check: `$PWPY -c "$WPX"'
+ta,_=SETUP()
+pre=OK(BOOK(ta,F+"T20:00","s69-seed",table_id="t_3",ps=4),201)
+rows,sk,cen=UI(lambda pg:PX_TOUR(pg,pre["reference"]),route=None)
+blank=[r for r in rows if r["verdict"] in ("NO-INK","NO-PIXELS")]
+flat=[r for r in rows if r["verdict"]=="FLAT-AGAINST-PAGE"]
+boxless=[s for s in sk if s["why"]=="zero-box" and (s["interactive"] or s["hasText"]) and (s["text"] or "")]
+print("CENSUS PER SURFACE:",json.dumps(cen,indent=1,sort_keys=True))
+print("ELEMENTS WHOSE BOX HOLDS ONE COLOUR:",json.dumps(PX_FAILS(blank),indent=1,sort_keys=True))
+print("CONTROLS FLAT AGAINST THE PAGE:",json.dumps(PX_FAILS(flat),indent=1,sort_keys=True))
+print("NAMED CONTROLS EXCLUDED FOR HAVING NO BOX:",json.dumps(PX_SKIPS(boxless),indent=1,sort_keys=True))
+assert len(cen)==len(PX_SURF),"the tour reached %d surfaces, not the %d it names: %r"%(len(cen),len(PX_SURF),sorted(cen))
+assert rows,"nothing was measured, so this run settles nothing"
+assert not blank,"%d measured elements paint a single colour across their whole box, so nothing of them is on screen: %s"%(len(blank),json.dumps(PX_FAILS(blank),indent=1,sort_keys=True))
+assert not flat,"%d interactive elements are under 3.0:1 against the page around them across their whole box: %s"%(len(flat),json.dumps(PX_FAILS(flat),indent=1,sort_keys=True))
+assert not boxless,"a named interactive or text-bearing element was excluded for having no box: %s"%json.dumps(PX_SKIPS(boxless),indent=1,sort_keys=True)
+print("PASS",len(rows),"elements measured, 0 paint a single colour, 0 controls flat against the page, 0 named controls boxless")'`
+Passes when: exits 0 and ends `PASS <n> elements measured, 0 paint a single colour, …`. This isolates the exact failure the human saw from the milder one. `LOW-CONTRAST` is text that is too faint to read; **`NO-INK` is text that was never painted at all**, which is what `color: transparent` and `opacity: 0` produce and what no entry before S-65 could see. It is separated from S-67 so that a verdict distinguishes "faint" from "absent" without a reader having to parse the failure list. It also covers two exclusion paths rather than only the measured set: an interactive element with no text of its own must be distinguishable from the page it sits on, and a named control reduced to a zero-size box fails here instead of being quietly excluded. **What it does not establish:** anything about elements excluded as occluded, `display:none` or `aria-hidden` — those remain in the printed exclusion list for a reader to check, and S-68 is what forces the ones that matter back into the measured set.
+Status: unclaimed
+
+### S-70: The error that tells a signed-out visitor to sign in is reached with a legibly painted route to signing in.
+Check: `$PWPY -c "$WPX"'
+SETUP()
+def f(pg):
+    SEARCH_UI(pg,"r_anker",F,4)
+    c=CELL(pg,"t_2","19:00")
+    assert c,"no available cell at 19:00 to click while signed out, so the reported path cannot be reproduced"
+    c.click(); pg.wait_for_timeout(800)
+    if SEE(pg,"booking-submit"): CLICK(pg,"booking-submit"); pg.wait_for_timeout(1400)
+    err=TXT(pg,"auth-error")
+    url=pg.url.replace(BASE,"") or "/"
+    rows,sk=PX_SCAN(pg,"signed out, slot clicked")
+    return rows,PX_SKIPS(sk),err,url
+rows,sk,err,url=UI(f,route=None)
+si=PX_ROUTE(rows,PX_SIGNIN,"^/?login")
+su=PX_ROUTE(rows,PX_SIGNUP,"^/?signup")
+ok=[r for r in si+su if r["verdict"]=="OK"]
+form=[r for r in rows if r["testid"] in ("login-email","login-password","login-submit")]
+formok=[r for r in form if r["verdict"]=="OK"]
+print("URL AFTER CLICKING A SLOT WHILE SIGNED OUT:",url)
+print("AUTH-ERROR TEXT:",json.dumps(err))
+print("MEASURED ON THIS SURFACE:",len(rows))
+print("EXCLUDED FROM MEASUREMENT:",json.dumps(sk,sort_keys=True))
+print("ROUTES TO SIGNING IN ON THIS SURFACE:",json.dumps([[r["testid"],r["tag"],r["text"],r["href"],r["verdict"],r["measured"],r["need"],r["ink"],r["bg"]] for r in si+su],sort_keys=True))
+print("LOGIN FORM ON THIS SURFACE:",json.dumps([[r["testid"],r["verdict"],r["measured"],r["need"]] for r in form],sort_keys=True))
+assert rows,"nothing was measured on the surface reached by clicking a slot while signed out"
+assert err or url.rstrip("/").endswith("/login"),"clicking a slot while signed out neither showed auth-error nor navigated to /login, so the reported path did not occur: url=%r"%url
+if url.rstrip("/").endswith("/login"):
+    assert len(formok)==3,"the click navigated to /login but the login form is not legible in rendered pixels: %s"%json.dumps(PX_FAILS(form),sort_keys=True)
+    print("PASS the slot click delivered the visitor to a legibly painted /login form")
+else:
+    assert si or su,"the signed-out visitor is told to sign in with no interactive route to do so measured on the surface; excluded: %s"%json.dumps(sk,sort_keys=True)
+    assert ok,"a route to signing in is present on the error surface but none of them is legible in rendered pixels: %s"%json.dumps(PX_FAILS(si+su),sort_keys=True)
+    print("PASS the error surface paints a legible route to signing in:",json.dumps([[r["testid"],r["text"],r["href"],r["measured"]] for r in ok],sort_keys=True))
+'`
+Passes when: exits 0 and ends with one of the two `PASS …` lines, having printed the URL, the `auth-error` text, the census, the exclusion list and the route table. The human's second sentence is a separate claim from the first: the header is one surface, the state after clicking a slot is another, and a visitor stranded there is stranded whatever the header does. S-36 already permits either outcome — an `auth-error` in place, or a navigation to `/login` — so this entry branches on which happened and requires painted legibility in both: a route on the error surface, or an actually legible login form at the destination. **What it does not establish:** that the error text itself names the route, or that the route is reachable without scrolling.
+Status: unclaimed
+
+### S-71: Each primary action is painted distinguishably from the page around it, at 3.0:1 or better.
+Check: `$PWPY -c "$WPX"'
+SETUP()
+PRIMARY=[["/ signed out","/","search-button"],["/login signed out","/login","login-submit"],
+         ["/signup signed out","/signup","signup-submit"],["/lookup signed out","/lookup","lookup-submit"]]
+def f(pg):
+    rows=[]
+    for name,path,_t in PRIMARY:
+        pg.goto(BASE+path,wait_until="load")
+        r,_s=PX_SCAN(pg,name); rows.extend(r)
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,4)
+    CLICK(pg,"slot-t_2-19:00"); pg.wait_for_timeout(800)
+    r,_s=PX_SCAN(pg,"booking form, signed in"); rows.extend(r)
+    return rows
+rows=UI(f,route=None)
+want=[[n,t] for n,_p,t in PRIMARY]+[["booking form, signed in","booking-submit"]]
+found=[]; absent=[]; dull=[]
+for n,t in want:
+    hit=[r for r in rows if r["surface"]==n and r["testid"]==t]
+    if not hit: absent.append([n,t]); continue
+    r=hit[0]
+    found.append([n,t,r["salience"],r["ratio_text"],r["kind"],r["bg"],r["surround"],r["ink"]])
+    if r["salience"]<PX_UI: dull.append([n,t,r["salience"],r["bg"],r["surround"]])
+print("PRIMARY ACTIONS AS PAINTED:",json.dumps(found,indent=1,sort_keys=True))
+print("NOT MEASURED:",json.dumps(absent,sort_keys=True))
+print("UNDER 3.0:1 AGAINST THE PAGE:",json.dumps(dull,sort_keys=True))
+assert not absent,"a primary action was never measured on its surface: %s"%json.dumps(absent,sort_keys=True)
+assert not dull,"a primary action is under the declared 3.0:1 floor against the page immediately around it: %s"%json.dumps(dull,sort_keys=True)
+print("PASS",len(found),"primary actions each paint at 3.0:1 or better against their surroundings")'`
+Passes when: exits 0 and ends `PASS 5 primary actions each paint at 3.0:1 or better …`, with the measured figures above it. Five primary actions are named: `search-button`, `login-submit`, `signup-submit`, `lookup-submit`, `booking-submit`. The measurement is the highest contrast between any colour painted inside the control's full box — fill, border or glyph — and the dominant colour of a 6-pixel ring just outside it, so a filled button passes on its fill and a flat text button passes on its letters, while a control that paints nothing distinguishable fails at 1.0. **This is a floor under a property §16 routed to human judgement, and it does not replace that routing** — see §18. **What it does not establish:** that the action is the *most* salient thing on its surface, that it is positioned where a diner will look, or that five is the full set of primary actions.
+Status: unclaimed
+
+### S-72: After the fix, the harness command in the defect report passes suites 1 and 2 against stage-2/.
+Check: `cd /Users/aashanjaved/dark-factory-wearedevs && ./.venv/bin/python -m harness run --track tablekeeper --repo /Users/aashanjaved/band-work/result --stage 2 --out /Users/aashanjaved/band-work/checks/fix-$(date +%s); echo "harness exit $?"`
+Passes when: the harness exits 0, reporting zero failures and zero errors for **both** stage 1 and stage 2, and `harness exit 0` prints. This is the human's command, byte for byte as the defect report gave it, with the exit code echoed so a verdict can quote it. A printed failure for the stage-3 probe is expected and is not this run's exit code, per `harness/cli.py:459`. **It deliberately does not bracket the working tree.** Two `docs/` paths are dirty at `f63f657` and belong to nobody in this band; a clean-tree assertion here would fail for a reason that has nothing to do with the fix. That is ERRATA 2 / Defect 5 unresolved rather than discharged, and it is why S-73 exists beside this entry: this one proves the human's command passes where the human runs it, and S-73 proves the revision passes where nothing can move underneath it. **What it does not establish:** which revision was tested — the harness reads a working tree, so a verdict for this entry must name the revision separately and assert the tree held only those two `docs/` paths.
+Status: unclaimed
+
+### S-73: The same suites pass in grading mode against an immutable clone of the fixed revision.
+Check: `SRC=/Users/aashanjaved/band-work/result; REV="${TK_REV:-$(git -C "$SRC" rev-parse HEAD)}"; C="$SRC/.auditor-clones/s73"; rm -rf "$C" && git clone -q --no-local "$SRC" "$C" && git -C "$C" checkout -q "$REV" && test -z "$(git -C "$C" status --porcelain)" || { echo "CLONE NOT CLEAN"; exit 1; }; before=$(git -C "$C" rev-parse HEAD); echo "AUDITING $before"; cd /Users/aashanjaved/dark-factory-wearedevs && ./.venv/bin/python -m harness run --track tablekeeper --repo "$C" --stage 2 --mode isolated --out /Users/aashanjaved/band-work/checks/s73-$(date +%s); r=$?; echo "harness exit $r"; test $r -eq 0 && test -z "$(git -C "$C" status --porcelain)" && test "$(git -C "$C" rev-parse HEAD)" = "$before" && echo "SUITES 1 AND 2 PASS IN ISOLATED MODE AT $before"`
+Passes when: exits 0 and prints `AUDITING <revision>`, the harness summary with zero failures and zero errors for both stages, `harness exit 0`, then `SUITES 1 AND 2 PASS IN ISOLATED MODE AT <the same revision>`. `--mode isolated` is required because the harness defaults to `host`, where it warns that outbound is not blocked and that a submission must never be scored from that mode — ERRATA 1 / Defect 2, which cost C-140 and C-141 their meaning. `TK_REV` names the revision; unset, it audits the current `HEAD` of the source repository. `.auditor-clones/` is gitignored, so making the clone cannot dirty the source tree. **What it does not establish:** anything about the live working tree, which is the point — the clone is the thing audited, per §10.
+Status: unclaimed
+
+### S-74: The fix changed nothing under stage-1/.
+Check: `SRC=/Users/aashanjaved/band-work/result; BASE_REV="${TK_BASE_REV:-f63f657d4839f3a9106c9956b4136ecbd3072f53}"; REV="${TK_REV:-$(git -C "$SRC" rev-parse HEAD)}"; echo "BASELINE $BASE_REV"; echo "FIXED    $(git -C "$SRC" rev-parse "$REV")"; git -C "$SRC" merge-base --is-ancestor "$BASE_REV" "$REV" || { echo "BASELINE IS NOT AN ANCESTOR OF THE FIX"; exit 1; }; d=$(git -C "$SRC" diff --name-only "$BASE_REV" "$REV" -- stage-1/); test -z "$d" && echo "STAGE-1 UNCHANGED" || { echo "STAGE-1 CHANGED:"; echo "$d"; exit 1; }; echo "CHANGED BY THE FIX:"; git -C "$SRC" diff --name-only "$BASE_REV" "$REV"`
+Passes when: exits 0 and prints `BASELINE f63f657…`, `FIXED <revision>`, then `STAGE-1 UNCHANGED`, then the full list of paths the fix touched. The baseline defaults to `f63f657d4839f3a9106c9956b4136ecbd3072f53`, which was `HEAD` when this entry was written; `@registrar` dispatched from `c07cb94e73adc74c2e98beb0ca87df68a234bd36`, two commits earlier, and those two commits touch only `REFUSALS.md`, so `stage-1/`, `stage-2/` and `LEDGER.md` are byte-identical across them and either baseline settles this claim identically. The ancestry assertion is there so the claim cannot be settled by comparing two unrelated commits. **What it does not establish:** that the paths the fix did touch were the right ones.
+Status: unclaimed
+
+## What these ten entries do not reach
+
+Named here rather than left for a reader to assume covered.
+
+| Not reached | Why not, and what it would take |
+|---|---|
+| The 375px viewport | `UI()` from §15 builds a 1280×900 page and the instrument measures what that page paints. A narrow-viewport sweep is a separate entry and is not written. |
+| Hover, focus and disabled appearance | The raster is a still of the resting state. Measuring focus would need the instrument run after a `Tab`, which no entry here does. |
+| `no-slots`, `booking-error`, `booking-uncertain` | Each needs a fixture or a fault injection the tour does not perform. S-67 reaches twelve surfaces and these three are not among them. |
+| Elements excluded as occluded, `display:none` or `aria-hidden` | Printed in every exclusion list, asserted on only where S-68 names the control. A control hidden under a transparent overlay is excluded, not failed. |
+| Text sharing a box with an icon or image | A visible glyph anywhere in a box can carry the ratio for invisible text in that same box. Measuring leaves rather than containers narrows this; it does not close it. |
+| Whether the interface is good | Unchanged from §16. These entries make a specific class of failure impossible to pass. They say nothing else. |
