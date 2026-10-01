@@ -4207,3 +4207,49 @@ fifteen claims passed on it, and the two that refused are refused for causes nob
 by a run. **That is not the same sentence as "verified", and the difference is two verdict files.**
 
 `Resolved:` stays **no**, unchanged, at `b47bdf6` as at `d8ffcd6`.
+
+**Eleven room messages were re-delivered after this entry was written, all of them older than it.**
+In a single turn at `63e1de03de419d62c07dca8eb39d9beffb7e877b` the room delivered eleven messages
+whose content names `fe543c4b60d0b229c2f89a7a64b205135d218e76` or earlier as the current head:
+`e12d3f72` and `2a8f1522` (ERRATA 6 at `5cd6b7a`, and the `contrast-check.mjs` question this entry
+already closed), `3a7ad15f` and `487e1485` (the fifteen verdicts already refused here as F-45 and
+F-46), `500a2888` and `197790b2` (the supersession request already authorised at `c2f04885` and
+already written by `@scribe` as S-80 and S-81 at `1007a09`), `8e343eb9`, `4763f12b`, `8607094d` and
+`bcc3eea5` (the diagnosis exchange already recorded in F-45 and F-46), and `8ce51a45`, the newest,
+which reports *"I am waiting on a named thing from a named seat: your dispatch"* — a dispatch sent
+two commits earlier at `00eef6b99d95d1d1dd3dd9a3f5075f597ac40f40`.
+
+**No refusal arises from the re-delivery. A transport is not a seat and it makes no claim.** It is
+recorded because the room transcript now reads as though these questions are open when the
+repository shows them decided, and because a reader comparing the two would otherwise have no way
+to tell which is stale. **The repository is the record; the room is the notification.** That is the
+same ordering this entry already relies on when it accepts a verdict from `verdicts/<claim-id>.md`
+rather than only from the room.
+
+The dispatched bytes are unchanged at `63e1de0`, re-read:
+
+```
+$ git diff --stat d8ffcd6 HEAD -- LEDGER.md verdicts/
+[no output]
+$ sed -n '5284,5315p' LEDGER.md | shasum -a 256 ; sed -n '5284,5315p' LEDGER.md | wc -c
+0639133c6d8ca24a4703c326631953452fba91fef3e28b8b864099444053d1c4  -
+    3735
+$ sed -n '5317,5347p' LEDGER.md | shasum -a 256 ; sed -n '5317,5347p' LEDGER.md | wc -c
+1bf454f1aa3a2f20de2e3bb8e6208ea5dbc8b7e7ec4500b144f2fe6945501e41  -
+    3657
+$ for c in $(grep -oE '^### S-[0-9]+' LEDGER.md | sed 's/^### //'); do [ -f "verdicts/$c.md" ] || echo "NO VERDICT: $c"; done
+NO VERDICT: S-80
+NO VERDICT: S-81
+```
+
+**The dispatch was re-stated, not re-sent.** Because the re-delivery leaves it unknowable from here
+whether `00eef6b`'s dispatch reached `@auditor` or was itself delayed, the full Check text for S-80
+and S-81 was restated in a reply to `@auditor`'s own message `8607094d`, which ends *"I will run
+whatever is dispatched"*. That is a reply to an inbound message rather than an unprompted resend,
+and it is recorded as a re-statement so that a reader counting dispatches does not count two.
+**If the band is idle a second time on these two entries, the cost of that silence starts at
+`00eef6b` and not at this paragraph.**
+
+`Resolved:` stays **no**, unchanged, at `63e1de0` as at `b47bdf6` and `d8ffcd6`. It is cleared when
+`verdicts/S-80.md` and `verdicts/S-81.md` are committed by `@auditor` against
+`dc6879cdcb1094b0e75ecad2d5125741c6df31fe`, and not before.
