@@ -4253,3 +4253,55 @@ and it is recorded as a re-statement so that a reader counting dispatches does n
 `Resolved:` stays **no**, unchanged, at `63e1de0` as at `b47bdf6` and `d8ffcd6`. It is cleared when
 `verdicts/S-80.md` and `verdicts/S-81.md` are committed by `@auditor` against
 `dc6879cdcb1094b0e75ecad2d5125741c6df31fe`, and not before.
+
+**The same eleven messages were re-delivered a second time, and the dispatch is now a committed
+file.** In one turn at `0b5132f34d17dea356aabb74492cdd8969e00be8` the room delivered eleven messages
+again: `e12d3f72`, `2a8f1522`, `3a7ad15f`, `487e1485`, `500a2888`, `197790b2`, `8e343eb9`,
+`4763f12b`, `8607094d`, `bcc3eea5`, `8ce51a45`. **That is the identical set this entry already lists
+one paragraph above**, id for id, and a reader can check it against that list without leaving this
+file. The first re-delivery could be read as one transport hiccup. A second, after this entry
+recorded the first, cannot.
+
+**No refusal arises from the re-delivery, for the same reason as before: a transport is not a seat
+and it makes no claim.** What follows from it is a change in how the dispatch is carried. Two room
+dispatches have now been sent for these two entries and neither produced a verdict file:
+
+```
+$ for c in S-80 S-81; do [ -f "verdicts/$c.md" ] || echo "NO VERDICT: $c"; done
+NO VERDICT: S-80
+NO VERDICT: S-81
+```
+
+So the dispatch is committed to **`handoffs/batch-6.md`**, carrying both revisions, both entry
+digests, both prelude digests, §20's prelude text, and the Check text for S-80 and S-81 copied by
+`sed -n '5284,5347p' LEDGER.md` rather than transcribed — byte-identical to the ledger range at
+`sha256 d02670b4cc39bbc6056954b1915394b5b51c2d307b1d3186c55e9bc6663b30fa`. **A dispatch that lives
+in the repository survives a dropped message and a restarted seat; one that lives only in the room
+survives neither.** That is the same ordering this entry already relies on in accepting a verdict
+from `verdicts/<claim-id>.md`, applied in the other direction: if the record is what a verdict must
+be committed to, it is also where a dispatch should be readable from.
+
+The dispatched bytes are unchanged again at `0b5132f`, re-read before the handoff was written:
+
+```
+$ git diff --stat d8ffcd6 HEAD -- LEDGER.md verdicts/
+[no output]
+$ sed -n '5284,5315p' LEDGER.md | shasum -a 256 ; sed -n '5284,5315p' LEDGER.md | wc -c
+0639133c6d8ca24a4703c326631953452fba91fef3e28b8b864099444053d1c4  -
+    3735
+$ sed -n '5317,5347p' LEDGER.md | shasum -a 256 ; sed -n '5317,5347p' LEDGER.md | wc -c
+1bf454f1aa3a2f20de2e3bb8e6208ea5dbc8b7e7ec4500b144f2fe6945501e41  -
+    3657
+```
+
+**Three dispatches now exist for two entries and that number is itself the finding.** It is not
+diligence. Each one cost minutes and produced nothing, because the thing missing was never the
+content — `@auditor` has said twice that it will run whatever is dispatched, and `@builder` has
+confirmed `stage-2/app.py` is untouched at `git diff --stat dc6879c HEAD -- stage-2/app.py` with no
+output. What was missing was a place the dispatch could be read from that does not depend on a
+message arriving. **If a fourth is needed, the fault is no longer in the transport**, and the next
+entry in this file should say so rather than counting re-sends.
+
+`Resolved:` stays **no**, unchanged, at `0b5132f` as at `63e1de0`, `b47bdf6` and `d8ffcd6`. It is
+cleared when `verdicts/S-80.md` and `verdicts/S-81.md` are committed by `@auditor` against
+`dc6879cdcb1094b0e75ecad2d5125741c6df31fe`, and not before.
