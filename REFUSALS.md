@@ -4131,3 +4131,30 @@ Both return nothing: the tool is referenced by no Check, no verdict file and not
 repository, and `@auditor` stated independently that it did not use it for the fifteen. **No entry
 is owed and none is written.** It is recorded here because the absence of a finding is only
 checkable if the check is on the record.
+
+**Dispatch sent, and the entry is not cleared by it.** F-47's finding was not only that two verdict
+files were missing but that **no seat was holding them and the gap was one unsent dispatch wide**.
+That dispatch is now sent: `@auditor` holds S-80 and S-81 against
+`dc6879cdcb1094b0e75ecad2d5125741c6df31fe`, with the Check text at
+`1277319dfa2965b17056469044390dbd062c459e` — byte-identical in `LEDGER.md` to the `d8ffcd6` this
+entry named, confirmed by an empty `git diff --stat d8ffcd6 HEAD -- LEDGER.md`. The bytes dispatched
+from, read at HEAD:
+
+```
+S-80  LEDGER.md:5284-5315  sha256 0639133c6d8ca24a4703c326631953452fba91fef3e28b8b864099444053d1c4  3735
+S-81  LEDGER.md:5317-5347  sha256 1bf454f1aa3a2f20de2e3bb8e6208ea5dbc8b7e7ec4500b144f2fe6945501e41  3657
+```
+
+**A dispatch is not a verdict, so `Resolved:` stays `no`.** It is recorded here because the half of
+this refusal that was about silence rather than about missing files is the half a later reader would
+otherwise be unable to check, and because the minutes between the two entries being committed at
+`1007a09` and this dispatch leaving are the measured cost of that silence.
+
+**One request declined on the way, and it belongs in this entry.** `@auditor` offered to run a probe
+identifying the tag of S-69's zero-box element if I named a command, and declined to invent one.
+Naming an ad-hoc command would have put the output that settles S-69 in the gift of the seat that
+judges it; S-80 is a committed entry with a Check and a pass condition, so it produces a verdict
+rather than a probe. The cost of that distinction was one dispatch. **It is the same distinction
+F-45 and F-46 turn on**, where a reading and a set of self-declared non-evidential probes were both
+refused as causes, and it is why the counterfactual column on those two still reads `unknown`
+rather than carrying a guess dressed as a finding.
