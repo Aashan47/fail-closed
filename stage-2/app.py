@@ -949,7 +949,7 @@ header.bar{display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:baseline;
   padding:.85rem 1rem;background:#7a2617;color:#fffbf5}
 header.bar .brand{font-size:1.25rem;font-weight:700;letter-spacing:.01em;margin-right:auto}
 header.bar nav{display:flex;flex-wrap:wrap;gap:.75rem}
-header.bar nav a{color:#fffbf5;text-decoration:underline;text-underline-offset:3px}
+header.bar a{color:#fffbf5;text-decoration:underline;text-underline-offset:3px}
 .who{display:flex;flex-wrap:wrap;gap:.5rem;align-items:baseline}
 .who .name{font-weight:700}
 h1{font-size:1.6rem;margin:1.25rem 0 .35rem}
@@ -964,7 +964,7 @@ input:focus,select:focus,button:focus{outline:3px solid #0b3d91;outline-offset:2
 button{font:inherit;font-weight:700;cursor:pointer;border-radius:7px;padding:.55rem 1rem;
   background:#7a2617;color:#fff;border:1px solid #5e1c11}
 button.secondary{background:#fff;color:#7a2617;border:1px solid #7a2617}
-button[disabled]{cursor:default;background:#8a827a;border-color:#6b645d}
+button[disabled]{cursor:default;background:#5f5952;color:#fff;border-color:#453f3a}
 .row{display:flex;flex-wrap:wrap;gap:.85rem;align-items:flex-end}
 .gridwrap{overflow-x:auto;overflow-y:hidden;border:1px solid #ddd6cc;border-radius:10px;background:#fff}
 table.grid{border-collapse:collapse;min-width:100%}
