@@ -4744,3 +4744,223 @@ Named here rather than left for a reader to assume covered.
 | Elements excluded as occluded, `display:none` or `aria-hidden` | Printed in every exclusion list, asserted on only where S-68 names the control. A control hidden under a transparent overlay is excluded, not failed. |
 | Text sharing a box with an icon or image | A visible glyph anywhere in a box can carry the ratio for invisible text in that same box. Measuring leaves rather than containers narrows this; it does not close it. |
 | Whether the interface is good | Unchanged from §16. These entries make a specific class of failure impossible to pass. They say nothing else. |
+
+---
+
+# ERRATA 6 — four of the five declared gaps needed no fault injection, and the fifth needed one this file already performs
+
+ERRATA 5's closing table named the 375px viewport, the disabled appearance of every button,
+`no-slots`, `booking-error` and `booking-uncertain` as out of reach for S-67's tour. **That was
+honest about the tour and wrong about the reach.** `@builder` named the mechanisms: `no-slots` needs
+only a date on a weekday the fixture's `opening_hours` omits; the disabled appearance is the resting
+state of `search-button`, `booking-submit` and `reservation-cancel-button` while a request is in
+flight; and 375px is an argument to `UI()`. `booking-error` is reached by the S-45 mechanism —
+another account takes the table — with no fault at all, and `booking-uncertain` by the S-46
+mechanism, which this file has performed since stage 2 opened.
+
+So the gap was mine, not the interface's. The five entries below close it. **This matters beyond
+tidiness**: the disabled appearance is where `@builder` reports finding the second instance of the
+reported defect's shape — a rule repainting a background and leaving the text to inherit — and no
+entry in ERRATA 5 measures a disabled button, because the tour never puts one in that state.
+
+**§17 is not touched and the ten taken entries are not touched.** S-65 to S-74 were taken by
+`@registrar` at `8caa6f08`, and a Check whose text is fixed while the prelude it loads changes
+underneath it is the F-11 shape §13 exists to make visible. The `#PX-BEGIN`/`#PX-END` block is
+therefore left byte-identical — `sha256
+ab26a7c81555b741ae1c8df94371ef7946a4e9a78dc87126cb0e1061195934b9`, 9141 bytes — and the five entries
+below load a **second, additive** block.
+
+## §19 The extended-surface helpers (`$PX2`)
+
+Loaded after `$W` and `$PX`, never in place of either:
+
+```sh
+export PX2="$(awk '/^#PX2-BEGIN$/{f=1;next} /^#PX2-END$/{f=0} f' "$TK_REPO/LEDGER.md")"
+export WPX2="$W
+$PX
+$PX2"
+```
+
+Confirm all three loaded:
+
+```sh
+$PWPY -c "$WPX2"'
+print("WPX2 OK",BASE,PX_AA,len(PX_SURF),len(PX_CLOSED()["restaurants"][0]["opening_hours"]))'
+```
+
+`PX_CLOSED()` omits Thursday from `opening_hours`, and `F` is `2027-06-10`, a Thursday — so the
+fixture's own calendar closes the searched day without a fault, a fixture edit or a clock change.
+`PX_DISABLE()` sets `disabled` on **every** `<button>` in the document and returns what it touched.
+
+**The proxy in `PX_DISABLE`, labelled per §16 rule 1.** It measures what the stylesheet paints for
+the disabled state, by putting the elements into that state directly. **It does not establish that
+the service enters that state during a request** — S-53 is the entry that requires a loading state at
+all, and this one says nothing about when it appears. The reason not to catch it in flight is that a
+check racing a request is not deterministic, and a flaky Check is worse than a narrow one. Disabling
+every button rather than the three named ones is deliberate: the grid cells are buttons too, and a
+rule that fails on a named button fails on an unnamed one identically.
+
+```python
+#PX2-BEGIN
+PX_DIS="""()=>{
+  const out=[];
+  for (const b of document.querySelectorAll("button")) {
+    b.disabled=true;
+    out.push(b.getAttribute("data-testid")||b.textContent.replace(/\\s+/g," ").trim().slice(0,32)||"button");
+  }
+  return out;
+}"""
+def PX_DISABLE(pg):
+    return pg.evaluate(PX_DIS)
+def PX_CLOSED():
+    return FX(restaurants=[REST(opening_hours=[{"weekday":w,"opens":"18:00","closes":"23:30"}
+                                               for w in WD if w!="thu"])])
+def PX_LOSE(pg,pat="**/reservations**"):
+    st={"drop":True}
+    def h(route):
+        if route.request.method=="POST" and st["drop"]:
+            st["drop"]=False
+            try: route.fetch()
+            except Exception: pass
+            route.abort("connectionfailed"); return
+        route.continue_()
+    pg.route(pat,h); return st
+#PX2-END
+```
+
+## New entries — the five surfaces ERRATA 5 declared out of reach
+
+### S-75: Every button is legible while disabled, on five surfaces.
+Check: `$PWPY -c "$WPX2"'
+ta,_=SETUP()
+pre=OK(BOOK(ta,F+"T20:00","s75-seed",table_id="t_3",ps=4),201)
+def f(pg):
+    rows=[]; sk=[]; cen={}; dis={}
+    def g(n):
+        dis[n]=PX_DISABLE(pg)
+        r,s=PX_SCAN(pg,n); rows.extend(r); sk.extend(s); cen[n]=len(r)
+    pg.goto(BASE+"/login",wait_until="load"); g("/login, every button disabled")
+    pg.goto(BASE+"/signup",wait_until="load"); g("/signup, every button disabled")
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,4); g("/ signed in with results, every button disabled")
+    SEARCH_UI(pg,"r_anker",F,4); CLICK(pg,"slot-t_2-19:00"); pg.wait_for_timeout(800)
+    g("booking form, every button disabled")
+    pg.goto(BASE+"/lookup",wait_until="load")
+    FILL(pg,"lookup-reference-input",pre["reference"]); CLICK(pg,"lookup-submit")
+    pg.wait_for_timeout(1000); g("/lookup reservation shown, every button disabled")
+    return rows,sk,cen,dis
+rows,sk,cen,dis=UI(f,route=None)
+bad=PX_FAILS(rows)
+n=sum(len(dis[k]) for k in dis)
+print("BUTTONS DISABLED PER SURFACE:",json.dumps(dis,indent=1,sort_keys=True))
+print("CENSUS PER SURFACE:",json.dumps(cen,indent=1,sort_keys=True))
+print("EXCLUDED FROM MEASUREMENT:",json.dumps(PX_SKIPS(sk),indent=1,sort_keys=True))
+print("TOTAL BUTTONS DISABLED:",n,"TOTAL MEASURED:",len(rows))
+assert len(cen)==5,"reached %d of the 5 surfaces: %r"%(len(cen),sorted(cen))
+assert n>=8,"only %d buttons were disabled across %d surfaces, so a pass here settles little: %s"%(n,len(dis),json.dumps(dis,sort_keys=True))
+assert not bad,"%d of %d measured elements are below the declared threshold while every button is disabled:\n%s"%(len(bad),len(rows),json.dumps(bad,indent=1,sort_keys=True))
+print("PASS",n,"buttons disabled across",len(cen),"surfaces,",len(rows),"elements measured, none below threshold")'`
+Passes when: exits 0 and ends `PASS <n> buttons disabled across 5 surfaces, …`, having printed what was disabled on each surface, the census, and the exclusion list. **This is the entry ERRATA 5 was missing.** A rule matching `button[disabled]` that repaints the background and leaves the text to inherit produces exactly the reported defect in a state no entry in ERRATA 5 visits, because S-67's tour never disables anything. Every `<button>` is disabled rather than the three the spec names, because the grid cells are buttons and a rule does not care which button it matches. **Proxy, per §16 rule 1:** it measures what the stylesheet paints for the disabled state by entering that state directly. **What it does not establish:** that the service actually disables these buttons during a request — that is S-53's territory and this entry makes no claim about it — nor anything about the transition into or out of the state.
+Status: unclaimed
+
+### S-76: The same twelve surfaces hold at a 375-pixel viewport.
+Check: `$PWPY -c "$WPX2"'
+ta,_=SETUP()
+pre=OK(BOOK(ta,F+"T20:00","s76-seed",table_id="t_3",ps=4),201)
+rows,sk,cen=UI(lambda pg:PX_TOUR(pg,pre["reference"]),w=375,h=812,route=None)
+bad=PX_FAILS(rows)
+print("VIEWPORT 375x812")
+print("CENSUS PER SURFACE:",json.dumps(cen,indent=1,sort_keys=True))
+print("EXCLUDED FROM MEASUREMENT:",json.dumps(PX_SKIPS(sk),indent=1,sort_keys=True))
+print("TOTAL MEASURED:",len(rows))
+assert len(cen)==len(PX_SURF),"the tour reached %d surfaces, not the %d it names: %r"%(len(cen),len(PX_SURF),sorted(cen))
+assert rows,"nothing was measured at 375 CSS pixels"
+assert not bad,"%d of %d measured elements are below the declared threshold at 375 CSS pixels:\n%s"%(len(bad),len(rows),json.dumps(bad,indent=1,sort_keys=True))
+print("PASS",len(rows),"elements measured at 375x812 across",len(cen),"surfaces, none below threshold")'`
+Passes when: exits 0 and ends `PASS <n> elements measured at 375x812 across 12 surfaces, …`. ERRATA 5 named the narrow viewport out of reach because `UI()` builds 1280×900; it takes `w` and `h`, so the reach was one argument away. The spec requires the flows to stay clear and usable at 375 CSS pixels, and a layout that reflows text onto a new background is a contrast change, not only a layout change — S-54 and S-55 already measure scrolling and clipping at that width and neither reads a painted colour. **What it does not establish:** anything about intermediate widths, or about touch target sizes, which no entry in this file measures.
+Status: unclaimed
+
+### S-77: The closed-day no-slots surface is legible, signed out and signed in.
+Check: `$PWPY -c "$WPX2"'
+SETUP(PX_CLOSED())
+def f(pg):
+    rows=[]; sk=[]; st=[]
+    SEARCH_UI(pg,"r_anker",F,4)
+    r,s=PX_SCAN(pg,"no-slots, signed out"); rows.extend(r); sk.extend(s)
+    st.append([SEE(pg,"no-slots"),TXT(pg,"no-slots"),SEE(pg,"availability-grid")])
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,4)
+    r,s=PX_SCAN(pg,"no-slots, signed in"); rows.extend(r); sk.extend(s)
+    st.append([SEE(pg,"no-slots"),TXT(pg,"no-slots"),SEE(pg,"availability-grid")])
+    return rows,sk,st
+rows,sk,st=UI(f,route=None)
+bad=PX_FAILS(rows)
+print("SEARCHED DATE:",F,"WEEKDAY OMITTED FROM opening_hours: thu")
+print("NO-SLOTS STATE [seen,text,grid] SIGNED OUT THEN SIGNED IN:",json.dumps(st))
+print("EXCLUDED FROM MEASUREMENT:",json.dumps(PX_SKIPS(sk),indent=1,sort_keys=True))
+print("TOTAL MEASURED:",len(rows))
+assert st[0][0] or st[1][0],"the closed-day fixture produced no visible no-slots state on either search"
+assert (st[0][1] or "").strip() or (st[1][1] or "").strip(),"no-slots is shown but carries no text: %r"%st
+assert rows,"nothing was measured on the no-slots surface"
+assert not bad,"%d of %d measured elements are below the declared threshold on the no-slots surface:\n%s"%(len(bad),len(rows),json.dumps(bad,indent=1,sort_keys=True))
+print("PASS no-slots reached by a closed-day fixture and legible on both surfaces,",len(rows),"elements measured")'`
+Passes when: exits 0 and ends `PASS no-slots reached by a closed-day fixture and legible …`, having printed the state tuple for both surfaces. No fault injection: `PX_CLOSED()` omits Thursday from `opening_hours` and `F` is a Thursday, so the restaurant's own calendar closes the searched day. S-34 already requires `no-slots` instead of the grid and S-52 that it say what is absent; **neither reads a painted pixel**, so an empty-state message painted on its own background is invisible to both. **What it does not establish:** that the wording is useful, which is `@registrar`'s and the human's; nor the appearance of a day that is open but fully booked, which is a different surface and has no entry.
+Status: unclaimed
+
+### S-78: The refusal surface after a 409 is legible.
+Check: `$PWPY -c "$WPX2"'
+ta,tb=SETUP()
+def f(pg):
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,4)
+    CLICK(pg,"slot-t_2-19:00"); pg.wait_for_timeout(800)
+    assert SEE(pg,"booking-form"),"the booking form did not open, so the refusal surface cannot be reached"
+    OK(BOOK(tb,F+"T19:00","s78-steal",table_id="t_2",ps=4),201)
+    CLICK(pg,"booking-submit"); pg.wait_for_timeout(1600)
+    rows,sk=PX_SCAN(pg,"booking-error after a 409")
+    return rows,sk,SEE(pg,"booking-error"),TXT(pg,"booking-error"),SEE(pg,"confirmation")
+rows,sk,seen,txt,conf=UI(f,route=None)
+bad=PX_FAILS(rows)
+print("BOOKING-ERROR SHOWN:",seen,"CONFIRMATION SHOWN:",conf)
+print("BOOKING-ERROR TEXT:",json.dumps(txt))
+print("EXCLUDED FROM MEASUREMENT:",json.dumps(PX_SKIPS(sk),indent=1,sort_keys=True))
+print("TOTAL MEASURED:",len(rows))
+assert seen,"no booking-error after another account took the table, so the refusal surface was never reached"
+assert (txt or "").strip(),"booking-error is shown but carries no text"
+assert rows,"nothing was measured on the refusal surface"
+assert not bad,"%d of %d measured elements are below the declared threshold on the refusal surface:\n%s"%(len(bad),len(rows),json.dumps(bad,indent=1,sort_keys=True))
+print("PASS the refusal surface is legible,",len(rows),"elements measured")'`
+Passes when: exits 0 and ends `PASS the refusal surface is legible, …`, having printed whether `booking-error` appeared, its text, and the exclusion list. No fault injection and no clock change: a second account takes `t_2` after the form opens, which is S-45's mechanism exactly. S-45 asserts the refusal's *behaviour* — the error appears, the form and the diner's input survive, availability refreshes — and reads no painted colour; an error message painted the colour of its own panel satisfies every one of its assertions. **What it does not establish:** the behaviour S-45 covers, which this entry does not re-claim beyond requiring the surface to have been reached at all.
+Status: unclaimed
+
+### S-79: The uncertain surface after a lost response is legible.
+Check: `$PWPY -c "$WPX2"'
+ta,_=SETUP()
+def f(pg):
+    PX_LOSE(pg)
+    LOGIN_UI(pg); SEARCH_UI(pg,"r_anker",F,4)
+    CLICK(pg,"slot-t_2-19:00"); pg.wait_for_timeout(800)
+    assert SEE(pg,"booking-form"),"the booking form did not open, so the uncertain surface cannot be reached"
+    CLICK(pg,"booking-submit"); pg.wait_for_timeout(2500)
+    rows,sk=PX_SCAN(pg,"booking-uncertain after a lost response")
+    return rows,sk,SEE(pg,"booking-uncertain"),TXT(pg,"booking-uncertain"),SEE(pg,"confirmation"),SEE(pg,"booking-error")
+rows,sk,seen,txt,conf,err=UI(f,route=None)
+bad=PX_FAILS(rows)
+print("BOOKING-UNCERTAIN SHOWN:",seen,"CONFIRMATION SHOWN:",conf,"BOOKING-ERROR SHOWN:",err)
+print("BOOKING-UNCERTAIN TEXT:",json.dumps(txt))
+print("EXCLUDED FROM MEASUREMENT:",json.dumps(PX_SKIPS(sk),indent=1,sort_keys=True))
+print("TOTAL MEASURED:",len(rows))
+assert seen,"the POST response was dropped and no booking-uncertain surface appeared; confirmation=%r booking-error=%r"%(conf,err)
+assert (txt or "").strip(),"booking-uncertain is shown but carries no text"
+assert rows,"nothing was measured on the uncertain surface"
+assert not bad,"%d of %d measured elements are below the declared threshold on the uncertain surface:\n%s"%(len(bad),len(rows),json.dumps(bad,indent=1,sort_keys=True))
+print("PASS the uncertain surface is legible,",len(rows),"elements measured")'`
+Passes when: exits 0 and ends `PASS the uncertain surface is legible, …`, having printed which of the three outcome panels appeared, the uncertain text, and the exclusion list. `PX_LOSE` lets the first `POST /reservations` reach the server with `route.fetch()` and then aborts the response with `connectionfailed`, so the booking commits and the browser never learns it did — S-46's mechanism, written against the **synchronous** Playwright API because `PX_SCAN` is synchronous. S-46 itself is async and is unaffected. **This is a fault injection and ERRATA 5 was right that one is needed; it was wrong that it was out of reach**, since this file has performed it since stage 2 opened. **What it does not establish:** the recovery S-46 covers — that retrying the unchanged form returns the original reference — which this entry does not re-claim.
+Status: unclaimed
+
+## What ERRATA 6 still does not reach
+
+| Not reached | Why not |
+|---|---|
+| Hover and focus appearance | The raster is a still of the resting state. A focus sweep would need the instrument run after each `Tab`, and a hover sweep after each `hover()`. Neither is written. Still a gap. |
+| A day that is open but fully booked | S-77 covers the closed day. The fully-booked grid is a different surface and no entry measures it. |
+| Intermediate viewport widths, and touch target sizes | S-76 measures 375 and S-67 measures 1280. Nothing measures between them, and no entry in this file measures a target size. |
+| Whether the service enters the disabled state during a request | S-75 enters it directly and says so. S-53 requires a loading state exists; nothing ties the two together. |
+| Text sharing a box with an icon or image | Unchanged from §17. A visible glyph anywhere in a box can carry the ratio for invisible text beside it. |
