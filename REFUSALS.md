@@ -4305,3 +4305,61 @@ entry in this file should say so rather than counting re-sends.
 `Resolved:` stays **no**, unchanged, at `0b5132f` as at `63e1de0`, `b47bdf6` and `d8ffcd6`. It is
 cleared when `verdicts/S-80.md` and `verdicts/S-81.md` are committed by `@auditor` against
 `dc6879cdcb1094b0e75ecad2d5125741c6df31fe`, and not before.
+
+**The same eleven messages were re-delivered a third time, and the fault is no longer in the
+transport.** In one turn, whose parent is `327dddd59289c9ea4ff0cfed44b5b03b9e8f14e0`, the room
+delivered the identical eleven ids again: `e12d3f72`, `2a8f1522`, `3a7ad15f`, `487e1485`,
+`500a2888`, `197790b2`, `8e343eb9`, `4763f12b`, `8607094d`, `bcc3eea5`, `8ce51a45`. **That is the
+set this entry already lists twice above, id for id**, and a reader can check it against either list
+without leaving this file. The paragraph recording the second re-delivery ended with an instruction
+to this one:
+
+> If a fourth is needed, the fault is no longer in the transport, and the next entry in this file
+> should say so rather than counting re-sends.
+
+**This is that paragraph and it says so.** A fourth dispatch would carry bytes that are already
+committed, readable, and unchanged, to a seat that has twice said it will run whatever is
+dispatched. The state at the parent revision, re-read rather than recalled:
+
+```
+$ ls verdicts/S-80.md verdicts/S-81.md
+ls: verdicts/S-80.md: No such file or directory
+ls: verdicts/S-81.md: No such file or directory
+$ shasum -a 256 handoffs/batch-6.md ; wc -c < handoffs/batch-6.md
+ae7fea81166e4ca844b6ff569ec5728194b91beaec27a0b99c0dc891d512c635  handoffs/batch-6.md
+   12996
+$ git diff --stat d8ffcd6 HEAD -- LEDGER.md verdicts/
+[no output]
+$ sed -n '5284,5315p' LEDGER.md | shasum -a 256
+0639133c6d8ca24a4703c326631953452fba91fef3e28b8b864099444053d1c4  -
+$ sed -n '5317,5347p' LEDGER.md | shasum -a 256
+1bf454f1aa3a2f20de2e3bb8e6208ea5dbc8b7e7ec4500b144f2fe6945501e41  -
+```
+
+**The concrete blocker, named rather than implied: across three turns this seat has received no
+room message outside the stale set.** Every inbound id is one of the eleven, and the newest of them
+reports waiting on a dispatch that was sent before it was written. Nothing in that is evidence that
+a seat is unhealthy, and this entry does not claim it — what it establishes is only that the room
+has delivered nothing new while the repository has moved five commits. **The repository is the
+record and the room is the notification**, which is the ordering this entry relies on when it accepts
+a verdict from `verdicts/<claim-id>.md`; applied here it means the dispatch is already where a
+restarted seat can read it, and a fourth copy in the room adds nothing a dropped message would not
+drop again.
+
+**What this seat will not do, stated because it is the shortcut available right now.** S-80 and S-81
+are two Checks with committed text, a named revision, and a prelude whose digests are in
+`handoffs/batch-6.md`. Running them would take minutes and would close the gate today. **A
+gatekeeper that can manufacture its own evidence is not a gate**, and a verdict recorded by the seat
+that decides what verdicts mean is worth less than no verdict at all, because it reads the same and
+cannot be checked by its author. The two files stay missing until `@auditor` commits them.
+
+Would it have failed the graded suite: **unknown**, unchanged and for the reason already given —
+neither check has been executed, so there is no result for a graded run to agree or disagree with.
+The three re-deliveries change nothing about that, because a transport is not a seat and makes no
+claim.
+
+`Resolved:` stays **no**, unchanged, at this revision as at `0b5132f`, `63e1de0`, `b47bdf6` and
+`d8ffcd6`. It is cleared when `verdicts/S-80.md` and `verdicts/S-81.md` are committed by `@auditor`
+against `dc6879cdcb1094b0e75ecad2d5125741c6df31fe`, and not before. **The stage is declared blocked
+on exactly these two files**, and the declaration is in `REPORT.md` rather than left implicit in a
+ledger nobody was asked to read.

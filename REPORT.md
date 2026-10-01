@@ -632,3 +632,178 @@ figure. **The measurement this record refused to hide is what made the close har
 moved pointer would have concealed eleven post-close corrections and produced one tidy ref.
 That is the honest cost of the choice and not an argument against it. The version needing no tag
 at all is the one in `REFUSALS.md` F-42: **run the command at whatever revision you hold.**
+
+# Contrast-defect stage — declared blocked 2026-10-01T09:35Z, not closed
+
+**This stage did not close. It is declared blocked, and the declaration is the report.** Two
+committed claims carry no verdict, so the gate is shut for the no-verdict reason alone, before
+anything either claim would establish if it ran. What follows is the state at
+`327dddd59289c9ea4ff0cfed44b5b03b9e8f14e0`, the revision this report is written on top of.
+
+## Claims
+
+Seventeen claims were written this stage, `S-65` through `S-81`:
+
+    $ grep -cE '^### S-(6[5-9]|7[0-9]|8[01])\b' LEDGER.md
+    17
+
+- `S-65`–`S-74` — `@scribe` at `8caa6f0`, claims that settle on painted pixels rather than the DOM.
+- `S-75`–`S-79` — `@scribe` at `5cd6b7a`, the five gap entries. `S-75` is the one the claim set was
+  widened for: every button disabled, on five surfaces.
+- `S-80`–`S-81` — `@scribe` at `1007a09`, the two bounded superseding entries authorised at
+  `c2f04885` and recorded at `d8ffcd6`.
+
+**Fifteen of the seventeen carry a verdict file**, `verdicts/S-65.md` … `verdicts/S-79.md`,
+committed by `@auditor` at `fe543c4b60d0b229c2f89a7a64b205135d218e76` against
+`dc6879cdcb1094b0e75ecad2d5125741c6df31fe`:
+
+    PASS  S-65 S-66 S-67 S-68 S-70 S-71 S-72 S-73 S-74 S-75 S-77 S-78 S-79   (13)
+    FAIL  S-69 S-76                                                          (2)
+
+**Thirteen passed first time, on one pass, with no fix cycle.** Two refused. Two have no verdict:
+
+    $ for c in $(grep -oE '^### S-[0-9]+' LEDGER.md | sed 's/^### //'); do [ -f "verdicts/$c.md" ] || echo "NO VERDICT: $c"; done
+    NO VERDICT: S-80
+    NO VERDICT: S-81
+
+## Refusals
+
+Three entries, `F-45`, `F-46` and `F-47`, all in `REFUSALS.md`. By case:
+
+| Case | Count | Entries |
+|---|---|---|
+| failing verdict | 2 | `F-45` (`S-69`), `F-46` (`S-76`) |
+| no verdict | 1 | `F-47` (`S-80` and `S-81`) |
+| unevidenced verdict | 0 | — |
+
+**All three read `unknown` in the counterfactual column: yes 0, no 0, unknown 3.** That is the
+situation the registrar's mandate names, and it is reported in its own terms: **on this stage's
+three entries alone, the gate has not yet been shown to pay for itself.** The earlier stages'
+sections above carry their own counts and are not restated here.
+
+**The `unknown` on `F-45` and `F-46` is a deliberate reading and not a missing measurement**, and
+it is the most important sentence in this report. `@auditor` ran the graded suite at
+`dc6879c` immediately after each failure, in the same clone, and quoted it in both verdict files:
+`stage 1: pass`, `stage 2: pass`, `harness exit 0`. Read mechanically that is **`no`** — the gate
+refused work the supplied checks are happy with, which is the interesting case. It is recorded as
+`unknown` instead because **`no` asserts that a real defect was caught, and the cause of both
+refusals is unestablished.** Three seats produced readings of the cause and none produced a run:
+
+- `@scribe` diagnosed both as defects in its own Check text, and stated first and unprompted that
+  the tool which runs commands was unavailable in its session, so **it had run no reproduction.**
+- `@builder` ran probes — a freshly appended `<option>` measuring `[0,0]`, `gridwrap` scrollWidth
+  655 against clientWidth 349, worst contrast 8.25:1 after `scrollLeft = scrollWidth` — and said in
+  the same message that **they are not evidence**, being commands no Check names.
+- `@auditor` declined to endorse either diagnosis, twice, including a correction to each of the
+  other two seats for citing its verdict files as support: its record carries no tag for the `S-69`
+  element and no finding about why the 248 scored as they did. It added one measured datum from
+  grepping the fifteen run logs — `NO-PIXELS 0`, `NO-INK 159`, `LOW-CONTRAST 2`,
+  `FLAT-AGAINST-PAGE 90` — and stated the limit on it.
+
+**Three seats agreed on a cause by reading and none of them settled it by running.** `S-80` and
+`S-81` exist to settle it, and until they do, the difference between `no` and a defect in this
+factory's own instrument is a difference nobody here has measured. **Writing `yes` or `no` now
+would be guessing, and the one rule on that line is not to guess.**
+
+## Claims still unresolved
+
+Four, in two kinds:
+
+- **`S-80`, `S-81` — no verdict.** Never executed. `F-47`, `Resolved: no`.
+- **`S-69`, `S-76` — refused, cause unestablished.** Both FAIL verdicts stand; neither entry was
+  edited, and both originals remain in `LEDGER.md` with their verdicts intact as the record.
+  `F-45` and `F-46`, both `Resolved: no`.
+
+No claim was resolved this stage. `stage-2/app.py` is untouched since `dc6879c`:
+
+    $ git diff --stat dc6879c HEAD -- stage-2/app.py
+    [no output]
+
+## What this stage did establish
+
+- **The reported contrast defect is fixed and the fix is verdicted.** `S-66` PASS, exit 0:
+  `Sign in` and `Create an account` both paint at 9.62:1 against `rgb(255, 251, 245)`.
+- **The raster instrument works.** `S-65` PASS: three pixel-invisible probes rejected, one legible
+  probe accepted, nothing excluded. The two later failures sit on top of a working instrument.
+- **The widened claim reached the second rule.** `S-75` PASS: `100 buttons disabled across 5
+  surfaces, 347 elements measured, none below threshold`.
+- **No verdict rests on the broken `contrast-check.mjs`.** `@scribe` raised it; `grep -rln` for both
+  `contrast-check` and `band-work/bin` returns nothing across the repository, so no verdict was
+  settled against black. Recorded in `F-47`; **no refusal arose from it.**
+- **A defective Check that induces a defective fix was not shipped.** `@builder` could have turned
+  both FAILs green — a custom listbox for the `<select>`, a grid that never overflows at 375 — and
+  declined on the record, naming it as shaping code to an assertion rather than to the requirement.
+  The second change would have touched the `slot-` testids that suite 2 references in 13 places.
+
+## Why it is blocked rather than dispatched again
+
+**Three dispatches were issued for `S-80` and `S-81` and none produced a verdict file.** The first
+in the room at `00eef6b`; the second re-stated in a reply at `63e1de0`; the third committed to
+`handoffs/batch-6.md` at `327dddd`, carrying both revisions, both entry digests, §20's prelude text
+and the Check text copied by `sed` rather than transcribed. Across those turns the room delivered
+the **same eleven stale message ids three times** and nothing else — the set is listed id for id in
+`F-47`, three times, so the claim can be checked rather than taken.
+
+What was missing was never the content, and a fourth copy in the room would add nothing a dropped
+message would not drop again. The dispatch is now in the repository, where a restarted seat can
+read it without a message arriving. **`F-47` records the fault as no longer being in the transport
+rather than counting a fourth re-send**, which is what the entry recording the second re-delivery
+instructed this one to do.
+
+**The registrar did not run `S-80` or `S-81` to close its own gate.** Both have committed Check
+text, a named revision and published prelude digests; running them would have taken minutes. A
+verdict recorded by the seat that decides what verdicts mean reads identically to a real one and
+cannot be checked by its author, which is the one failure that would make every other line in this
+file worthless.
+
+## Elapsed
+
+**2h 05m**, from `8caa6f0` at `2026-10-01T07:30:19Z` to this report at `2026-10-01T09:35:24Z`.
+
+The anchor is the first commit of the stage, not the dispatch: **the human's stage task is not
+timestamped in the repository**, so true dispatch-to-here is longer than this figure by an
+unmeasured amount, and the figure is reported as what it is rather than rounded up to a guess.
+
+## Model spend, per seat
+
+Verbatim from `band --profile default --session registrar usage rooms`, the room row for
+`ead443ec-6e6b-4475-a93e-0f67ff6427c7`:
+
+    ROOM                                    SESSIONS         TOKENS   ESTIMATE  AGENTS
+    ead443ec-6e6b-4475-a93e-0f67ff6427c7          16      928316349    $603.34  aashanjaved.cs/auditor $130.10 · aashanjaved.cs/scribe $160.23 · aashanjaved.cs/builder $162.00 · aashanjaved.cs/registrar $151.02
+
+| Seat | Estimate |
+|---|---|
+| `@builder` | $162.00 |
+| `@scribe` | $160.23 |
+| `@registrar` | $151.02 |
+| `@auditor` | $130.10 |
+| **Room total** | **$603.34** |
+
+**Three statements of what that number is not.** The command prints `Estimated at list prices —
+not a bill.` and that is quoted rather than paraphrased. Where the seats run on a subscription
+rather than metered billing, **no money changed hands** and the figure is the work's notional cost.
+And it is **cumulative for the room across the whole run, not this stage** — the room view does not
+split by stage, so a per-stage figure is **unavailable** and is reported as unavailable rather than
+subtracted out of two cumulative readings.
+
+`band usage agents` is not used here: it attributes nothing to the room and lumps this work into a
+single `(unattributed)` bucket, which in this machine's output also holds 63 unrelated sessions.
+
+## Gate condition at close — verified, not asserted
+
+The gate is **shut**. Re-read at the parent revision rather than recalled:
+
+    $ for c in $(grep -oE '^### S-[0-9]+' LEDGER.md | sed 's/^### //'); do [ -f "verdicts/$c.md" ] || echo "NO VERDICT: $c"; done
+    NO VERDICT: S-80
+    NO VERDICT: S-81
+    $ git diff --stat d8ffcd6 HEAD -- LEDGER.md verdicts/
+    [no output]
+    $ shasum -a 256 handoffs/batch-6.md ; wc -c < handoffs/batch-6.md
+    ae7fea81166e4ca844b6ff569ec5728194b91beaec27a0b99c0dc891d512c635  handoffs/batch-6.md
+       12996
+
+Three entries hold it shut: `F-45`, `F-46` and `F-47`, each `Resolved: no`. **It opens when
+`verdicts/S-80.md` and `verdicts/S-81.md` are committed by `@auditor` against `dc6879c`**, and on
+what those two establish about whether `S-69` and `S-76` refused a defect in the revision or a
+defect in this factory's own Check text. **Not before, and not on a majority of thirteen passes.**
