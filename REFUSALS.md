@@ -4363,3 +4363,61 @@ claim.
 against `dc6879cdcb1094b0e75ecad2d5125741c6df31fe`, and not before. **The stage is declared blocked
 on exactly these two files**, and the declaration is in `REPORT.md` rather than left implicit in a
 ledger nobody was asked to read.
+
+**A fourth re-delivery, and this paragraph is the last one that will count them.** In one turn,
+whose parent is `edc3671c5f02ce296272438e1e898b401b1f540d`, the room delivered the identical eleven
+ids a fourth time: `e12d3f72`, `2a8f1522`, `3a7ad15f`, `487e1485`, `500a2888`, `197790b2`,
+`8e343eb9`, `4763f12b`, `8607094d`, `bcc3eea5`, `8ce51a45`. **Three paragraphs above already list
+that set, id for id.** The newest of the eleven still reports *"I am waiting on a named thing from a
+named seat: your dispatch"*, a dispatch sent four commits before this one at `00eef6b` and committed
+as a file at `0b5132f`. The two newest commits in this repository, `ea12efb` and `edc3671`, are not
+mentioned by any of the eleven.
+
+The state is re-read rather than recalled, and nothing in it has moved:
+
+```
+$ ls verdicts/S-80.md verdicts/S-81.md
+ls: verdicts/S-80.md: No such file or directory
+ls: verdicts/S-81.md: No such file or directory
+$ git diff --stat d8ffcd6 HEAD -- LEDGER.md verdicts/
+[no output]
+$ git diff --stat dc6879c HEAD -- stage-2/
+[no output]
+$ sed -n '5284,5315p' LEDGER.md | shasum -a 256
+0639133c6d8ca24a4703c326631953452fba91fef3e28b8b864099444053d1c4  -
+$ sed -n '5317,5347p' LEDGER.md | shasum -a 256
+1bf454f1aa3a2f20de2e3bb8e6208ea5dbc8b7e7ec4500b144f2fe6945501e41  -
+$ shasum -a 256 handoffs/batch-6.md ; wc -c < handoffs/batch-6.md
+ae7fea81166e4ca844b6ff569ec5728194b91beaec27a0b99c0dc891d512c635  handoffs/batch-6.md
+   12996
+```
+
+**Counting re-deliveries has stopped being informative, and continuing to count them would be this
+seat's own version of the failure it is recording.** The first was a transport hiccup. The second
+established that it was not. The third moved the dispatch into the repository so that no further
+copy could help. A fourth adds one fact and no more: the eleven stale ids are now the only room
+input this seat has received across four turns, and all eleven were answered before they arrived.
+Each of the eleven was settled individually as a stale confirmation rather than re-answered, because
+an answer to a decided question is indistinguishable in the transcript from an answer to an open one,
+and the transcript is what a later reader will mistake for the state. **The repository is the record;
+the room is the notification.**
+
+**What is not concluded from four re-deliveries, stated because it is the available temptation.**
+Nothing here establishes that `@auditor` is unhealthy, that `@scribe` or `@builder` failed to act, or
+that any seat is holding work it has not reported. Three seats reported accurately from their own
+seats at `fe543c4`, and `@builder`'s `git diff --stat dc6879c HEAD -- stage-2/app.py` with no output
+is confirmed at this revision against all of `stage-2/`. **A transport is not a seat and makes no
+claim, and this seat does not get to convert silence into a finding about anyone.** What is
+established is narrower and sufficient: two committed claims have no verdict file, and this seat
+cannot produce one.
+
+**The declaration in `REPORT.md` stands unchanged and is not re-made.** The stage is blocked on
+`verdicts/S-80.md` and `verdicts/S-81.md`, committed by `@auditor` against
+`dc6879cdcb1094b0e75ecad2d5125741c6df31fe`, with the dispatched bytes readable at
+`handoffs/batch-6.md`. A second declaration would be a fifth dispatch wearing a different hat.
+
+Would it have failed the graded suite: **unknown**, unchanged — neither check has been executed, so
+there is no result for a graded run to agree or disagree with.
+
+`Resolved:` stays **no**, unchanged, at this revision as at `edc3671`, `0b5132f`, `63e1de0`,
+`b47bdf6` and `d8ffcd6`.
