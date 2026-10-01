@@ -4075,3 +4075,59 @@ it: refusing 248 elements and measuring none of them would leave a silent covera
 visible false failure is today.
 
 Resolved: **no.**
+
+---
+
+### F-47 — S-80 and S-81 carry no verdict, and the band went idle holding them
+
+Case: **no verdict** — `verdicts/S-80.md` and `verdicts/S-81.md` do not exist.
+Revision: `d8ffcd62430216643e903d5c75ed81dcd3c4500e`.
+
+Evidence:
+
+```
+$ for c in $(grep -oE '^### S-[0-9]+' LEDGER.md | sed 's/^### //'); do [ -f "verdicts/$c.md" ] || echo "NO VERDICT: $c"; done; echo "entries: $(grep -cE '^### S-[0-9]+' LEDGER.md)"
+NO VERDICT: S-80
+NO VERDICT: S-81
+entries: 82
+```
+
+Eighty of the eighty-two claims carry a verdict file. These two carry none, and both read
+`Status: unclaimed` at `LEDGER.md:5315` and `:5347`. **The gate is closed on the stage for that
+reason alone**, independently of anything either entry would establish if it ran.
+
+**What makes this entry worth writing is not the missing files, it is that nobody was holding
+them.** `@scribe` wrote and committed S-80 and S-81 at `1007a09`, recorded the authorisation at
+`d8ffcd6`, and reported holding no claim. `@builder` reported `stage-2/app.py` untouched, checked
+that it was not idle by neglect, and reported `entries with no verdict file: none` — a reading taken
+at `fe543c4`, before these two entries existed, and correct at that revision. `@auditor` reported
+nothing outstanding and stated it would run whatever was dispatched. Each report was accurate from
+its own seat. **Together they left two committed claims with no verdict and no seat acting on them,
+and every seat reporting itself healthy.** That is the silence this ledger exists to interrupt, and
+it was one unsent dispatch wide.
+
+Would it have failed the graded suite: **unknown**, and here the word is not a hedge about a defect
+— **there is no result to compare.** Neither check has been executed, so there is nothing for a
+graded run to agree or disagree with. This is the no-verdict category proper rather than the
+evidence-provenance category of F-45 and F-46: those two had output and lacked a cause, this one
+has no output at all.
+
+Resolved: **no.** It is cleared when `verdicts/S-80.md` and `verdicts/S-81.md` are committed by
+`@auditor` against `dc6879cdcb1094b0e75ecad2d5125741c6df31fe`, with the Check text taken from
+`LEDGER.md` at `d8ffcd6`, and not before.
+
+**One provenance question closed, with no refusal arising from it.** `@scribe` asked whether any
+verdict in `verdicts/` had been settled with `band-work/bin/contrast-check.mjs`, whose guard
+compares a no-space `rgba(0,0,0,0)` default against a with-space `rgba(0, 0, 0, 0)` literal and so
+never walks for a background. Had any verdict rested on it, that verdict would have been measured
+against black and would be an unevidenced-verdict refusal. It does not:
+
+```
+$ grep -rln "contrast-check" . --exclude-dir=.git
+$ grep -rln "band-work/bin" . --exclude-dir=.git
+```
+
+Both return nothing: the tool is referenced by no Check, no verdict file and nothing else in this
+repository, and `@auditor` stated independently that it did not use it for the fifteen. **No entry
+is owed and none is written.** It is recorded here because the absence of a finding is only
+checkable if the check is on the record.
